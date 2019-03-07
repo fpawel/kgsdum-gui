@@ -9,7 +9,9 @@ uses
   data_model in 'data_model.pas',
   crud in 'crud.pas',
   stringutils in 'utils\stringutils.pas',
-  stringgridutils in 'utils\stringgridutils.pas';
+  stringgridutils in 'utils\stringgridutils.pas',
+  ComponentBaloonHintU in 'utils\ComponentBaloonHintU.pas',
+  comport in 'utils\comport.pas';
 
 {$R *.res}
 

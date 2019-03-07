@@ -188,34 +188,34 @@ begin
                 if FConnection <> '' then
                     exit(cvrErr);
             pcBegNorm:
-                exit(FConc[scaleConcBegin, scaleTempNorm].Color);
+                exit(FConc[scaleConcBegin, scaleTempNorm].Check);
 
             pcMidNorm:
-                exit(FConc[scaleConcMidle, scaleTempNorm].Color);
+                exit(FConc[scaleConcMidle, scaleTempNorm].Check);
 
             pcEndNorm:
-                exit(FConc[scaleConcEnd, scaleTempNorm].Color);
+                exit(FConc[scaleConcEnd, scaleTempNorm].Check);
 
             pcBegMinus:
-                exit(FConc[scaleConcBegin, scaleTempMinus].Color);
+                exit(FConc[scaleConcBegin, scaleTempMinus].Check);
 
             pcMidMinus:
-                exit(FConc[scaleConcMidle, scaleTempMinus].Color);
+                exit(FConc[scaleConcMidle, scaleTempMinus].Check);
 
             pcEndMinus:
-                exit(FConc[scaleConcEnd, scaleTempMinus].Color);
+                exit(FConc[scaleConcEnd, scaleTempMinus].Check);
 
             pcBegPlus:
-                exit(FConc[scaleConcBegin, scaleTempPlus].Color);
+                exit(FConc[scaleConcBegin, scaleTempPlus].Check);
 
             pcMidPlus:
-                exit(FConc[scaleConcMidle, scaleTempPlus].Color);
+                exit(FConc[scaleConcMidle, scaleTempPlus].Check);
 
             pcEndPlus:
-                exit(FConc[scaleConcEnd, scaleTempPlus].Color);
+                exit(FConc[scaleConcEnd, scaleTempPlus].Check);
 
         else
-            exit(clBlack);
+            exit(cvrnone);
         end;
 
 end;

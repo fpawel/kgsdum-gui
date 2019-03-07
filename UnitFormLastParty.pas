@@ -7,13 +7,17 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Grids, Vcl.StdCtrls,
     Vcl.Imaging.pngimage, Vcl.ExtCtrls, System.ImageList, Vcl.ImgList,
-    Vcl.Menus, data_model;
+    Vcl.Menus, data_model, Vcl.ComCtrls, Vcl.ToolWin;
 
 type
     TFormLastParty = class(TForm)
         StringGrid1: TStringGrid;
-        PanelError: TPanel;
         ImageList1: TImageList;
+        ToolBarParty: TToolBar;
+        ToolButtonParty: TToolButton;
+        ToolButtonStop: TToolButton;
+        ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
         procedure StringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer;
           Rect: TRect; State: TGridDrawState);
         procedure StringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer;
@@ -24,6 +28,9 @@ type
           Shift: TShiftState; X, Y: Integer);
         procedure FormShow(Sender: TObject);
         procedure FormCreate(Sender: TObject);
+        procedure ToolButtonPartyClick(Sender: TObject);
+        procedure ToolButtonStopClick(Sender: TObject);
+        procedure ToolButton1Click(Sender: TObject);
     private
         { Private declarations }
         Last_Edited_Col, Last_Edited_Row: Integer;
@@ -163,6 +170,120 @@ begin
 
 end;
 
+procedure TFormLastParty.ToolButton1Click(Sender: TObject);
+var
+    p: TProduct;
+begin
+    if (StringGrid1.Row - 1 < 0) or (StringGrid1.Row - 1 >= Length(FProducts))
+    then
+        exit;
+    p := FProducts[StringGrid1.Row - 1];
+
+    if MessageBox(Handle,
+      PCHar(format
+      ('Подтвердите необходимость удаления данных БО №%d-%s, место %d, адрес %d',
+      [p.FProductID, p.FSerial, StringGrid1.Row, p.FAddr])),
+      'Запрос подтверждения', mb_IconQuestion or mb_YesNo) <> mrYes then
+        exit;
+
+    with TFDQuery.Create(nil) do
+    begin
+        Connection := KgsdumData.Conn;
+        try
+            SQL.Text := 'DELETE FROM product WHERE product_id = :product_id;';
+            ParamByName('product_id').Value := p.FProductID;
+            ExecSQL;
+        finally
+            Free;
+        end;
+    end;
+    reload_data;
+end;
+
+procedure TFormLastParty.ToolButtonPartyClick(Sender: TObject);
+begin
+    if not MessageBox(Handle,
+      'Подтвердите необходимость создания новой партии.',
+      'Запрос подтверждения', mb_IconQuestion or mb_YesNo) = mrYes then
+        exit;
+
+    with TFDQuery.Create(nil) do
+    begin
+        Connection := KgsdumData.Conn;
+        try
+            SQL.Text := 'INSERT INTO party DEFAULT VALUES;';
+            ExecSQL;
+            SQL.Text :=
+              'INSERT INTO product (party_id, serial_number, addr) VALUES ((SELECT * FROM last_party_id), ''1'', 1);';
+            ExecSQL;
+        finally
+            Free;
+        end;
+    end;
+    reload_data;
+
+end;
+
+procedure TFormLastParty.ToolButtonStopClick(Sender: TObject);
+var
+    i, serial, addr: Integer;
+    addrs: TArray<Integer>;
+    serials: TArray<string>;
+
+label  _l;
+
+begin
+    with TFDQuery.Create(nil) do
+    begin
+        Connection := KgsdumData.Conn;
+        try
+            // SQL.Text := 'BEGIN TRANSACTION';
+            // ExecSQL;
+
+            SQL.Text :=
+              'SELECT serial_number, addr FROM product WHERE party_id = (SELECT * FROM last_party_id);';
+            Open;
+            First;
+            while not Eof do
+            begin
+                SetLength(serials, Length(serials) + 1);
+                SetLength(addrs, Length(addrs) + 1);
+                addrs[Length(addrs) - 1] := FieldValues['addr'];
+                serials[Length(serials) - 1] := FieldValues['serial_number'];
+                Next;
+            end;
+            Close;
+
+            addr := 1;
+            serial := 1;
+        _l:
+            for i := 0 to Length(addrs) - 1 do
+            begin
+                if addr = addrs[i] then
+                begin
+                    addr := addr + 1;
+                    goto _l;
+                end;
+                if inttostr(serial) = serials[i] then
+                begin
+                    serial := serial + 1;
+                    goto _l;
+                end;
+            end;
+
+            SQL.Text :=
+              'INSERT INTO product (party_id, serial_number, addr, production) '
+              + 'VALUES ((SELECT * FROM last_party_id), :serial_number, :addr, TRUE);';
+            ParamByName('serial_number').Value := inttostr(serial);
+            ParamByName('addr').Value := addr;
+            ExecSQL;
+        finally
+            Free;
+        end;
+    end;
+    reload_data;
+end;
+
 procedure TFormLastParty.StringGrid1MouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
@@ -278,10 +399,10 @@ var
     ARow, ACol: Integer;
     s: string;
 begin
-
+    StringGrid_Clear(StringGrid1);
     with Application.MainForm do
         with GetLastParty do
-            Caption := Format('Партия № %d, создана %s',
+            Caption := format('Партия БО КГСДУМ № %d, создана %s',
               [FPartyID, FormatDateTime('dd MMMM yyyy hh:nn',
               IncHour(FCreatedAt, 3))]);
     FProducts := GetLastPartyProducts;
@@ -291,6 +412,9 @@ begin
     begin
         colcount := Length(FColumns);
         RowCount := Length(FProducts) + 1;
+        if Length(FProducts) = 0 then
+            exit;
+
         FixedRows := 1;
         FixedCols := 1;
         ColWidths[0] := 80;
@@ -325,6 +449,7 @@ procedure TFormLastParty.UpdateAddr(ACol, ARow: Integer; Value: string);
 var
     p: TProduct;
 begin
+    CloseWindow(FhWndTip);
     p := FProducts[ARow - 1];
 
     with TFDQuery.Create(nil) do
@@ -334,29 +459,26 @@ begin
           'UPDATE product SET addr = :addr WHERE product_id = :product_id;';
 
         ParamByName('product_id').Value := p.FProductID;
+
         try
             ParamByName('addr').Value := StrToInt(Value);
             ExecSQL;
             p.FAddr := StrToInt(Value);
             FProducts[ARow - 1] := p;
-            PanelError.Visible := false;
         except
             on E: Exception do
             begin
-                PanelError.Caption := Format('%s: %s: "%s": %s',
-                  [ProductValues[0, ARow - 1], product_column_name[pcSerial],
-                  Value, E.Message]);
-                PanelError.Visible := True;
                 with StringGrid1 do
                 begin
                     OnSetEditText := nil;
-                    Cells[ACol, ARow] := IntToStr(p.FAddr);
+                    Cells[ACol, ARow] := inttostr(p.FAddr);
                     OnSetEditText := StringGrid1SetEditText;
                 end;
 
-                CloseWindow(FhWndTip);
                 FhWndTip := StringGrid1.ShowBalloonTip(TIconKind.Error,
-                  'Ошибка', PanelError.Caption)
+                  'Ошибка данных', format('%s: %s: "%s": %s',
+                  [ProductValues[0, ARow - 1], product_column_name[pcSerial],
+                  Value, E.Message]))
 
             end;
         end;
@@ -369,6 +491,7 @@ procedure TFormLastParty.UpdateSerial(ACol, ARow: Integer; Value: string);
 var
     p: TProduct;
 begin
+    CloseWindow(FhWndTip);
     p := FProducts[ARow - 1];
 
     with TFDQuery.Create(nil) do
@@ -382,23 +505,20 @@ begin
             ExecSQL;
             p.FSerial := Value;
             FProducts[ARow - 1] := p;
-            PanelError.Visible := false;
         except
             on E: Exception do
             begin
-                PanelError.Caption := Format('%s: %s: "%s": %s',
-                  [ProductValues[0, ARow - 1], product_column_name[pcSerial],
-                  Value, E.Message]);
-                PanelError.Visible := True;
                 with StringGrid1 do
                 begin
                     OnSetEditText := nil;
                     Cells[ACol, ARow] := p.FSerial;
                     OnSetEditText := StringGrid1SetEditText;
                 end;
-                CloseWindow(FhWndTip);
+
                 FhWndTip := StringGrid1.ShowBalloonTip(TIconKind.Error,
-                  'Ошибка', PanelError.Caption);
+                  'Ошибка', format('%s: %s: "%s": %s',
+                  [ProductValues[0, ARow - 1], product_column_name[pcSerial],
+                  Value, E.Message]));
 
             end;
         end;
