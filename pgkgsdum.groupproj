@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{94D380BD-D6B0-4C2C-80CF-0F7830D3BFE5}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="kgsdum.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="test_comport.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Test\kgsdumTests.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="kgsdum">
+        <MSBuild Projects="kgsdum.dproj"/>
+    </Target>
+    <Target Name="kgsdum:Clean">
+        <MSBuild Projects="kgsdum.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="kgsdum:Make">
+        <MSBuild Projects="kgsdum.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="test_comport">
+        <MSBuild Projects="test_comport.dproj"/>
+    </Target>
+    <Target Name="test_comport:Clean">
+        <MSBuild Projects="test_comport.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="test_comport:Make">
+        <MSBuild Projects="test_comport.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="kgsdumTests">
+        <MSBuild Projects="Test\kgsdumTests.dproj"/>
+    </Target>
+    <Target Name="kgsdumTests:Clean">
+        <MSBuild Projects="Test\kgsdumTests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="kgsdumTests:Make">
+        <MSBuild Projects="Test\kgsdumTests.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="kgsdum;test_comport;kgsdumTests"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="kgsdum:Clean;test_comport:Clean;kgsdumTests:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="kgsdum:Make;test_comport:Make;kgsdumTests:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

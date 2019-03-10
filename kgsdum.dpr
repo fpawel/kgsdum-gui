@@ -8,10 +8,18 @@ uses
   UnitFormLastParty in 'UnitFormLastParty.pas' {FormLastParty},
   data_model in 'data_model.pas',
   crud in 'crud.pas',
-  stringutils in 'utils\stringutils.pas',
   stringgridutils in 'utils\stringgridutils.pas',
   ComponentBaloonHintU in 'utils\ComponentBaloonHintU.pas',
-  comport in 'utils\comport.pas';
+  comport in 'hardware\comport.pas',
+  kgs in 'hardware\kgs.pas',
+  UnitFormSelectWorksDialog in 'UnitFormSelectWorksDialog.pas' {FormSelectWorksDialog},
+  run_work in 'run_work.pas',
+  errors in 'errors.pas',
+  works in 'works.pas',
+  PropertyValueEditors in 'PropertyValueEditors.pas',
+  UnitFormProperties in 'UnitFormProperties.pas' {FormProperties},
+  config_value in 'config_value.pas',
+  stringutils in 'utils\stringutils.pas';
 
 {$R *.res}
 
@@ -21,5 +29,7 @@ begin
   Application.CreateForm(TKgsdumMainForm, KgsdumMainForm);
   Application.CreateForm(TKgsdumData, KgsdumData);
   Application.CreateForm(TFormLastParty, FormLastParty);
+  Application.CreateForm(TFormSelectWorksDialog, FormSelectWorksDialog);
+  Application.CreateForm(TFormProperties, FormProperties);
   Application.Run;
 end.

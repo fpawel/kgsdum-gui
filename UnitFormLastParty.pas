@@ -204,7 +204,7 @@ procedure TFormLastParty.ToolButtonPartyClick(Sender: TObject);
 begin
     if not MessageBox(Handle,
       'Подтвердите необходимость создания новой партии.',
-      'Запрос подтверждения', mb_IconQuestion or mb_YesNo) = mrYes then
+      'Запрос подтверждения', mb_IconQuestion or mb_YesNo) <> mrYes then
         exit;
 
     with TFDQuery.Create(nil) do

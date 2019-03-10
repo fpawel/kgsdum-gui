@@ -17,10 +17,10 @@ object FormLastParty: TFormLastParty
   TextHeight = 13
   object StringGrid1: TStringGrid
     AlignWithMargins = True
-    Left = 3
-    Top = 36
-    Width = 872
-    Height = 401
+    Left = 36
+    Top = 3
+    Width = 839
+    Height = 434
     Align = alClient
     BorderStyle = bsNone
     ColCount = 4
@@ -36,10 +36,10 @@ object FormLastParty: TFormLastParty
     OnMouseDown = StringGrid1MouseDown
     OnSelectCell = StringGrid1SelectCell
     OnSetEditText = StringGrid1SetEditText
-    ExplicitLeft = 39
-    ExplicitTop = -2
-    ExplicitWidth = 831
-    ExplicitHeight = 434
+    ExplicitLeft = 3
+    ExplicitTop = 36
+    ExplicitWidth = 872
+    ExplicitHeight = 401
     ColWidths = (
       64
       64
@@ -51,8 +51,9 @@ object FormLastParty: TFormLastParty
   object ToolBarParty: TToolBar
     Left = 0
     Top = 0
-    Width = 878
-    Height = 33
+    Width = 33
+    Height = 440
+    Align = alLeft
     ButtonHeight = 30
     ButtonWidth = 30
     Caption = 'ToolBar1'
@@ -60,7 +61,7 @@ object FormLastParty: TFormLastParty
     EdgeOuter = esNone
     Images = ImageList1
     TabOrder = 1
-    ExplicitWidth = 440
+    ExplicitHeight = 878
     object ToolButtonParty: TToolButton
       Left = 0
       Top = 0
@@ -72,26 +73,28 @@ object FormLastParty: TFormLastParty
       OnClick = ToolButtonPartyClick
     end
     object ToolButton2: TToolButton
-      Left = 30
+      Left = 0
       Top = 0
       Width = 8
       Caption = 'ToolButton2'
       ImageIndex = 3
+      Wrap = True
       Style = tbsSeparator
     end
     object ToolButtonStop: TToolButton
-      Left = 38
-      Top = 0
+      Left = 0
+      Top = 38
       Hint = #1044#1086#1073#1072#1074#1080#1090#1100' '#1087#1088#1080#1073#1086#1088' '#1074' '#1087#1072#1088#1090#1080#1102
       Caption = 'ToolButtonStop'
       ImageIndex = 1
       ParentShowHint = False
+      Wrap = True
       ShowHint = True
       OnClick = ToolButtonStopClick
     end
     object ToolButton1: TToolButton
-      Left = 68
-      Top = 0
+      Left = 0
+      Top = 68
       Hint = #1059#1076#1072#1083#1080#1090#1100' '#1087#1088#1080#1073#1086#1088' '#1080#1079' '#1087#1072#1088#1090#1080#1080
       Caption = 'ToolButton1'
       ImageIndex = 2
@@ -110,7 +113,7 @@ object FormLastParty: TFormLastParty
     Left = 536
     Top = 98
     Bitmap = {
-      494C010103009C03BC0314001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C010103009C03C00314001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000001400000001002000000000000019
       0000000000000000000000000000000000000000000000000000000000000000
       00000000000000000000000000000202011F22180D693F2D1A8D3F2D1A8D2218

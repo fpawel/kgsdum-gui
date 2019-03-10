@@ -17,9 +17,30 @@ procedure PageControl_DrawVerticalTab(Control: TCustomTabControl;
 
 procedure ConvertImagesToHighColor(ImageList: TImageList);
 
+function cut_str(s:string;c:TCanvas; w:integer):string;
+
 implementation
 
 uses Winapi.Windows;
+
+function cut_str(s:string;c:TCanvas; w:integer):string;
+ var i, w1 :integer;
+    s1:string;
+begin
+    if w > c.TextWidth( s ) then
+        exit(s);
+    result := s;
+    w1 := c.TextWidth( '...' );
+    result := '';
+    for I := 1 to Length(s) do
+    begin
+        s1 := result + s[i];
+        if c.TextWidth(s1)+w1+3 > w then
+        	break;
+        result := s1;
+    end;
+    result := result + '...';
+end;
 
 procedure ConvertImagesToHighColor(ImageList: TImageList);
 

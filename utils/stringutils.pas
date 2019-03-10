@@ -2,15 +2,16 @@
 
 interface
 
-uses Vcl.Graphics;
 
 function str_validate_decimal_separator(s: string): string;
 function str_to_float(s: string): Double;
 function str_replace_unicode_chars(s: string): string;
 function inttostr2(n: integer): string;
-function cut_str(s:string;c:TCanvas; w:integer):string;
+
 function month_name(month_number:integer):string;
 function try_str_to_float(s:string; var v:double):boolean;
+
+function BytesToHex(BA: TArray<byte>; Sep: string = ' '): string;
 
 implementation
 
@@ -63,23 +64,29 @@ begin
 end;
 
 
-function cut_str(s:string;c:TCanvas; w:integer):string;
- var i, w1 :integer;
-    s1:string;
+
+
+function BytesToHex(BA: TArray<byte>; Sep: string ): string;
+var
+    i, k: integer;
 begin
-    if w > c.TextWidth( s ) then
-        exit(s);
-    result := s;
-    w1 := c.TextWidth( '...' );
     result := '';
-    for I := 1 to Length(s) do
+
+    if Sep = '' then
     begin
-        s1 := result + s[i];
-        if c.TextWidth(s1)+w1+3 > w then
-        	break;
-        result := s1;
+        for i := low(BA) to high(BA) do
+            result := result + IntToHex(BA[i], 2);
+    end
+    else
+    begin
+        k := high(BA);
+        for i := low(BA) to k do
+        begin
+            result := result + IntToHex(BA[i], 2);
+            if k <> i then
+                result := result + Sep;
+        end;
     end;
-    result := result + '...';
 end;
 
 end.

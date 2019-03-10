@@ -2,7 +2,7 @@ unit crud;
 
 interface
 
-uses data_model;
+uses data_model, sysutils;
 
 function GetLastPartyProducts: TArray<TProduct>;
 
@@ -17,18 +17,28 @@ begin
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.Conn;
+
+        SQL.Text :=
+          'INSERT INTO party (created_at) SELECT CURRENT_TIMESTAMP WHERE NOT EXISTS(SELECT 1 FROM party)';
+        ExecSQL;
+        Close;
+
         SQL.Text := 'SELECT * FROM last_party;';
         Open;
         First;
-        if not Eof then
-            with result do
-            begin
-                FCreatedAt := FieldValues['created_at'];
-                FPartyID := FieldValues['party_id'];
-                PgsBeg := FieldValues['pgs_beg'];
-                PgsMid := FieldValues['pgs_mid'];
-                PgsEnd := FieldValues['pgs_end'];
-            end;
+
+        if eof then
+            raise Exception.Create('unexpected EOF');
+
+        with result do
+        begin
+            FCreatedAt := FieldValues['created_at'];
+            FPartyID := FieldValues['party_id'];
+            PgsBeg := FieldValues['pgs_beg'];
+            PgsMid := FieldValues['pgs_mid'];
+            PgsEnd := FieldValues['pgs_end'];
+        end;
+
         Close;
         Free;
     end;

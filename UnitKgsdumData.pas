@@ -14,7 +14,6 @@ type
   TKgsdumData = class(TDataModule)
     Conn: TFDConnection;
     FDPhysPgDriverLink1: TFDPhysPgDriverLink;
-    FDQuery1: TFDQuery;
   private
     { Private declarations }
   public

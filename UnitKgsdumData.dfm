@@ -17,9 +17,4 @@ object KgsdumData: TKgsdumData
     Left = 168
     Top = 64
   end
-  object FDQuery1: TFDQuery
-    Connection = Conn
-    Left = 112
-    Top = 32
-  end
 end
