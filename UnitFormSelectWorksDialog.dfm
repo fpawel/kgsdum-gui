@@ -26,8 +26,6 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     BevelKind = bkFlat
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitLeft = 8
-    ExplicitWidth = 385
     object CheckListBox1: TCheckListBox
       Left = 22
       Top = 16
@@ -54,6 +52,15 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
       Height = 97
       Caption = #1042#1099#1087#1086#1083#1085#1080#1090#1100' '#1085#1072#1089#1090#1088#1086#1081#1082#1091' '#1087#1088#1080#1073#1086#1088#1086#1074
       TabOrder = 1
+    end
+    object Button2: TButton
+      Left = 237
+      Top = 119
+      Width = 132
+      Height = 97
+      Caption = #1053#1072#1095#1072#1090#1100' '#1086#1087#1088#1086#1089' '#1087#1088#1080#1073#1086#1088#1086#1074
+      TabOrder = 2
+      OnClick = Button2Click
     end
   end
 end

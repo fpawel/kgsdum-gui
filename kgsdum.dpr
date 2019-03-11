@@ -13,12 +13,12 @@ uses
   comport in 'hardware\comport.pas',
   kgs in 'hardware\kgs.pas',
   UnitFormSelectWorksDialog in 'UnitFormSelectWorksDialog.pas' {FormSelectWorksDialog},
-  run_work in 'run_work.pas',
+  run_work in 'work\run_work.pas',
   errors in 'errors.pas',
-  works in 'works.pas',
-  PropertyValueEditors in 'PropertyValueEditors.pas',
-  UnitFormProperties in 'UnitFormProperties.pas' {FormProperties},
-  config_value in 'config_value.pas',
+  works in 'work\works.pas',
+  PropertyValueEditors in 'settings\PropertyValueEditors.pas',
+  UnitFormProperties in 'settings\UnitFormProperties.pas' {FormProperties},
+  config_value in 'settings\config_value.pas',
   stringutils in 'utils\stringutils.pas';
 
 {$R *.res}

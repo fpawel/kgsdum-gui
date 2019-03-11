@@ -7,13 +7,13 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ToolWin,
     Vcl.StdCtrls,
-    Vcl.ExtCtrls, System.ImageList, Vcl.ImgList;
+    Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, inifiles;
 
 type
     TKgsdumMainForm = class(TForm)
         PageControlMain: TPageControl;
         TabSheetParty: TTabSheet;
-    TabSheetJournal: TTabSheet;
+        TabSheetJournal: TTabSheet;
         ImageList4: TImageList;
         Panel3: TPanel;
         LabelStatusTop: TLabel;
@@ -42,10 +42,13 @@ type
         procedure PageControlMainChange(Sender: TObject);
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
+        procedure ToolButton4Click(Sender: TObject);
+        procedure ToolButton2Click(Sender: TObject);
     private
         { Private declarations }
     public
         { Public declarations }
+        Ini: TIniFile;
         procedure AppException(Sender: TObject; E: Exception);
         procedure OnStartWork;
         procedure OnStopWork;
@@ -58,7 +61,9 @@ implementation
 
 {$R *.dfm}
 
-uses JclDebug,vclutils, UnitFormLastParty, UnitKgsdumData, UnitFormSelectWorksDialog;
+uses JclDebug, vclutils, UnitFormLastParty, UnitKgsdumData,
+    UnitFormSelectWorksDialog,
+    UnitFormProperties, works, run_work;
 
 procedure TKgsdumMainForm.FormShow(Sender: TObject);
 begin
@@ -82,6 +87,16 @@ procedure TKgsdumMainForm.PageControlMainDrawTab(Control: TCustomTabControl;
   TabIndex: Integer; const Rect: TRect; Active: Boolean);
 begin
     PageControl_DrawVerticalTab(Control, TabIndex, Rect, Active);
+end;
+
+procedure TKgsdumMainForm.ToolButton2Click(Sender: TObject);
+begin
+    CancelExecution;
+end;
+
+procedure TKgsdumMainForm.ToolButton4Click(Sender: TObject);
+begin
+    FormProperties.Show;
 end;
 
 procedure TKgsdumMainForm.ToolButtonRunClick(Sender: TObject);
@@ -147,11 +162,27 @@ end;
 
 procedure TKgsdumMainForm.OnStartWork;
 begin
+    with FormSelectWorksDialog do
+    begin
+        Button1.Enabled := false;
+        Button2.Enabled := false;
+        CheckListBox1.Enabled := false;
+        Hide;
+    end;
+    ToolBarStop.Visible := true;
 
 end;
 
 procedure TKgsdumMainForm.OnStopWork;
 begin
+    with FormSelectWorksDialog do
+    begin
+        Button1.Enabled := true;
+        Button2.Enabled := true;
+        CheckListBox1.Enabled := true;
+    end;
+    ToolBarStop.Visible := false;
+    LabelStatusTop.Caption := LabelStatusTop.Caption + ': выполнено';
 
 end;
 

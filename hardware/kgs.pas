@@ -23,7 +23,7 @@ procedure KgsWriteCoefficient(DeviceAddr: KgsDeviceAddr;
 procedure KgsWriteVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
   Value: double; w: TComportWorker);
 
-function ReadVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
+function KgsReadVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
   w: TComportWorker): double;
 
 implementation
@@ -299,7 +299,7 @@ begin
     result := _result;
 end;
 
-function ReadVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
+function KgsReadVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
 w: TComportWorker): double;
 var
     r: KgsRequest;
@@ -332,7 +332,7 @@ begin
     r.Direction := KgsRead;
     r.Value := (coefficient div 60) * 60.;
     KgsGetResponse(r, w);
-    result := ReadVar(DeviceAddr, ceil(1. * coefficient - r.Value), w);
+    result := KgsReadVar(DeviceAddr, ceil(1. * coefficient - r.Value), w);
 end;
 
 procedure KgsWriteCoefficient(DeviceAddr: KgsDeviceAddr;

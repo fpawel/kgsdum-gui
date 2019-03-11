@@ -122,15 +122,15 @@
             <Form>FormSelectWorksDialog</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="run_work.pas"/>
+        <DCCReference Include="work\run_work.pas"/>
         <DCCReference Include="errors.pas"/>
-        <DCCReference Include="works.pas"/>
-        <DCCReference Include="PropertyValueEditors.pas"/>
-        <DCCReference Include="UnitFormProperties.pas">
+        <DCCReference Include="work\works.pas"/>
+        <DCCReference Include="settings\PropertyValueEditors.pas"/>
+        <DCCReference Include="settings\UnitFormProperties.pas">
             <Form>FormProperties</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="config_value.pas"/>
+        <DCCReference Include="settings\config_value.pas"/>
         <DCCReference Include="utils\stringutils.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

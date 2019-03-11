@@ -69,7 +69,6 @@ begin
                 FProduction := FieldValues['production'];
 
                 FSerial := FieldValues['serial_number'];
-                FConnection := FieldValues['connection_error'];
 
                 if FieldValues['concentration_beg_norm'] <> Variants.Null then
                     with FConc[scaleConcBegin, scaleTempNorm] do

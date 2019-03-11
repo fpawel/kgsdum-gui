@@ -17,7 +17,7 @@ type
         ToolButtonParty: TToolButton;
         ToolButtonStop: TToolButton;
         ToolButton1: TToolButton;
-    ToolButton2: TToolButton;
+        ToolButton2: TToolButton;
         procedure StringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer;
           Rect: TRect; State: TGridDrawState);
         procedure StringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer;
@@ -35,10 +35,13 @@ type
         { Private declarations }
         Last_Edited_Col, Last_Edited_Row: Integer;
 
-        FProducts: TArray<TProduct>;
         FColumns: TArray<TProductField>;
 
         FhWndTip: THandle;
+
+        FProducts: TArray<TProduct>;
+
+        FInterrogatePlace: Integer;
 
         function GetProductValue(ColumnIndex, RowIndex: Integer): string;
 
@@ -60,11 +63,20 @@ type
         property ProductValues[ColumnIndex, RowIndex: Integer]: string
           read GetProductValue;
 
+        procedure reset_products;
+
     public
         { Public declarations }
+
+        function ProductionProducts: TArray<TProduct>;
+
         procedure SetProductionAll(production: Boolean);
 
         procedure reload_data;
+
+        procedure SetProductInterrogate(place: Integer);
+        procedure SetProductConc(place: Integer; Value: double);
+        procedure SetProductConnectionError(place: Integer; error: string);
     end;
 
 var
@@ -79,6 +91,7 @@ uses FireDAC.Comp.Client, stringgridutils, stringutils, dateutils, crud,
 
 procedure TFormLastParty.FormCreate(Sender: TObject);
 begin
+    FInterrogatePlace := -1;
     SetLength(FProducts, 96);
     reload_data;
 end;
@@ -230,7 +243,7 @@ var
     addrs: TArray<Integer>;
     serials: TArray<string>;
 
-label  _l;
+label _l;
 
 begin
     with TFDQuery.Create(nil) do
@@ -336,6 +349,9 @@ begin
     if not p.FProduction then
         cnv.Brush.Color := $F6F7F7;
 
+    if ARow = FInterrogatePlace + 1 then
+        cnv.Brush.Color := clSkyBlue;
+
     case CheckProductFieldValue(p, FColumns[ACol]) of
         cvrOk:
             cnv.Font.Color := clBlue;
@@ -393,21 +409,15 @@ begin
     DrawCellStr(ACol, ARow, Rect, ta, StringGrid1.Cells[ACol, ARow]);
 end;
 
-procedure TFormLastParty.reload_data;
+procedure TFormLastParty.reset_products;
 var
     i: Integer;
     ARow, ACol: Integer;
     s: string;
 begin
-    StringGrid_Clear(StringGrid1);
-    with Application.MainForm do
-        with GetLastParty do
-            Caption := format('Партия БО КГСДУМ № %d, создана %s',
-              [FPartyID, FormatDateTime('dd MMMM yyyy hh:nn',
-              IncHour(FCreatedAt, 3))]);
-    FProducts := GetLastPartyProducts;
-    FColumns := GetProductFields(FProducts);
 
+    FColumns := GetProductFields(FProducts);
+    StringGrid_Clear(StringGrid1);
     with StringGrid1 do
     begin
         colcount := Length(FColumns);
@@ -436,6 +446,17 @@ begin
 
     end;
 
+end;
+
+procedure TFormLastParty.reload_data;
+begin
+    with Application.MainForm do
+        with GetLastParty do
+            Caption := format('Партия БО КГСДУМ № %d, создана %s',
+              [FPartyID, FormatDateTime('dd MMMM yyyy hh:nn',
+              IncHour(FCreatedAt, 3))]);
+    FProducts := GetLastPartyProducts;
+    reset_products;
 end;
 
 function TFormLastParty.GetProductValue(ColumnIndex, RowIndex: Integer): string;
@@ -475,7 +496,7 @@ begin
                     OnSetEditText := StringGrid1SetEditText;
                 end;
 
-                FhWndTip := StringGrid1.ShowBalloonTip(TIconKind.Error,
+                FhWndTip := StringGrid1.ShowBalloonTip(TIconKind.error,
                   'Ошибка данных', format('%s: %s: "%s": %s',
                   [ProductValues[0, ARow - 1], product_column_name[pcSerial],
                   Value, E.Message]))
@@ -515,7 +536,7 @@ begin
                     OnSetEditText := StringGrid1SetEditText;
                 end;
 
-                FhWndTip := StringGrid1.ShowBalloonTip(TIconKind.Error,
+                FhWndTip := StringGrid1.ShowBalloonTip(TIconKind.error,
                   'Ошибка', format('%s: %s: "%s": %s',
                   [ProductValues[0, ARow - 1], product_column_name[pcSerial],
                   Value, E.Message]));
@@ -537,7 +558,52 @@ begin
     // p.FProduction := production;
     // StringGrid_RedrawCell(StringGrid1, 0, p.FPlace + 1);
     // end;
+end;
 
+procedure TFormLastParty.SetProductConc(place: Integer; Value: double);
+begin
+    FProducts[place].FConnection := 'C=' + FloatToStr(value);
+    FProducts[place].FConnectionFailed := false;
+    reset_products;
+end;
+
+procedure TFormLastParty.SetProductConnectionError(place: Integer;
+  error: string);
+begin
+    FProducts[place].FConnection := error;
+    FProducts[place].FConnectionFailed := true;
+    reset_products;
+end;
+
+function TFormLastParty.ProductionProducts: TArray<TProduct>;
+var
+    p: TProduct;
+begin
+    SetLength(result, 0);
+    for p in FProducts do
+
+        if p.FProduction then
+        begin
+            SetLength(result, Length(result) + 1);
+            result[Length(result) - 1] := p;
+        end;
+end;
+
+procedure TFormLastParty.SetProductInterrogate(place: Integer);
+var
+    row:integer;
+begin
+
+    if FInterrogatePlace > -1 then
+    begin
+        row := FInterrogatePlace + 1;
+        FInterrogatePlace := -1;
+        StringGrid_RedrawRow(StringGrid1, row);
+    end;
+
+    FInterrogatePlace := place;
+    if FInterrogatePlace > -1 then
+        StringGrid_RedrawRow(StringGrid1, FInterrogatePlace + 1);
 end;
 
 end.

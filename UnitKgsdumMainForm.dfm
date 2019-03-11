@@ -118,6 +118,7 @@ object KgsdumMainForm: TKgsdumMainForm
         Top = 0
         Caption = 'ToolButton4'
         ImageIndex = 3
+        OnClick = ToolButton4Click
       end
     end
     object PanelDelay: TPanel
@@ -272,6 +273,7 @@ object KgsdumMainForm: TKgsdumMainForm
         ImageIndex = 1
         ParentShowHint = False
         ShowHint = True
+        OnClick = ToolButton2Click
       end
     end
     object ToolBar4: TToolBar
@@ -338,7 +340,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C010109002403D80414001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C010109002403E40414001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

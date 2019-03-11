@@ -2,7 +2,7 @@ unit data_model;
 
 interface
 
-uses  classes, graphics;
+uses classes, graphics;
 
 type
     TProductField = (pcPlace, pcAddr, pcSerial, pcConnection, pcBegNorm,
@@ -33,6 +33,7 @@ type
         FPlace, FAddr: integer;
         FSerial: string;
         FConnection: string;
+        FConnectionFailed: boolean;
         FConc: array [TScaleConc, TScaleTemp] of TConcValue;
     end;
 
@@ -45,8 +46,6 @@ type
 
     end;
 
-
-
 function ProductColumnWidth(column: TProductField; canvas: TCanvas;
   prods: TArray<TProduct>; err_det: TErrorDetail): integer;
 
@@ -54,8 +53,8 @@ function GetProductFields(prods: TArray<TProduct>): TArray<TProductField>;
 function FormatProductFieldValue(product: TProduct; field: TProductField;
   err_det: TErrorDetail): string;
 
-function CheckProductFieldValue(product: TProduct;
-  field: TProductField): TCheckValueResult;
+function CheckProductFieldValue(product: TProduct; field: TProductField)
+  : TCheckValueResult;
 
 function ProductFieldAlignment(c: TProductField): TAlignment;
 
@@ -178,14 +177,14 @@ begin
     end;
 end;
 
-function CheckProductFieldValue(product: TProduct;
-  field: TProductField): TCheckValueResult;
+function CheckProductFieldValue(product: TProduct; field: TProductField)
+  : TCheckValueResult;
 begin
 
     with product do
         case field of
             pcConnection:
-                if FConnection <> '' then
+                if FConnectionFailed then
                     exit(cvrErr);
             pcBegNorm:
                 exit(FConc[scaleConcBegin, scaleTempNorm].Check);
@@ -215,7 +214,7 @@ begin
                 exit(FConc[scaleConcEnd, scaleTempPlus].Check);
 
         else
-            exit(cvrnone);
+            exit(cvrNone);
         end;
 
 end;
@@ -227,6 +226,9 @@ begin
             exit(taLeftJustify);
         pcAddr:
             exit(taCenter);
+
+        pcConnection:
+            exit(taLeftJustify);
     else
         exit(taRightJustify);
     end;

@@ -36,10 +36,6 @@ object FormLastParty: TFormLastParty
     OnMouseDown = StringGrid1MouseDown
     OnSelectCell = StringGrid1SelectCell
     OnSetEditText = StringGrid1SetEditText
-    ExplicitLeft = 3
-    ExplicitTop = 36
-    ExplicitWidth = 872
-    ExplicitHeight = 401
     ColWidths = (
       64
       64
@@ -61,7 +57,6 @@ object FormLastParty: TFormLastParty
     EdgeOuter = esNone
     Images = ImageList1
     TabOrder = 1
-    ExplicitHeight = 878
     object ToolButtonParty: TToolButton
       Left = 0
       Top = 0
@@ -113,7 +108,7 @@ object FormLastParty: TFormLastParty
     Left = 536
     Top = 98
     Bitmap = {
-      494C010103009C03C00314001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C010103009C03C80314001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000001400000001002000000000000019
       0000000000000000000000000000000000000000000000000000000000000000
       00000000000000000000000000000202011F22180D693F2D1A8D3F2D1A8D2218

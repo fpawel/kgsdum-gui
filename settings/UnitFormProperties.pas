@@ -11,7 +11,7 @@ interface
 uses
     Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
     StdCtrls, VirtualTrees, ImgList, ExtCtrls, UITypes, System.ImageList,
-    PropertyValueEditors;
+    PropertyValueEditors, config_value, comport;
 
 const
     // Helper message to decouple node change handling from edit handling.
@@ -57,24 +57,22 @@ type
         procedure FormDeactivate(Sender: TObject);
 
     private
-        FConfig: TConfigSections;
+        FProperties: TArray<RConfigData>;
+
         procedure WMStartEditing(var Message: TMessage);
           message WM_STARTEDITING;
 
-        function GetProp(Node: PVirtualNode): TConfigProperty;
         function GetNodeData(Node: PVirtualNode): PConfigData;
     public
 
-        procedure SetConfig(AConfig: TConfigSections);
 
-        property Prop[Node: PVirtualNode]: TConfigProperty read GetProp;
+        ComportProducts, ComportTermo: TConfigComportName;
+
         property TreeData[Node: PVirtualNode]: PConfigData read GetNodeData;
     end;
 
 var
     FormProperties: TFormProperties;
-
-    // ----------------------------------------------------------------------------------------------------------------------
 
 implementation
 
@@ -82,7 +80,6 @@ uses
     Math, stringgridutils, vclutils;
 
 {$R *.DFM}
-// ----------------- TFormProperties ------------------------------------------------------------------------------------
 
 procedure TFormProperties.FormCreate(Sender: TObject);
 begin
@@ -99,14 +96,19 @@ begin
     // looks so much nicer.
     ConvertImagesToHighColor(TreeImages);
 
-end;
+    ComportProducts := TConfigComportName.Create;
+    ComportTermo := TConfigComportName.Create;
 
-procedure TFormProperties.SetConfig(AConfig: TConfigSections);
-begin
-    VST3.Clear;
-    VST3.RootNodeCount := 0;
-    FConfig := AConfig;
-    VST3.RootNodeCount := Length(FConfig);
+    ComportProducts.Value := 'COM24';
+
+    FProperties := [RConfigData.CreateSection('Порты СОМ',
+      [RConfigData.CreateProperty('Приборы', ComportProducts),
+      RConfigData.CreateProperty('Термокамера', ComportTermo)])];
+
+    VST3.RootNodeCount := Length(FProperties);
+
+    
+
 end;
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -115,7 +117,7 @@ procedure TFormProperties.VST3InitChildren(Sender: TBaseVirtualTree;
   Node: PVirtualNode; var ChildCount: Cardinal);
 begin
     if Node.Parent = Sender.RootNode then
-        ChildCount := Length(FConfig[Node.Index].FProperties)
+        ChildCount := Length(FProperties[Node.Index].Properties)
     else
         ChildCount := 0;
 end;
@@ -134,14 +136,13 @@ begin
     if ParentNode = nil then
     begin
         InitialStates := InitialStates + [ivsHasChildren, ivsExpanded];
-        p.Sect := FConfig[Node.Index];
-        p.Prop := nil;
+        p.Value := nil;
+        p.Properties := FProperties[Node.Index].Properties;
     end
     else
     begin
-        p.Sect := FConfig[Node.Parent.Index];
-        p.Prop := FConfig[Node.Parent.Index].FProperties[Node.Index];
-
+        p.Value := FProperties[Node.Parent.Index].Properties[Node.Index].Value;
+        p.Properties := [];
     end;
 end;
 
@@ -158,23 +159,25 @@ begin
     if (Node.Parent = Sender.RootNode) then
     begin
         if Column = 0 then
-            CellText := FConfig[Node.Index].FHint;
+            CellText := FProperties[Node.Index].Name;
         exit;
     end;
 
     case Column of
         0:
 
-            CellText := FConfig[Node.Parent.Index].FProperties
-              [Node.Index].FHint;
+            CellText := FProperties[Node.Parent.Index].Properties
+              [Node.Index].Name;
 
         1:
 
-            CellText := Prop[Node].FValue;
+            CellText := FProperties[Node.Parent.Index].Properties[Node.Index]
+              .Value.AsString;
 
         2:
 
-            CellText := Prop[Node].FError;
+            CellText := FProperties[Node.Parent.Index].Properties[Node.Index]
+              .Value.Error;
 
     end;
 
@@ -187,21 +190,6 @@ procedure TFormProperties.VST3GetHint(Sender: TBaseVirtualTree;
   var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
 
 begin
-    if Node.Parent = Sender.RootNode then
-        exit;
-    with Prop[Node] do
-    begin
-        HintText := FHint;
-
-        if FMinSet then
-            HintText := HintText + #13 + 'минимум: ' + floattostr(FMin);
-
-        if FMaxSet then
-            HintText := HintText + #13 + 'максимум: ' + floattostr(FMax);
-
-        if FError <> '' then
-            HintText := HintText + #13#13 + '"' + FValue + '": ' + FError;
-    end;
 
 end;
 
@@ -298,12 +286,13 @@ procedure TFormProperties.VST3DrawText(Sender: TBaseVirtualTree;
 var
     R: TRect;
 begin
-    if (Column = 1) and (Prop[Node].FValueType = VtBool) then
+    if (Column = 1) and (TreeData[Node].Value is TConfigBool) then
     begin
         R := CellRect;
         R.Left := R.Left - 9;
         R.Right := R.Right - 9;
-        DrawCheckbox(Sender, TargetCanvas, R, Prop[Node].Bool, '');
+        DrawCheckbox(Sender, TargetCanvas, R,
+          (TreeData[Node].Value as TConfigBool).Value, '');
         DefaultDraw := false;
     end;
 
@@ -340,10 +329,10 @@ begin
     if Node.Parent = Sender.RootNode then
     begin
         // root nodes
-        PropText := FConfig[Node.Index].FHint;
+        PropText := FProperties[Node.Index].Name;
     end
     else
-        PropText := FConfig[Node.Parent.Index].FProperties[Node.Index].FName;
+        PropText := FProperties[Node.Parent.Index].Properties[Node.Index].Name;
 
     // By using StrLIComp we can specify a maximum length to compare. This allows us to find also nodes
     // which match only partially. Don't forget to specify the shorter string length as search length.
@@ -380,18 +369,13 @@ procedure TFormProperties.VST3FreeNode(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 var
     Data: PConfigData;
-
+    I: Integer;
 begin
     Data := Sender.GetNodeData(Node);
-    Finalize(Data.Prop);
-    Finalize(Data.Sect);
-end;
+    Finalize(Data.Value);
 
-function TFormProperties.GetProp(Node: PVirtualNode): TConfigProperty;
-begin
-    if not Assigned(TreeData[Node].Prop) then
-        raise Exception.Create('not a prop');
-    Result := TreeData[Node].Prop;
+    for I := 0 to Length(Data.Properties) - 1 do
+        Data.Properties[I].Value.Free;
 end;
 
 function TFormProperties.GetNodeData(Node: PVirtualNode): PConfigData;

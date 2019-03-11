@@ -11,32 +11,6 @@ uses
     Mask, config_value;
 
 type
-    TPropertyValueType = (VtInt, VtFloat, VtString, VtComportName, VtBaud,
-      VtBool, VtNullFloat);
-
-    TConfigProperty = class
-    public
-        Hint, Name: string;
-        Value: TConfigValue;
-        Children: TArray<TConfigProperty>;
-    end;
-
-    TConfigSection = class
-        FName: string;
-        FHint: string;
-        FProperties: TArray<TConfigProperty>;
-        function HasError: boolean;
-    end;
-
-    TConfigSections = TArray<TConfigSection>;
-
-    RConfigData = record
-        Prop: TConfigProperty;
-        Sect: TConfigSection;
-        function HasError: boolean;
-    end;
-
-    PConfigData = ^RConfigData;
 
     // ----------------------------------------------------------------------------------------------------------------------
     // Our own edit link to implement several different node editors.
@@ -82,24 +56,6 @@ implementation
 
 uses
     comport, vclutils, stringutils, RTTI;
-
-function TConfigSection.HasError: boolean;
-var
-    i: integer;
-begin
-    for i := 0 to length(self.FProperties) - 1 do
-        if FProperties[i].FValue.HasError then
-            Exit(true);
-    Exit(false);
-end;
-
-function RConfigData.HasError: boolean;
-begin
-    if Assigned(Prop) then
-        exit(Prop.FValue.HasError);
-    exit(Sect.HasError);
-
-end;
 
 
 
@@ -204,7 +160,7 @@ begin
     except
 
     end;
-    FConfigData.Prop.FValue.SetValueFromControl(FEdit);
+    FConfigData.Value.SetValueFromControl(FEdit);
     FTree.InvalidateNode(FNode);
     FTree.InvalidateNode(FNode.Parent);
 end;
@@ -250,7 +206,7 @@ begin
 
     // determine what edit type actually is needed
     FEdit.Free;
-    FEdit := FConfigData.Prop.FValue.CreateControl;
+    FEdit := FConfigData.Value.CreateControl(Tree);
 
     if FEdit is TComboBox then
         with FEdit as TComboBox do
@@ -302,6 +258,5 @@ begin
     FEdit.BoundsRect := R;
 end;
 // ----------------------------------------------------------------------------------------------------------------------
-
 
 end.

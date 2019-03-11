@@ -11,8 +11,10 @@ type
     Panel1: TPanel;
     CheckListBox1: TCheckListBox;
     Button1: TButton;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -26,9 +28,19 @@ implementation
 
 {$R *.dfm}
 
+uses works;
+
+procedure TFormSelectWorksDialog.Button2Click(Sender: TObject);
+begin
+    RunInterrogate;
+end;
+
 procedure TFormSelectWorksDialog.FormCreate(Sender: TObject);
 begin
     SetWindowLong(Button1.Handle, GWL_STYLE, GetWindowLong(Button1.Handle,
+    	GWL_STYLE) or BS_MULTILINE);
+    CheckListBox1.CheckAll(cbChecked);
+    SetWindowLong(Button2.Handle, GWL_STYLE, GetWindowLong(Button1.Handle,
     	GWL_STYLE) or BS_MULTILINE);
     CheckListBox1.CheckAll(cbChecked);
 end;

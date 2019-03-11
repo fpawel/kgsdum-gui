@@ -9,9 +9,6 @@
         <Projects Include="test_comport.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Test\kgsdumTests.dproj">
-            <Dependencies/>
-        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -38,23 +35,14 @@
     <Target Name="test_comport:Make">
         <MSBuild Projects="test_comport.dproj" Targets="Make"/>
     </Target>
-    <Target Name="kgsdumTests">
-        <MSBuild Projects="Test\kgsdumTests.dproj"/>
-    </Target>
-    <Target Name="kgsdumTests:Clean">
-        <MSBuild Projects="Test\kgsdumTests.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="kgsdumTests:Make">
-        <MSBuild Projects="Test\kgsdumTests.dproj" Targets="Make"/>
-    </Target>
     <Target Name="Build">
-        <CallTarget Targets="kgsdum;test_comport;kgsdumTests"/>
+        <CallTarget Targets="kgsdum;test_comport"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="kgsdum:Clean;test_comport:Clean;kgsdumTests:Clean"/>
+        <CallTarget Targets="kgsdum:Clean;test_comport:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="kgsdum:Make;test_comport:Make;kgsdumTests:Make"/>
+        <CallTarget Targets="kgsdum:Make;test_comport:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
