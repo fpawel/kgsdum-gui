@@ -26,9 +26,12 @@ procedure StringGrid_DrawCellBmp(grd: TStringGrid; Rect: TRect;
 
 procedure StringGrid_RedrawCol(grd: TStringGrid; aCol: integer);
 
+procedure DrawCellText(StringGrid1:TStringGrid; ACol, ARow: Integer; Rect: TRect;
+  ta: TAlignment; text: string);
+
 implementation
 
-uses winapi.windows, system.math, winapi.uxtheme;
+uses winapi.windows, system.math, winapi.uxtheme, stringutils, vclutils;
 
 procedure StringGrid_DrawCellBounds(cnv: TCanvas; acol, arow: integer;
   Rect: TRect);
@@ -255,6 +258,29 @@ begin
     end;
     x := r.Right + 2;
     grd.Canvas.Draw(r.Left + 2, Rect.Top + 3, bmp);
+end;
+
+
+procedure DrawCellText(StringGrid1:TStringGrid; ACol, ARow: Integer; Rect: TRect;
+  ta: TAlignment; text: string);
+var
+    X, Y, txt_width, txt_height: Integer;
+begin
+    with StringGrid1.Canvas do
+    begin
+
+        if TextWidth(text) + 3 > Rect.Width then
+            text := cut_str(text, StringGrid1.Canvas, Rect.Width);
+        txt_width := TextWidth(text);
+        txt_height := TextHeight(text);
+        X := Rect.Left + 3;
+        if ta = taRightJustify then
+            X := Rect.Right - 3 - round(txt_width)
+        else if ta = taCenter then
+            X := Rect.Left + round((Rect.Width - txt_width) / 2.0);
+        Y := Rect.Top + round((Rect.Height - txt_height) / 2.0);
+        TextRect(Rect, X, Y, text);
+    end;
 end;
 
 end.

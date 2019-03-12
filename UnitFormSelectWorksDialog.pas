@@ -4,17 +4,48 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.CheckLst, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.CheckLst, Vcl.ExtCtrls,
+  System.ImageList, Vcl.ImgList, Vcl.ComCtrls;
 
 type
   TFormSelectWorksDialog = class(TForm)
-    Panel1: TPanel;
+    PageControl1: TPageControl;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
     CheckListBox1: TCheckListBox;
-    Button1: TButton;
+    FlowPanel1: TFlowPanel;
+    Label2: TLabel;
+    EditSerial: TEdit;
+    Label3: TLabel;
+    Edit1: TEdit;
+    Label4: TLabel;
+    Edit3: TEdit;
     Button2: TButton;
+    Button3: TButton;
+    CheckBox1: TCheckBox;
+    RadioButton1: TRadioButton;
+    RadioButton2: TRadioButton;
+    TabSheet3: TTabSheet;
+    TabSheet4: TTabSheet;
+    Button4: TButton;
+    Button5: TButton;
+    Button6: TButton;
+    Button7: TButton;
+    Button8: TButton;
+    Button9: TButton;
+    Button10: TButton;
+    Button11: TButton;
+    Button12: TButton;
+    Button13: TButton;
+    Button14: TButton;
+    Edit2: TEdit;
+    Label1: TLabel;
+    Button15: TButton;
+    Button1: TButton;
+    Button16: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure Button16Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -30,7 +61,7 @@ implementation
 
 uses works;
 
-procedure TFormSelectWorksDialog.Button2Click(Sender: TObject);
+procedure TFormSelectWorksDialog.Button16Click(Sender: TObject);
 begin
     RunInterrogate;
 end;
@@ -38,9 +69,6 @@ end;
 procedure TFormSelectWorksDialog.FormCreate(Sender: TObject);
 begin
     SetWindowLong(Button1.Handle, GWL_STYLE, GetWindowLong(Button1.Handle,
-    	GWL_STYLE) or BS_MULTILINE);
-    CheckListBox1.CheckAll(cbChecked);
-    SetWindowLong(Button2.Handle, GWL_STYLE, GetWindowLong(Button1.Handle,
     	GWL_STYLE) or BS_MULTILINE);
     CheckListBox1.CheckAll(cbChecked);
 end;

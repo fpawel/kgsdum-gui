@@ -19,7 +19,10 @@ uses
   PropertyValueEditors in 'settings\PropertyValueEditors.pas',
   UnitFormProperties in 'settings\UnitFormProperties.pas' {FormProperties},
   config_value in 'settings\config_value.pas',
-  stringutils in 'utils\stringutils.pas';
+  stringutils in 'utils\stringutils.pas',
+  modbus in 'hardware\modbus.pas',
+  UnitFormConsole in 'UnitFormConsole.pas' {FormConsole},
+  richeditutils in 'utils\richeditutils.pas';
 
 {$R *.res}
 
@@ -31,5 +34,6 @@ begin
   Application.CreateForm(TFormLastParty, FormLastParty);
   Application.CreateForm(TFormSelectWorksDialog, FormSelectWorksDialog);
   Application.CreateForm(TFormProperties, FormProperties);
+  Application.CreateForm(TFormConsole, FormConsole);
   Application.Run;
 end.

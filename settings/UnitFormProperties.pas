@@ -65,8 +65,9 @@ type
         function GetNodeData(Node: PVirtualNode): PConfigData;
     public
 
-
         ComportProducts, ComportTermo: TConfigComportName;
+
+        LogComport: TConfigBool;
 
         property TreeData[Node: PVirtualNode]: PConfigData read GetNodeData;
     end;
@@ -98,16 +99,19 @@ begin
 
     ComportProducts := TConfigComportName.Create;
     ComportTermo := TConfigComportName.Create;
-
     ComportProducts.Value := 'COM24';
+
+    LogComport := TConfigBool.Create;
+    LogComport.Value := false;
 
     FProperties := [RConfigData.CreateSection('Порты СОМ',
       [RConfigData.CreateProperty('Приборы', ComportProducts),
-      RConfigData.CreateProperty('Термокамера', ComportTermo)])];
+      RConfigData.CreateProperty('Термокамера', ComportTermo),
+      RConfigData.CreateProperty('Показывать посылки', LogComport)
+
+      ])];
 
     VST3.RootNodeCount := Length(FProperties);
-
-    
 
 end;
 
@@ -238,9 +242,7 @@ begin
         begin
             Brush.Color := cl3dlight;
         end;
-
         FillRect(CellRect);
-
     end;
 end;
 

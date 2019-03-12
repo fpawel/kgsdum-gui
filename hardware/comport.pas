@@ -28,6 +28,18 @@ type
           ABackgroundWork: TBackgroundWork);
     end;
 
+
+    TComportLogEntry = record
+        HComport: THandle;
+        Request,Response: TBytes;
+        Millis: integer;
+        Attempt : integer;
+    end;
+
+    TComportLogHook = reference to procedure (_:TComportLogEntry);
+
+procedure SetcomportLogHook(logHook:TComportLogHook);
+
 procedure EnumComports(const Ports: TStrings);
 
 // EComportError
@@ -45,6 +57,13 @@ function GetResponse(request: TBytes; w: TComportWorker;
 implementation
 
 uses registry, windows, stringutils, errors;
+
+var _logHook : TComportLogHook;
+
+procedure SetcomportLogHook(logHook:TComportLogHook);
+begin
+    _logHook := logHook;
+end;
 
 constructor TComportWorker.Create(AComport: THandle; AConfig: TConfigGetResponse;
   ABackgroundWork: TBackgroundWork);
@@ -237,6 +256,7 @@ var
     attempt_number: integer;
     t: longint;
     s, err: string;
+    logEntry: TComportLogEntry;
 begin
     if w.Config.MaxAttemptCount < 1 then
         w.Config.MaxAttemptCount := 1;
@@ -249,7 +269,21 @@ begin
         SetLength(result, 0);
 
         WriteComport(w.HComport, request);
-        result := _ReadResponse(w);
+
+        try
+            result := _ReadResponse(w);
+        finally
+            if Assigned( _logHook ) then
+            begin
+                logEntry.HComport := w.HComport;
+                logEntry.Request := Request;
+                logEntry.Response := result;
+                logEntry.Millis := GetTickCount - t;
+                logEntry.Attempt := attempt_number;
+                _logHook(logEntry);
+            end;
+        end;
+
 
         try
             if length(result) = 0 then
@@ -274,5 +308,9 @@ begin
         raise EDeadlineExceeded.Create('не отвечает:  ' + s);
     raise EBadResponse.Create(err + ': ' + s);
 end;
+
+initialization
+
+_logHook := nil;
 
 end.

@@ -45,12 +45,7 @@ type
 
         function GetProductValue(ColumnIndex, RowIndex: Integer): string;
 
-        procedure DrawCellStr(ACol, ARow: Integer; Rect: TRect; ta: TAlignment;
-          str: string);
-
-        procedure DrawCellText(ACol, ARow: Integer; Rect: TRect;
-          ta: TAlignment);
-
+        
         procedure UpdateSerial(ACol, ARow: Integer; Value: string);
         procedure UpdateAddr(ACol, ARow: Integer; Value: string);
 
@@ -286,7 +281,7 @@ begin
 
             SQL.Text :=
               'INSERT INTO product (party_id, serial_number, addr, production) '
-              + 'VALUES ((SELECT * FROM last_party_id), :serial_number, :addr, TRUE);';
+              + 'VALUES ((SELECT * FROM last_party_id), :serial_number, :addr, 1);';
             ParamByName('serial_number').Value := inttostr(serial);
             ParamByName('addr').Value := addr;
             ExecSQL;
@@ -340,7 +335,7 @@ begin
     if ARow = 0 then
     begin
         cnv.Brush.Color := cl3DLight;
-        DrawCellText(ACol, 0, Rect, taCenter);
+        DrawCellText(StringGrid1, ACol, ARow, Rect, taCenter, StringGrid1.Cells[ACol, ARow]);
         StringGrid_DrawCellBounds(StringGrid1.Canvas, ACol, 0, Rect);
         exit;
     end;
@@ -377,37 +372,15 @@ begin
 
     if gdSelected in State then
         cnv.Brush.Color := clGradientInactiveCaption;
-    DrawCellText(ACol, ARow, Rect, ProductFieldAlignment(FColumns[ACol]));
+
+    DrawCellText(StringGrid1, ACol, ARow, Rect, ProductFieldAlignment(FColumns[ACol]),
+        StringGrid1.Cells[ACol, ARow]);
+
     StringGrid_DrawCellBounds(cnv, ACol, ARow, Rect);
 end;
 
-procedure TFormLastParty.DrawCellStr(ACol, ARow: Integer; Rect: TRect;
-  ta: TAlignment; str: string);
-var
-    X, Y, txt_width, txt_height: Integer;
-begin
-    with StringGrid1.Canvas do
-    begin
 
-        if TextWidth(str) + 3 > Rect.Width then
-            str := cut_str(str, StringGrid1.Canvas, Rect.Width);
-        txt_width := TextWidth(str);
-        txt_height := TextHeight(str);
-        X := Rect.Left + 3;
-        if ta = taRightJustify then
-            X := Rect.Right - 3 - round(txt_width)
-        else if ta = taCenter then
-            X := Rect.Left + round((Rect.Width - txt_width) / 2.0);
-        Y := Rect.Top + round((Rect.Height - txt_height) / 2.0);
-        TextRect(Rect, X, Y, str);
-    end;
-end;
 
-procedure TFormLastParty.DrawCellText(ACol, ARow: Integer; Rect: TRect;
-  ta: TAlignment);
-begin
-    DrawCellStr(ACol, ARow, Rect, ta, StringGrid1.Cells[ACol, ARow]);
-end;
 
 procedure TFormLastParty.reset_products;
 var

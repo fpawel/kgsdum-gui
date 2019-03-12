@@ -8,12 +8,13 @@ uses
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.PG,
   FireDAC.Phys.PGDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
   FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
-  FireDAC.Comp.DataSet;
+  FireDAC.Comp.DataSet, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLiteDef,
+  FireDAC.Phys.SQLite;
 
 type
   TKgsdumData = class(TDataModule)
     Conn: TFDConnection;
-    FDPhysPgDriverLink1: TFDPhysPgDriverLink;
+    FDPhysSQLiteDriverLink1: TFDPhysSQLiteDriverLink;
   private
     { Private declarations }
   public

@@ -4,17 +4,14 @@ object KgsdumData: TKgsdumData
   Width = 294
   object Conn: TFDConnection
     Params.Strings = (
-      'Database=kgsdum'
-      'User_Name=postgres'
-      'Password=falena190312'
-      'Server=localhost'
-      'DriverID=PG')
+      'Database=$(APPDATA)\kgsdum\kgsdum.sqlite'
+      'DriverID=SQLite')
     LoginPrompt = False
     Left = 32
     Top = 48
   end
-  object FDPhysPgDriverLink1: TFDPhysPgDriverLink
-    Left = 168
-    Top = 64
+  object FDPhysSQLiteDriverLink1: TFDPhysSQLiteDriverLink
+    Left = 160
+    Top = 48
   end
 end

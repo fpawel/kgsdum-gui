@@ -34,9 +34,7 @@ type
         ToolButton2: TToolButton;
         ToolBar4: TToolBar;
         ToolButton5: TToolButton;
-        ToolBar5: TToolBar;
-        ToolButton9: TToolButton;
-        ToolButton10: TToolButton;
+        TabSheetConsole: TTabSheet;
         procedure PageControlMainDrawTab(Control: TCustomTabControl;
           TabIndex: Integer; const Rect: TRect; Active: Boolean);
         procedure PageControlMainChange(Sender: TObject);
@@ -63,7 +61,7 @@ implementation
 
 uses JclDebug, vclutils, UnitFormLastParty, UnitKgsdumData,
     UnitFormSelectWorksDialog,
-    UnitFormProperties, works, run_work;
+    UnitFormProperties, works, run_work, UnitFormConsole;
 
 procedure TKgsdumMainForm.FormShow(Sender: TObject);
 begin
@@ -76,6 +74,16 @@ begin
         Align := alClient;
         Show;
     end;
+
+    with FormConsole do
+    begin
+        Font.Assign(self.Font);
+        Parent := TabSheetConsole;
+        BorderStyle := bsNone;
+        Align := alClient;
+        Show;
+    end;
+
 end;
 
 procedure TKgsdumMainForm.PageControlMainChange(Sender: TObject);
@@ -110,6 +118,8 @@ begin
                 Left := X + 5;
                 Top := Y + 5;
                 Show;
+                if Button1.Enabled then
+                    ActiveControl := Button1;
             end;
         end;
 end;
@@ -165,7 +175,6 @@ begin
     with FormSelectWorksDialog do
     begin
         Button1.Enabled := false;
-        Button2.Enabled := false;
         CheckListBox1.Enabled := false;
         Hide;
     end;
@@ -178,7 +187,6 @@ begin
     with FormSelectWorksDialog do
     begin
         Button1.Enabled := true;
-        Button2.Enabled := true;
         CheckListBox1.Enabled := true;
     end;
     ToolBarStop.Visible := false;

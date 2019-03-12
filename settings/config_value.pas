@@ -2,7 +2,7 @@ unit config_value;
 
 interface
 
-uses vcl.controls, inifiles;
+uses vcl.controls;
 
 type
     TPropertyValueType = (VtInt, VtFloat, VtString, VtComportName, VtBaud,
@@ -74,7 +74,7 @@ type
 
 implementation
 
-uses sysutils, stringutils, vcl.stdctrls, comport;
+uses sysutils, stringutils, vcl.stdctrls, comport, classes;
 
 // -----------------------------------------------------------------------------
 // RConfigData
@@ -192,7 +192,7 @@ end;
 
 function TConfigBool.AsString: string;
 begin
-    result := '';
+    result := BoolToStr(Value);
 end;
 
 // -----------------------------------------------------------------------------
@@ -221,8 +221,21 @@ begin
 end;
 
 procedure TConfigComportName.SetValueFromControl(Sender: TWinControl);
+var ports:TStringList;
 begin
-    Value := (Sender as TComboBox).Text;
+    Value := trim((Sender as TComboBox).Text);
+    if Value = '' then
+    begin
+        FError := 'не задан';
+        exit;
+    end;
+    ports:=TStringList.Create;
+    EnumComPorts(ports);
+    if ports.IndexOf(value) = -1 then
+        FError := 'нет такого СОМ порта'
+    else
+        FError := '';
+    ports.Free;
 end;
 
 function TConfigComportName.AsString: string;
