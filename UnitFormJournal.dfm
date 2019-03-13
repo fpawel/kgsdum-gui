@@ -1,0 +1,84 @@
+object FormJournal: TFormJournal
+  Left = 0
+  Top = 0
+  Caption = 'FormJournal'
+  ClientHeight = 300
+  ClientWidth = 762
+  Color = clWindow
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -15
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 18
+  object Splitter1: TSplitter
+    Left = 249
+    Top = 0
+    Width = 5
+    Height = 300
+  end
+  object Panel1: TPanel
+    Left = 0
+    Top = 0
+    Width = 249
+    Height = 300
+    Align = alLeft
+    BevelOuter = bvNone
+    TabOrder = 0
+    OnResize = Panel1Resize
+    object StringGrid1: TStringGrid
+      AlignWithMargins = True
+      Left = 3
+      Top = 44
+      Width = 243
+      Height = 253
+      Align = alClient
+      BorderStyle = bsNone
+      ColCount = 2
+      DefaultRowHeight = 20
+      DefaultDrawing = False
+      FixedColor = clBackground
+      FixedCols = 0
+      RowCount = 1
+      FixedRows = 0
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -15
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      GradientEndColor = clBlack
+      ParentFont = False
+      TabOrder = 0
+      ExplicitTop = 24
+      ExplicitWidth = 222
+      ExplicitHeight = 273
+      ColWidths = (
+        64
+        64)
+      RowHeights = (
+        20)
+    end
+    object Panel2: TPanel
+      Left = 0
+      Top = 0
+      Width = 249
+      Height = 41
+      Align = alTop
+      BevelOuter = bvNone
+      TabOrder = 1
+      ExplicitLeft = 64
+      ExplicitTop = 128
+      ExplicitWidth = 185
+      object ComboBox1: TComboBox
+        Left = 10
+        Top = 8
+        Width = 135
+        Height = 26
+        TabOrder = 0
+        Text = '13.03.2019'
+      end
+    end
+  end
+end
