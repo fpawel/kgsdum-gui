@@ -35,7 +35,12 @@ type
         FConnection: string;
         FConnectionFailed: boolean;
         FConc: array [TScaleConc, TScaleTemp] of TConcValue;
+        FCreatedAt: TDateTime;
+
+        function FormatID: string;
     end;
+
+    TProductProcedure = reference to procedure(_:TProduct);
 
     TErrorDetail = (erdtConc, erdtAbsErr, erdtErrPercent);
 
@@ -68,6 +73,11 @@ const
 implementation
 
 uses SysUtils, math;
+
+function TProduct.FormatID: string;
+begin
+    result := Format('БО № %d адр.%d %d-%s', [FPlace+1, FAddr, FProductID, FSerial]);
+end;
 
 function TConcValue.Check: TCheckValueResult;
 begin

@@ -2,7 +2,7 @@ unit run_work;
 
 interface
 
-uses comport, Classes;
+uses comport, Classes, data_model, UnitFormConsole;
 
 type
     TWorkProcedure = reference to procedure;
@@ -18,6 +18,9 @@ procedure CancelExecution;
 
 procedure Synchronize(p: TThreadProcedure); overload;
 procedure Synchronize(m: TThreadMethod); overload;
+procedure DoEachProduct(func: TProductProcedure);
+
+procedure AddWorkLog(ALevel: TLogLevel; AText: string);
 
 var
     ComportProductsConfig, ComportGasConfig, ComportTermoConfig
@@ -26,7 +29,8 @@ var
 implementation
 
 uses UnitKgsdumMainForm, windows, sysutils, errors,
-    UnitFormProperties, UnitFormConsole;
+    FireDAC.Comp.Client, UnitFormProperties, UnitFormLastParty, UnitKgsdumData,
+    stringutils;
 
 type
     TWorkThread = class(TThread)
@@ -39,6 +43,25 @@ var
     _hComportProducts, _hComportTermo: THandle;
     _thread: TWorkThread;
     _work: string;
+
+procedure AddWorkLog(ALevel: TLogLevel; AText: string);
+begin
+    FormConsole.AddLine(ALevel, _work, AText);
+
+    with TFDQuery.Create(nil) do
+    begin
+        Connection := KgsdumData.ConnJournal;
+        SQL.Text := 'INSERT INTO entry(work_id, created_at, level, message) VALUES ' +
+          '((SELECT * FROM last_work_id), :created_at, :level, :message)';
+        ParamByName('level').Value := integer(ALevel);
+        ParamByName('created_at').Value := now;
+        ParamByName('message').Value := AText;
+
+        ExecSQL;
+        Close;
+        Free;
+    end;
+end;
 
 procedure Synchronize(p: TThreadProcedure);
 begin
@@ -100,8 +123,18 @@ procedure RunWork(what: string; proc: TWorkProcedure);
 begin
     if IsWorkRunning then
         raise Exception.Create('already running');
-    FormConsole.AddLine(loglevInfo, what + ' : начало выполнения');
     _work := what;
+
+    with TFDQuery.Create(nil) do
+    begin
+        Connection := KgsdumData.ConnJournal;
+        SQL.Text := 'INSERT INTO work(name) VALUES (:work);';
+        ParamByName('work').Value := what;
+        ExecSQL;
+        Close;
+        Free;
+    end;
+    AddWorkLog(loglevInfo, 'начало выполнения');
     KgsdumMainForm.LabelStatusTop.Caption := what;
     _thread := TWorkThread.Create(true);
     _thread.FreeOnTerminate := true;
@@ -133,8 +166,7 @@ begin
             Synchronize(
                 procedure
                 begin
-                    FormConsole.AddLine(loglevWarn,
-                      format('%s: выполнение прервано', [_work]));
+                    AddWorkLog(loglevWarn, 'выполнение прервано');
                 end);
 
         end;
@@ -144,8 +176,8 @@ begin
                 procedure
                 begin
                     KgsdumMainForm.AppException(nil, e);
-                    FormConsole.AddLine(loglevError, format('%s: %s, %s',
-                      [_work, e.ClassName, e.Message]));
+                    AddWorkLog(loglevError, format('%s, %s',
+                      [e.ClassName, e.Message]));
                 end);
         end;
     end;
@@ -154,7 +186,7 @@ begin
         procedure
         begin
             KgsdumMainForm.OnStopWork;
-            FormConsole.AddLine(loglevInfo, _work + ': выполнено');
+            AddWorkLog(loglevInfo, 'выполнено');
         end);
 
     CloseComport(_hComportProducts);
@@ -162,6 +194,90 @@ begin
     AtomicExchange(_flag_running, 0);
     _work := '';
 
+end;
+
+procedure _do_each_product1(func: TProductProcedure);
+var
+    v: double;
+    p: TProduct;
+    Products: TArray<TProduct>;
+begin
+    Synchronize(
+        procedure
+        begin
+            Products := FormLastParty.ProductionProducts;
+        end);
+
+    if length(Products) = 0 then
+        raise Exception.Create('нет выбранных приборов для опроса');
+
+    for p in Products do
+    begin
+        Synchronize(
+            procedure
+            begin
+                FormLastParty.SetProductInterrogate(p.FPlace);
+            end);
+
+        try
+            func(p);
+        except
+            on e: EBadResponse do
+            begin
+                Synchronize(
+                    procedure
+                    begin
+                        FormLastParty.SetProductConnectionError(p.FPlace,
+                          e.Message);
+                        AddWorkLog(loglevError, format('%s: %s %s',
+                          [p.FormatID, e.ClassName, e.Message]));
+                    end);
+
+            end;
+            on e: EDeadlineExceeded do
+            begin
+                Synchronize(
+                    procedure
+                    begin
+                        FormLastParty.SetProductConnectionError(p.FPlace,
+                          'не отвечает');
+                        AddWorkLog(loglevError, format('%s: не отвечает',
+                          [p.FormatID]));
+                    end);
+            end;
+        end;
+    end;
+
+end;
+
+procedure DoEachProduct(func: TProductProcedure);
+begin
+    try
+        _do_each_product1(func);
+    finally
+        Synchronize(
+            procedure
+            begin
+                FormLastParty.SetProductInterrogate(-1);
+            end);
+    end;
+
+end;
+
+procedure AddComportLog(AComport: string; ARequest, AResponse: TBytes;
+millis, attempt: Integer);
+var
+    s: string;
+begin
+    s := AComport + ' : ' + BytesToHex(ARequest);
+    if length(AResponse) > 0 then
+        s := s + ' --> ' + BytesToHex(ARequest);
+
+    s := s + ' ' + Inttostr(millis) + ' мс';
+
+    if attempt > 1 then
+        s := s + ' (' + Inttostr(attempt) + ')';
+    AddWorkLog(loglevDebug, s);
 end;
 
 initialization
@@ -190,8 +306,8 @@ comport.SetcomportLogHook(
                 else if r.HComport = _hComportTermo then
                     comport := FormProperties.ComportTermo.Value +
                       '-термокамера';
-                FormConsole.AddComportMessage(comport, r.Request, r.Response,
-                  r.Millis, r.Attempt);
+                AddComportLog(comport, r.Request, r.Response, r.millis,
+                  r.attempt);
             end);
     end);
 

@@ -13,6 +13,7 @@ implementation
 uses FireDAC.Comp.Client, System.Generics.collections, UnitKgsdumData, Variants;
 
 function GetLastParty: TParty;
+var s:string;
 begin
     with TFDQuery.Create(nil) do
     begin
@@ -33,6 +34,7 @@ begin
         with result do
         begin
             FCreatedAt := FieldValues['created_at'];
+            s := DateTimeToStr(FCreatedAt);
             FPartyID := FieldValues['party_id'];
             PgsBeg := FieldValues['pgs_beg'];
             PgsMid := FieldValues['pgs_mid'];
@@ -47,6 +49,7 @@ end;
 function GetLastPartyProducts: TArray<TProduct>;
 var
     p: TProduct;
+    s:string;
 begin
     with TFDQuery.Create(nil) do
     begin
@@ -69,6 +72,10 @@ begin
                 FProduction := FieldValues['production'];
 
                 FSerial := FieldValues['serial_number'];
+
+                FCreatedAt := FieldValues['created_at'];
+
+                s := DateTimeToStr(FCreatedAt);
 
                 if FieldValues['concentration_beg_norm'] <> Variants.Null then
                     with FConc[scaleConcBegin, scaleTempNorm] do

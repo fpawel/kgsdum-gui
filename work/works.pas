@@ -5,133 +5,140 @@ interface
 uses data_model;
 
 procedure RunInterrogate;
+procedure RunReadVar(addr: byte; AVar: byte);
+procedure RunReadVars(AVar: byte);
+procedure RunReadCoefficient(addr: byte; ACoefficient: byte);
+procedure RunReadCoefficients(ACoefficient: byte);
 
 implementation
 
 uses sysutils, comport, UnitFormProperties, kgs, UnitFormLastParty,
     classes, windows, run_work, errors, UnitFormConsole;
 
-type
-    _FuncProduct = reference to procedure(p: TProduct);
 
-procedure _do_each_product1(func: _FuncProduct);
+
+
+function ReadProductConc(p: TProduct; w: TComportWorker; log: boolean): double;
 var
     v: double;
-    p: TProduct;
-    Products: TArray<TProduct>;
 begin
+    v := KgsReadVar(p.FAddr, 72, w);
     Synchronize(
         procedure
         begin
-            Products := FormLastParty.ProductionProducts;
+            FormLastParty.SetProductConc(p.FPlace, v);
+            if log then
+                AddWorkLog(loglevInfo, Format('%s: конц.=%s',
+                  [p.FormatID, 72, floattostr(v)]));
+
         end);
-
-    if length(Products) = 0 then
-        raise Exception.Create('нет выбранных приборов дл€ опроса');
-
-    for p in Products do
-    begin
-        Synchronize(
-            procedure
-            begin
-                FormLastParty.SetProductInterrogate(p.FPlace);
-            end);
-
-        try
-            func(p);
-        except
-            on e: EBadResponse do
-            begin
-                Synchronize(
-                    procedure
-                    begin
-                        FormLastParty.SetProductConnectionError(p.FPlace,
-                          e.Message);
-                    end);
-
-            end;
-            on e: EDeadlineExceeded do
-            begin
-                Synchronize(
-                    procedure
-                    begin
-                        FormLastParty.SetProductConnectionError(p.FPlace,
-                          'не отвечает');
-                    end);
-            end;
-        end;
-    end;
-
 end;
 
-procedure _do_each_product(func: _FuncProduct);
+function ReadAddrVar(addr: byte; AVar: byte): double;
+var
+    v: double;
 begin
-    try
-        _do_each_product1(func);
-    finally
-        Synchronize(
-            procedure
-            begin
-                FormLastParty.SetProductInterrogate(-1);
-            end);
-    end;
+    v := KgsReadVar(addr, AVar, ComportProductsWorker);
+    Synchronize(
+        procedure
+        begin
+            if FormLastParty.FindProductWithAddr(addr,
+                procedure(p: TProduct)
+                begin
+                    AddworkLog(loglevInfo,
+                      Format('%s: var%d=%s', [p.FormatID, AVar,
+                      floattostr(v)]));
 
+                end) then
+                exit;
+            AddworkLog(loglevInfo,
+            Format('адр.%d: var%d=%s',
+              [addr, AVar, floattostr(v)]));
+        end);
+end;
+
+function ReadAddrCoefficient(addr: byte; ACoefficient: byte): double;
+var
+    v: double;
+begin
+    v := KgsReadCoefficient(addr, ACoefficient, ComportProductsWorker);
+    Synchronize(
+        procedure
+        begin
+            if FormLastParty.FindProductWithAddr(addr,
+                procedure(p: TProduct)
+                begin
+                    AddworkLog(loglevInfo,
+                      Format('%s: коэф.%d=%s', [p.FormatID, ACoefficient,
+                      floattostr(v)]));
+
+                end) then
+                exit;
+            AddworkLog(loglevInfo,
+                Format('адр.%d: коэф.%d=%s',
+              [addr, ACoefficient, floattostr(v)]));
+        end);
 end;
 
 procedure RunInterrogate;
 begin
-    RunWork('ќпрос',
+    RunWork('опрос',
         procedure
         begin
             while True do
             begin
-                _do_each_product(
+                DoEachProduct(
                     procedure(p: TProduct)
-                    var
-                        v: double;
                     begin
-                        v := KgsReadVar(p.FAddr, 72, ComportProductsWorker);
-                        Synchronize(
-                            procedure
-                            begin
-                                FormLastParty.SetProductConc(p.FPlace, v);
-                            end);
+                        ReadProductConc(p, ComportProductsWorker, false);
                     end);
             end;
         end);
 end;
 
-
-function ReadVarWithLog(addr: byte; AVar: byte);
+procedure RunReadVars(AVar: byte);
 begin
+    RunWork(Format('считать var%d', [AVar]),
+        procedure
+        begin
+            DoEachProduct(
+                procedure(p: TProduct)
+                begin
+                    ReadAddrVar(p.FAddr, AVar);
+                end);
 
-
+        end);
 end;
 
 procedure RunReadVar(addr: byte; AVar: byte);
 begin
-    RunWork(Format('”правление: считать регистр %d, адрес %d', [AVar, addr]),
+    RunWork(Format('считать var%d адр.%d', [AVar, addr]),
         procedure
         begin
-            if addr = 0 then
-            begin
-                _do_each_product(
-                    procedure(p: TProduct)
-                    var
-                        v: double;
-                    begin
-                        v := KgsReadVar(p.FAddr, AVar, ComportProductsWorker);
-                        Synchronize(
-                            procedure
-                            begin
-                                FormLastParty.SetProductConc(p.FPlace, v);
-                                FormConsole.AddLine(loglevInfo,
-                                  Format('адрес %d, регистр %d : %s',
-                                  [addr, AVar, floattostr(v)]));
-                            end);
-                    end);
+            ReadAddrVar(addr, AVar);
+        end);
+end;
 
-            end;
+procedure RunReadCoefficients(ACoefficient: byte);
+begin
+    RunWork(Format('считать коэф.%d', [ACoefficient]),
+        procedure
+        begin
+            DoEachProduct(
+                procedure(p: TProduct)
+                begin
+                    ReadAddrCoefficient(p.FAddr, ACoefficient);
+                end);
+
+        end);
+end;
+
+procedure RunReadCoefficient(addr: byte; ACoefficient: byte);
+begin
+    RunWork(Format('считать коэф.%d адр.%d', [ACoefficient, addr]),
+        procedure
+        begin
+            ReadAddrVar(addr, ACoefficient);
         end);
 end;
 

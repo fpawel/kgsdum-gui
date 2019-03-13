@@ -15,6 +15,7 @@ type
   TKgsdumData = class(TDataModule)
     Conn: TFDConnection;
     FDPhysSQLiteDriverLink1: TFDPhysSQLiteDriverLink;
+    ConnJournal: TFDConnection;
   private
     { Private declarations }
   public

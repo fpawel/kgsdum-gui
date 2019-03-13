@@ -13,6 +13,12 @@ type
 
     TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError);
 
+    TLogEntry = record
+        Time: TDateTime;
+        Level: TLogLevel;
+        Work, Text: string;
+    end;
+
     TFormConsole = class(TForm)
         ImageList4: TImageList;
         StringGrid1: TStringGrid;
@@ -20,16 +26,18 @@ type
         procedure FormResize(Sender: TObject);
         procedure StringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer;
           Rect: TRect; State: TGridDrawState);
+        procedure StringGrid1MouseDown(Sender: TObject; Button: TMouseButton;
+          Shift: TShiftState; X, Y: Integer);
 
     private
         { Private declarations }
-        FLevels: TArray<TLogLevel>;
+        FEntries: TArray<TLogEntry>;
 
     public
         { Public declarations }
-        procedure AddComportMessage(AComport: string;
+        procedure AddComportMessage(AWork, AComport: string;
           ARequest, AResponse: TBytes; millis, attempt: Integer);
-        procedure AddLine(ALevel: TLogLevel; AText: string);
+        procedure AddLine(ALevel: TLogLevel; AWork, AText: string);
     end;
 
 var
@@ -43,7 +51,7 @@ uses Rest.Json, dateutils, richeditutils, stringutils, stringgridutils;
 
 procedure TFormConsole.FormCreate(Sender: TObject);
 begin
-    SetLength(FLevels, 1);
+    SetLength(FEntries, 1);
 
 end;
 
@@ -51,7 +59,7 @@ procedure TFormConsole.FormResize(Sender: TObject);
 begin
     with StringGrid1 do
     begin
-        ColWidths[0] := 100;
+        ColWidths[0] := 70;
         ColWidths[1] := self.Width - ColWidths[0] - 30;
     end;
 end;
@@ -72,25 +80,28 @@ begin
     if gdSelected in State then
         cnv.Brush.Color := clGradientInactiveCaption;
 
-    if ACol = 0 then
-    begin
-        ta := taCenter;
-        cnv.Font.Color := clGreen;
-    end
-    else
-    begin
-        ta := taLeftJustify;
-        cnv.Font.Color := clBlack;
-        case FLevels[ARow] of
-            loglevDebug:
-                cnv.Font.Color := clGray;
-            loglevInfo:
-                cnv.Font.Color := clNavy;
-            loglevWarn:
-                cnv.Font.Color := clMaroon;
-            loglevError:
-                cnv.Font.Color := clRed;
-        end;
+    case ACol of
+        0:
+            begin
+                ta := taCenter;
+                cnv.Font.Color := clGreen;
+            end;
+        1:
+            begin
+                ta := taLeftJustify;
+                cnv.Font.Color := clBlack;
+                case FEntries[ARow].Level of
+                    loglevDebug:
+                        cnv.Font.Color := clGray;
+                    loglevInfo:
+                        cnv.Font.Color := clNavy;
+                    loglevWarn:
+                        cnv.Font.Color := clMaroon;
+                    loglevError:
+                        cnv.Font.Color := clRed;
+                end;
+            end;
+
     end;
 
     DrawCellText(StringGrid1, ACol, ARow, Rect, ta,
@@ -98,23 +109,40 @@ begin
     // StringGrid_DrawCellBounds(StringGrid1.Canvas, ACol, ARow, Rect);
 end;
 
-procedure TFormConsole.AddLine(ALevel: TLogLevel; AText: string);
+procedure TFormConsole.StringGrid1MouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-    SetLength(FLevels, Length(FLevels) + 1);
-    FLevels[Length(FLevels) - 2] := ALevel;
+    if Button = TMouseButton.mbRight then
+        with StringGrid1 do
+        begin
+            Col := -1;
+            Row := -1;
+        end;
+
+end;
+
+procedure TFormConsole.AddLine(ALevel: TLogLevel; AWork, AText: string);
+begin
+    SetLength(FEntries, Length(FEntries) + 1);
+    with FEntries[Length(FEntries) - 2] do
+    begin
+        Level := ALevel;
+        Work := AWork;
+        Text := AText;
+        Time := now;
+    end;
 
     with StringGrid1 do
     begin
         Row := RowCount - 1;
-        Cells[0, RowCount - 1] := formatDatetime('hh:mm:ss.zzz', now);
-        Cells[1, RowCount - 1] := AText;
+        Cells[0, RowCount - 1] := formatDatetime('hh:mm:ss', now);
+        Cells[1, RowCount - 1] := AWork + ': ' + AText;
         RowCount := RowCount + 1;
     end;
 end;
 
-procedure TFormConsole.AddComportMessage(AComport: string;
+procedure TFormConsole.AddComportMessage(AWork, AComport: string;
   ARequest, AResponse: TBytes; millis, attempt: Integer);
-
 var
     s: string;
 begin
@@ -126,7 +154,7 @@ begin
 
     if attempt > 1 then
         s := s + ' (' + Inttostr(attempt) + ')';
-    AddLine(loglevDebug, s);
+    AddLine(loglevDebug, AWork, s);
 end;
 
 end.

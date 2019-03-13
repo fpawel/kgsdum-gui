@@ -32,14 +32,10 @@ object KgsdumMainForm: TKgsdumMainForm
     object TabSheetParty: TTabSheet
       Caption = #1055#1072#1088#1090#1080#1103
       ImageIndex = 4
-      ExplicitLeft = 101
-      ExplicitTop = 6
     end
     object TabSheetConsole: TTabSheet
       Caption = #1050#1086#1085#1089#1086#1083#1100
       ImageIndex = 2
-      ExplicitLeft = 101
-      ExplicitTop = 3
     end
     object TabSheetJournal: TTabSheet
       Caption = #1046#1091#1088#1085#1072#1083
@@ -73,7 +69,6 @@ object KgsdumMainForm: TKgsdumMainForm
       Margins.Top = 5
       Align = alLeft
       Caption = 'LabelStatusTop'
-      ExplicitLeft = 128
       ExplicitHeight = 18
     end
     object ToolBar1: TToolBar
@@ -148,8 +143,6 @@ object KgsdumMainForm: TKgsdumMainForm
       ParentFont = False
       TabOrder = 2
       Visible = False
-      ExplicitLeft = 231
-      ExplicitWidth = 727
       object LabelDelayElepsedTime: TLabel
         AlignWithMargins = True
         Left = 5
@@ -186,7 +179,6 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
-        ExplicitLeft = 655
         ExplicitHeight = 18
       end
       object LabelWhat: TLabel
@@ -221,7 +213,6 @@ object KgsdumMainForm: TKgsdumMainForm
         EdgeOuter = esNone
         Images = ImageList4
         TabOrder = 0
-        ExplicitLeft = 691
         object ToolButtonStop: TToolButton
           Left = 0
           Top = 0
@@ -251,7 +242,6 @@ object KgsdumMainForm: TKgsdumMainForm
         ParentBackground = False
         ParentFont = False
         TabOrder = 1
-        ExplicitWidth = 549
         DesignSize = (
           606
           31)
@@ -262,7 +252,6 @@ object KgsdumMainForm: TKgsdumMainForm
           Height = 15
           Anchors = [akLeft, akTop, akRight, akBottom]
           TabOrder = 0
-          ExplicitWidth = 543
         end
       end
     end
@@ -280,7 +269,6 @@ object KgsdumMainForm: TKgsdumMainForm
       Images = ImageList4
       TabOrder = 3
       Visible = False
-      ExplicitLeft = 90
       object ToolButton2: TToolButton
         Left = 0
         Top = 0
@@ -327,7 +315,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010A002403F80414001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010A002403040514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

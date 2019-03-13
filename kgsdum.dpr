@@ -22,7 +22,8 @@ uses
   stringutils in 'utils\stringutils.pas',
   modbus in 'hardware\modbus.pas',
   UnitFormConsole in 'UnitFormConsole.pas' {FormConsole},
-  richeditutils in 'utils\richeditutils.pas';
+  richeditutils in 'utils\richeditutils.pas',
+  UnitFormJournal in 'UnitFormJournal.pas' {FormJournal};
 
 {$R *.res}
 
@@ -35,5 +36,6 @@ begin
   Application.CreateForm(TFormSelectWorksDialog, FormSelectWorksDialog);
   Application.CreateForm(TFormProperties, FormProperties);
   Application.CreateForm(TFormConsole, FormConsole);
+  Application.CreateForm(TFormJournal, FormJournal);
   Application.Run;
 end.

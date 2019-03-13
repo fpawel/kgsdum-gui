@@ -10,6 +10,9 @@ uses
     Vcl.Menus, data_model, Vcl.ComCtrls, Vcl.ToolWin;
 
 type
+
+
+
     TFormLastParty = class(TForm)
         StringGrid1: TStringGrid;
         ImageList1: TImageList;
@@ -45,7 +48,6 @@ type
 
         function GetProductValue(ColumnIndex, RowIndex: Integer): string;
 
-        
         procedure UpdateSerial(ACol, ARow: Integer; Value: string);
         procedure UpdateAddr(ACol, ARow: Integer; Value: string);
 
@@ -64,6 +66,9 @@ type
         { Public declarations }
 
         function ProductionProducts: TArray<TProduct>;
+        function Products: TArray<TProduct>;
+
+        function FindProductWithAddr(addr:byte; f:TProductProcedure):boolean;
 
         procedure SetProductionAll(production: Boolean);
 
@@ -335,7 +340,8 @@ begin
     if ARow = 0 then
     begin
         cnv.Brush.Color := cl3DLight;
-        DrawCellText(StringGrid1, ACol, ARow, Rect, taCenter, StringGrid1.Cells[ACol, ARow]);
+        DrawCellText(StringGrid1, ACol, ARow, Rect, taCenter,
+          StringGrid1.Cells[ACol, ARow]);
         StringGrid_DrawCellBounds(StringGrid1.Canvas, ACol, 0, Rect);
         exit;
     end;
@@ -373,14 +379,11 @@ begin
     if gdSelected in State then
         cnv.Brush.Color := clGradientInactiveCaption;
 
-    DrawCellText(StringGrid1, ACol, ARow, Rect, ProductFieldAlignment(FColumns[ACol]),
-        StringGrid1.Cells[ACol, ARow]);
+    DrawCellText(StringGrid1, ACol, ARow, Rect,
+      ProductFieldAlignment(FColumns[ACol]), StringGrid1.Cells[ACol, ARow]);
 
     StringGrid_DrawCellBounds(cnv, ACol, ARow, Rect);
 end;
-
-
-
 
 procedure TFormLastParty.reset_products;
 var
@@ -535,7 +538,7 @@ end;
 
 procedure TFormLastParty.SetProductConc(place: Integer; Value: double);
 begin
-    FProducts[place].FConnection := 'C=' + FloatToStr(value);
+    FProducts[place].FConnection := 'C=' + FloatToStr(Value);
     FProducts[place].FConnectionFailed := false;
     reset_products;
 end;
@@ -546,6 +549,24 @@ begin
     FProducts[place].FConnection := error;
     FProducts[place].FConnectionFailed := true;
     reset_products;
+end;
+
+
+function TFormLastParty.FindProductWithAddr(addr:byte; f:TProductProcedure):boolean;
+var p : TProduct;
+begin
+    for p in FProducts do
+        if p.FAddr = addr then
+        begin
+            f(p);
+            exit(true);
+        end;
+    exit(false);
+end;
+
+function TFormLastParty.Products: TArray<TProduct>;
+begin
+    result :=  FProducts;
 end;
 
 function TFormLastParty.ProductionProducts: TArray<TProduct>;
@@ -564,14 +585,14 @@ end;
 
 procedure TFormLastParty.SetProductInterrogate(place: Integer);
 var
-    row:integer;
+    Row: Integer;
 begin
 
     if FInterrogatePlace > -1 then
     begin
-        row := FInterrogatePlace + 1;
+        Row := FInterrogatePlace + 1;
         FInterrogatePlace := -1;
-        StringGrid_RedrawRow(StringGrid1, row);
+        StringGrid_RedrawRow(StringGrid1, Row);
     end;
 
     FInterrogatePlace := place;

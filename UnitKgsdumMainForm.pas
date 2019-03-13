@@ -118,8 +118,6 @@ begin
                 Left := X + 5;
                 Top := Y + 5;
                 Show;
-                if Button1.Enabled then
-                    ActiveControl := Button1;
             end;
         end;
 end;

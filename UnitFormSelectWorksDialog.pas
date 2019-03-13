@@ -15,14 +15,14 @@ type
     CheckListBox1: TCheckListBox;
     FlowPanel1: TFlowPanel;
     Label2: TLabel;
-    EditSerial: TEdit;
+    EditAddr: TEdit;
     Label3: TLabel;
-    Edit1: TEdit;
+    EditVar: TEdit;
     Label4: TLabel;
     Edit3: TEdit;
     Button2: TButton;
     Button3: TButton;
-    CheckBox1: TCheckBox;
+    CheckBoxEachAddr: TCheckBox;
     RadioButton1: TRadioButton;
     RadioButton2: TRadioButton;
     TabSheet3: TTabSheet;
@@ -46,6 +46,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
     procedure Button16Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -64,6 +65,23 @@ uses works;
 procedure TFormSelectWorksDialog.Button16Click(Sender: TObject);
 begin
     RunInterrogate;
+end;
+
+procedure TFormSelectWorksDialog.Button3Click(Sender: TObject);
+begin
+    if RadioButton1.Checked then
+    begin
+        if CheckBoxEachAddr.Checked then
+            RunReadVars(StrToInt(EditVar.Text))
+        else
+            RunReadVar(StrToInt(EditVar.Text), StrToInt(EditVar.Text));
+    end else
+    begin
+        if CheckBoxEachAddr.Checked then
+            RunReadCoefficients(StrToInt(EditVar.Text))
+        else
+            RunReadCoefficient(StrToInt(EditVar.Text), StrToInt(EditVar.Text));
+    end
 end;
 
 procedure TFormSelectWorksDialog.FormCreate(Sender: TObject);

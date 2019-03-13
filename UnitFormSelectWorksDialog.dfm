@@ -22,12 +22,10 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     Top = 0
     Width = 513
     Height = 249
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = #1057#1094#1077#1085#1072#1088#1080#1081
-      ExplicitLeft = 8
-      ExplicitTop = 33
       object CheckListBox1: TCheckListBox
         Left = 8
         Top = 8
@@ -69,10 +67,6 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     object TabSheet2: TTabSheet
       Caption = #1059#1087#1088#1072#1074#1083#1077#1085#1080#1077
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 30
-      ExplicitWidth = 529
-      ExplicitHeight = 279
       object FlowPanel1: TFlowPanel
         Left = 3
         Top = 14
@@ -90,7 +84,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
           Align = alTop
           Caption = #1057#1077#1090#1077#1074#1086#1081' '#1072#1076#1088#1077#1089
         end
-        object EditSerial: TEdit
+        object EditAddr: TEdit
           AlignWithMargins = True
           Left = 3
           Top = 28
@@ -99,7 +93,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
           Align = alTop
           Color = clInfoBk
           TabOrder = 0
-          Text = '100'
+          Text = '1'
         end
         object Label3: TLabel
           AlignWithMargins = True
@@ -110,7 +104,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
           Align = alTop
           Caption = #1040#1076#1088#1077#1089' '#1079#1085#1072#1095#1077#1085#1080#1103
         end
-        object Edit1: TEdit
+        object EditVar: TEdit
           AlignWithMargins = True
           Left = 3
           Top = 86
@@ -119,7 +113,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
           Align = alTop
           Color = clInfoBk
           TabOrder = 1
-          Text = '100'
+          Text = '72'
         end
         object Label4: TLabel
           AlignWithMargins = True
@@ -139,9 +133,8 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
           Align = alTop
           Color = clInfoBk
           TabOrder = 2
-          Text = '100'
         end
-        object CheckBox1: TCheckBox
+        object CheckBoxEachAddr: TCheckBox
           AlignWithMargins = True
           Left = 157
           Top = 10
@@ -149,6 +142,8 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
           Height = 17
           Margins.Top = 10
           Caption = #1042#1089#1077' '#1072#1076#1088#1077#1089#1072' '#1089#1077#1090#1080
+          Checked = True
+          State = cbChecked
           TabOrder = 3
         end
         object RadioButton1: TRadioButton
@@ -159,7 +154,9 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
           Height = 17
           Margins.Top = 10
           Caption = #1056#1077#1075#1080#1089#1090#1088
+          Checked = True
           TabOrder = 4
+          TabStop = True
         end
         object RadioButton2: TRadioButton
           AlignWithMargins = True
@@ -187,6 +184,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         Height = 35
         Caption = #1057#1095#1080#1090#1072#1090#1100
         TabOrder = 2
+        OnClick = Button3Click
       end
       object Button4: TButton
         Left = 382
@@ -200,7 +198,6 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     object TabSheet3: TTabSheet
       Caption = #1055#1085#1077#1074#1084#1086#1073#1083#1086#1082
       ImageIndex = 2
-      ExplicitLeft = 0
       object Button5: TButton
         Left = 386
         Top = 167
@@ -261,8 +258,6 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     object TabSheet4: TTabSheet
       Caption = #1058#1077#1088#1084#1086#1082#1072#1084#1077#1088#1072
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitHeight = 248
       object Label1: TLabel
         AlignWithMargins = True
         Left = 170

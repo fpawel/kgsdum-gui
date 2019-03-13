@@ -7,7 +7,7 @@ object FormConsole: TFormConsole
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -12
   Font.Name = 'Tahoma'
   Font.Style = []
   Icon.Data = {
@@ -149,7 +149,7 @@ object FormConsole: TFormConsole
   OnCreate = FormCreate
   OnResize = FormResize
   PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 14
   object StringGrid1: TStringGrid
     AlignWithMargins = True
     Left = 3
@@ -159,7 +159,7 @@ object FormConsole: TFormConsole
     Align = alClient
     BorderStyle = bsNone
     ColCount = 2
-    DefaultRowHeight = 18
+    DefaultRowHeight = 20
     DefaultDrawing = False
     FixedColor = clBackground
     FixedCols = 0
@@ -167,18 +167,21 @@ object FormConsole: TFormConsole
     FixedRows = 0
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -13
+    Font.Height = -15
     Font.Name = 'Tahoma'
     Font.Style = []
     GradientEndColor = clBlack
     ParentFont = False
     TabOrder = 0
     OnDrawCell = StringGrid1DrawCell
-    ExplicitLeft = 8
+    OnMouseDown = StringGrid1MouseDown
+    ExplicitLeft = -2
     ExplicitTop = -2
     ColWidths = (
       64
       64)
+    RowHeights = (
+      20)
   end
   object ImageList4: TImageList
     ColorDepth = cd32Bit
@@ -190,7 +193,7 @@ object FormConsole: TFormConsole
     Left = 192
     Top = 98
     Bitmap = {
-      494C0101010024034C0414001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C010101002403540414001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000001400000001002000000000000019
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000805
