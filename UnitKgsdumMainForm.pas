@@ -12,7 +12,7 @@ uses
 type
     TKgsdumMainForm = class(TForm)
         ImageList4: TImageList;
-    PanelTop: TPanel;
+        PanelTop: TPanel;
         LabelStatusTop: TLabel;
         ToolBar1: TToolBar;
         ToolButtonRun: TToolButton;
@@ -35,9 +35,10 @@ type
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
         procedure ToolButton2Click(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
+        procedure FormCreate(Sender: TObject);
     private
         { Private declarations }
+        procedure DoAppException(Sender: TObject; E: Exception);
     public
         { Public declarations }
         Ini: TIniFile;
@@ -69,7 +70,7 @@ begin
     with FormLastParty do
     begin
         Font.Assign(self.Font);
-        Parent := Self;
+        Parent := self;
         BorderStyle := bsNone;
         Align := alTop;
         Show;
@@ -78,7 +79,7 @@ begin
     with FormJournal do
     begin
         Font.Assign(self.Font);
-        Parent := Self;
+        Parent := self;
         BorderStyle := bsNone;
         Align := alClient;
         Show;
@@ -113,7 +114,7 @@ begin
         end;
 end;
 
-procedure TKgsdumMainForm.AppException(Sender: TObject; E: Exception);
+procedure TKgsdumMainForm.DoAppException(Sender: TObject; E: Exception);
 var
     stackList: TJclStackInfoList; // JclDebug.pas
     sl: TStringList;
@@ -151,11 +152,28 @@ begin
 
     CloseFile(FErrorLog);
 
+    FormJournal.NewExceptionEntry(e.ClassName + ': '+e.Message + ': '+stacktrace);
+
     if MessageDlg(E.Message, mtError, [mbAbort, mbIgnore], 0) = mrAbort then
     begin
         Application.OnException := nil;
         Application.Terminate;
         exit;
+    end;
+end;
+
+procedure TKgsdumMainForm.AppException(Sender: TObject; E: Exception);
+begin
+    try
+        DoAppException(Sender, E);
+    except
+        on Exn: Exception do
+        begin
+            Application.ShowException(E);
+            Application.ShowException(Exn);
+            Application.Terminate;
+            exit;
+        end;
     end;
 end;
 

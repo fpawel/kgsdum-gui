@@ -7,20 +7,117 @@ uses comport;
 type
     TBytes = TArray<byte>;
 
-    TParseBytes = reference to procedure(_: TBytes);
-
-    TModbusRequest = record
-        Addr: byte;
-        Cmd: byte;
-        Data: TArray<byte>;
-        function Bytes: TBytes;
-        procedure CheckResonse(response: TBytes);
-        function GetResponse(w: TComportWorker): TBytes;
-    end;
+function GetResponse(addr, cmd: byte; data: TBytes; w: TComportWorker;
+  FParse: TParseResponse): TBytes;
+function CRC16(bs: TBytes; index_from, index_to: integer): word;
+function Read3(addr: byte; AVar: word; w: TComportWorker): double;
 
 implementation
 
-uses errors, sysutils, stringutils;
+uses errors, sysutils, stringutils, bcd;
+
+type
+    TModbusRequest = record
+        addr: byte;
+        cmd: byte;
+        data: TArray<byte>;
+        function Bytes: TBytes;
+        procedure CheckResonse(response: TBytes);
+    end;
+
+function Read3(addr: byte; AVar: word; w: TComportWorker): double;
+var
+    _result: double;
+begin
+    GetResponse(addr, 3, [AVar shr 8, AVar, 0, 2], w,
+        procedure(response: TBytes)
+        var
+            lenMustBe: integer;
+        begin
+            lenMustBe := 2 * 2 + 5;
+            if length(response) <> lenMustBe then
+                raise EBadREsponse.Create(Format('длина ответа %d не равна %d',
+                  [length(response), lenMustBe]));
+
+            if not ParseBCD6(response, 3, _result) then
+                raise EBadREsponse.Create('не верный код BCD: ' +
+                  BytesToHex(response, ' ', 3, 6));
+        end);
+    result := _result;
+end;
+
+procedure TModbusRequest.CheckResonse(response: TBytes);
+var
+    crc: word;
+begin
+    if length(response) = 0 then
+        raise EDeadlineExceeded.Create('нет ответа');
+
+    if length(response) < 4 then
+        raise EBadREsponse.Create(Format('длина ответа %d менее 9',
+          [length(response)]));
+
+    crc := CRC16(response, 0, length(response));
+
+    if crc <> 0 then
+        raise EBadREsponse.Create('CRC16 не ноль');
+
+    if response[0] <> addr then
+        raise EBadREsponse.Create
+          (Format('не совпадает адрес ответа %d и запроса %d',
+          [response[0], addr]));
+
+    if (length(response) = 5) ANd ((cmd or $80) = response[1]) then
+        raise EBadREsponse.Create('прибор вернул код ошибки ' +
+          inttostr(response[2]));
+
+    if response[1] <> cmd then
+        raise EBadREsponse.Create
+          (Format('не совпадает код клманды ответа %d и запроса %d',
+          [response[1], cmd]));
+end;
+
+function _GetResponse(request: TModbusRequest; w: TComportWorker;
+FParse: TParseResponse): TBytes;
+var
+    _result: TBytes;
+begin
+    comport.GetResponse(request.Bytes, w,
+        procedure(response: TBytes)
+        begin
+            request.CheckResonse(response);
+            FParse(response);
+            _result := response;
+        end);
+    result := _result;
+end;
+
+function GetResponse(addr, cmd: byte; data: TBytes; w: TComportWorker;
+FParse: TParseResponse): TBytes;
+var
+    request: TModbusRequest;
+begin
+    request.addr := addr;
+    request.cmd := cmd;
+    request.data := data;
+    result := _GetResponse(request, w, FParse);
+end;
+
+function TModbusRequest.Bytes: TBytes;
+var
+    i, n: integer;
+    _crc16: word;
+begin
+    SetLength(result, 4 + length(data));
+    result[0] := addr;
+    result[1] := cmd;
+    for i := 0 to length(data) - 1 do
+        result[2 + i] := data[i];
+    n := 2 + length(data);
+    _crc16 := CRC16(result, 0, n - 1);
+    result[n] := _crc16 shr 8;
+    result[n + 1] := _crc16;
+end;
 
 const
     auchCRCHi: TBytes = [$00, $C1, $81, $40, $01, $C0, $80, $41, $01, $C0, $80,
@@ -61,17 +158,6 @@ const
       $8D, $4D, $4C, $8C, $44, $84, $85, $45, $87, $47, $46, $86, $82, $42, $43,
       $83, $41, $81, $80, $40];
 
-procedure GetResponse(request: TModbusRequest; w: TComportWorker;
-  var response: TBytes);
-begin
-    comport.GetResponse(request.Bytes, w,
-        procedure(_response: TBytes)
-        begin
-            request.CheckResonse(_response);
-            response := _response;
-        end);
-end;
-
 function CRC16(bs: TBytes; index_from, index_to: integer): word;
 var
     b: byte;
@@ -90,54 +176,6 @@ begin
         lo := auchCRCLo[i];
     end;
     result := (hi shl 8) + lo;
-end;
-
-procedure TModbusRequest.CheckResonse(response: TBytes);
-var
-    crc: word;
-begin
-    if Length(response) = 0 then
-        raise EDeadlineExceeded.Create('нет ответа');
-
-    if Length(response) < 4 then
-        raise EBadResponse.Create(Format('длина ответа %d менее 9',
-          [Length(response)]));
-
-    crc := CRC16(response, 0, Length(response));
-
-    if crc <> 0 then
-        raise EBadResponse.Create('CRC16 не ноль');
-
-    if response[0] <> Addr then
-        raise EBadResponse.Create
-          (Format('не совпадает адрес ответа %d и запроса %d',
-          [response[0], Addr]));
-
-    if (Length(response) = 5) ANd ((Cmd or $80) = response[1]) then
-        raise EBadResponse.Create('прибор вернул код ошибки ' +
-          inttostr(response[2]));
-
-    if response[1] <> Cmd then
-        raise EBadResponse.Create
-          (Format('не совпадает код клманды ответа %d и запроса %d',
-          [response[1], Cmd]));
-
-end;
-
-function TModbusRequest.Bytes: TBytes;
-var
-    i, n: integer;
-    _crc16: word;
-begin
-    SetLength(result, 4 + Length(Data));
-    result[0] := Addr;
-    result[1] := Cmd;
-    for i := 0 to Length(Data) - 1 do
-        result[2 + i] := Data[i];
-    n := 2 + Length(Data);
-    _crc16 := CRC16(result, 0, n - 1);
-    result[n] := _crc16 shr 8;
-    result[n + 1] := _crc16;
 end;
 
 end.

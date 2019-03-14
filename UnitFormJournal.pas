@@ -35,6 +35,8 @@ type
         procedure fetch_days;
         procedure NewWork(work: string);
         procedure NewEntry(ALevel: data_model.TLogLevel; AText: string);
+
+        procedure NewExceptionEntry(AText: string);
     end;
 
 var
@@ -174,7 +176,8 @@ begin
                   'work ON entry.work_id = work.work_id ' +
                   'WHERE CAST(STRFTIME(''%Y'', entry.created_at) AS INTEGER) = :year '
                   + '  AND CAST(STRFTIME(''%m'', entry.created_at) AS INTEGER) = :month '
-                  + '  AND CAST(STRFTIME(''%d'', entry.created_at) AS INTEGER) = :day';
+                  + '  AND CAST(STRFTIME(''%d'', entry.created_at) AS INTEGER) = :day '
+                  + 'ORDER BY entry.created_at ';
 
                 ParamByName('year').Value := YearOf(combobox_date);
                 ParamByName('month').Value := MonthOf(combobox_date);
@@ -285,8 +288,6 @@ begin
             while not eof do
             begin
                 dt := FieldValues['created_at'];
-                if (ComboBox1.Items.Count = 0 ) and (DateToStr(dt) <> DateToStr(now)) then
-                    ComboBox1.Items.Add(DateToStr(now));
                 ComboBox1.Items.Add(DateToStr(dt));
                 Next;
             end;
@@ -294,6 +295,11 @@ begin
             Free;
         end;
     end;
+
+    if (ComboBox1.Items.Count = 0) or (ComboBox1.Items[0] <> DateToStr(now))
+    then
+        ComboBox1.Items.Insert(0, DateToStr(now));
+
     if ComboBox1.Items.Count > 0 then
     begin
         ComboBox1.ItemIndex := 0;
@@ -312,8 +318,10 @@ begin
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnJournal;
-        SQL.Text := 'INSERT INTO work(name) VALUES (:work);';
+        SQL.Text :=
+          'INSERT INTO work(name, created_at) VALUES (:work, :created_at );';
         ParamByName('work').Value := work;
+        ParamByName('created_at').Value := now;
         ExecSQL;
         Close;
 
@@ -365,10 +373,9 @@ begin
 
     if ALevel >= loglevError then
     begin
-        FWorks[Length(FWorks)-1].ErrorOccurred := true;
-        StringGrid_RedrawRow(StringGrid1, StringGrid1.RowCount-1);
+        FWorks[Length(FWorks) - 1].ErrorOccurred := true;
+        StringGrid_RedrawRow(StringGrid1, StringGrid1.RowCount - 1);
     end;
-
 
     with TFDQuery.Create(nil) do
     begin
@@ -380,6 +387,33 @@ begin
         ParamByName('created_at').Value := now;
         ParamByName('message').Value := AText;
         ExecSQL;
+        Close;
+        Free;
+    end;
+end;
+
+procedure TFormJournal.NewExceptionEntry(AText: string);
+begin
+    with TFDQuery.Create(nil) do
+    begin
+        Connection := KgsdumData.ConnJournal;
+
+        SQL.Text :=
+          'INSERT INTO work(name, created_at) VALUES (''Исключителная ситуация'', :created_at );';
+        ParamByName('created_at').Value := now;
+
+        ExecSQL;
+
+        SQL.Text :=
+          'INSERT INTO entry(work_id, created_at, level, message) VALUES ' +
+          '((SELECT work_id FROM last_work), :created_at, :level, :message)';
+
+        ParamByName('level').Value := loglevException;
+        ParamByName('created_at').Value := now;
+        ParamByName('message').Value := AText;
+
+        ExecSQL;
+
         Close;
         Free;
     end;

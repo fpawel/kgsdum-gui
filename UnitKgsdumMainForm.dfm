@@ -37,12 +37,11 @@ object KgsdumMainForm: TKgsdumMainForm
       Left = 71
       Top = 5
       Width = 100
-      Height = 23
+      Height = 18
       Margins.Left = 5
       Margins.Top = 5
       Align = alLeft
       Caption = 'LabelStatusTop'
-      ExplicitHeight = 18
     end
     object ToolBar1: TToolBar
       Left = 0
@@ -121,7 +120,7 @@ object KgsdumMainForm: TKgsdumMainForm
         Left = 5
         Top = 3
         Width = 58
-        Height = 25
+        Height = 18
         Margins.Left = 5
         Margins.Right = 5
         Align = alLeft
@@ -133,14 +132,13 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
-        ExplicitHeight = 18
       end
       object LabelProgress: TLabel
         AlignWithMargins = True
         Left = 712
         Top = 3
         Width = 31
-        Height = 25
+        Height = 18
         Margins.Left = 5
         Margins.Right = 5
         Align = alRight
@@ -152,14 +150,13 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
-        ExplicitHeight = 18
       end
       object LabelWhat: TLabel
         AlignWithMargins = True
         Left = 73
         Top = 3
         Width = 23
-        Height = 25
+        Height = 18
         Margins.Left = 5
         Margins.Right = 5
         Align = alLeft
@@ -171,7 +168,6 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
-        ExplicitHeight = 18
       end
       object ToolBar6: TToolBar
         Left = 748
@@ -288,7 +284,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010A0024030C0514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010A002403100514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

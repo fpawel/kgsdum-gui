@@ -11,8 +11,6 @@ uses
 
 type
 
-    
-
     TFormConsole = class(TForm)
         ImageList4: TImageList;
         StringGrid1: TStringGrid;
@@ -26,13 +24,13 @@ type
     private
         { Private declarations }
         FEntries: TArray<TLogEntry>;
-        
 
     public
         { Public declarations }
-        procedure AddComportMessage( AComport: string;
+        procedure AddComportMessage(AComport: string;
           ARequest, AResponse: TBytes; millis, attempt: Integer);
-        procedure NewLine(ACreatedAt:TDatetime; ALevel: data_model.TLogLevel; AWork, AText: string);
+        procedure NewLine(ACreatedAt: TDatetime; ALevel: data_model.TLogLevel;
+          AWork, AText: string);
         procedure Clear;
     end;
 
@@ -50,7 +48,6 @@ uses FireDAC.Comp.Client, Rest.Json, dateutils, richeditutils, stringutils,
 procedure TFormConsole.FormCreate(Sender: TObject);
 begin
     SetLength(FEntries, 1);
-   
 
 end;
 
@@ -98,6 +95,11 @@ begin
                         cnv.Font.Color := clMaroon;
                     loglevError:
                         cnv.Font.Color := clRed;
+                    loglevException:
+                        begin
+                            cnv.Font.Color := clYellow;
+                            cnv.Brush.Color := clBlack;
+                        end;
                 end;
             end;
 
@@ -125,13 +127,14 @@ begin
     with StringGrid1 do
     begin
         Rowcount := 1;
-        Cells[0,0] := '';
-        Cells[1,0] := '';
+        Cells[0, 0] := '';
+        Cells[1, 0] := '';
     end;
     SetLength(FEntries, 1);
 end;
 
-procedure TFormConsole.NewLine(ACreatedAt:TDatetime;  ALevel: data_model.TLogLevel; AWork, AText: string);
+procedure TFormConsole.NewLine(ACreatedAt: TDatetime;
+  ALevel: data_model.TLogLevel; AWork, AText: string);
 begin
     SetLength(FEntries, Length(FEntries) + 1);
     with FEntries[Length(FEntries) - 2] do
@@ -144,14 +147,15 @@ begin
 
     with StringGrid1 do
     begin
-        Cells[0, RowCount - 1] := formatDatetime('hh:mm:ss', ACreatedAt);
-        Cells[1, RowCount - 1] := AWork + ': ' + AText;
-        RowCount := RowCount + 1;
+        Cells[0, Rowcount - 1] := formatDatetime('hh:mm:ss', ACreatedAt);
+        Cells[1, Rowcount - 1] := AWork + ': ' + AText;
+        Rowcount := Rowcount + 1;
+        Cells[0, Rowcount - 1] := '';
+        Cells[1, Rowcount - 1] := '';
     end;
 end;
 
-
-procedure TFormConsole.AddComportMessage( AComport: string;
+procedure TFormConsole.AddComportMessage(AComport: string;
   ARequest, AResponse: TBytes; millis, attempt: Integer);
 var
     s: string;
@@ -164,7 +168,7 @@ begin
 
     if attempt > 1 then
         s := s + ' (' + Inttostr(attempt) + ')';
-    //NewEntry(loglevDebug, s);
+    // NewEntry(loglevDebug, s);
 end;
 
 end.

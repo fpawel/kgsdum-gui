@@ -16,6 +16,9 @@ type
         Conn: TFDConnection;
         FDPhysSQLiteDriverLink1: TFDPhysSQLiteDriverLink;
         ConnJournal: TFDConnection;
+    FDQuery1: TFDQuery;
+    FDQuery2: TFDQuery;
+    procedure DataModuleCreate(Sender: TObject);
     private
         { Private declarations }
     public
@@ -33,5 +36,17 @@ implementation
 {$R *.dfm}
 
 
+
+procedure TKgsdumData.DataModuleCreate(Sender: TObject);
+var dir:String;
+
+begin
+    dir := GetEnvironmentVariable('APPDATA') + '\kgsdum\';
+
+    forcedirectories(dir);
+
+    FDQuery1.ExecSQL;
+    FDQuery2.ExecSQL;
+end;
 
 end.

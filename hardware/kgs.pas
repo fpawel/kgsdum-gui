@@ -185,8 +185,8 @@ begin
     unpack(response);
 
     if not ParseBCD6(response, 3, result) then
-        raise EBadResponse.Create(Format('не верный код BCD %s',
-          [BytesToHex([response[3], response[4], response[5], response[6]])]));
+        raise EBadResponse.Create('не верный код BCD: ' + BytesToHex(response,
+          ' ', 3, 6));
 
     if (Direction = KgsWrite) and (Value <> result) then
         raise EBadResponse.Create

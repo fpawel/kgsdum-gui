@@ -167,8 +167,8 @@ begin
                 procedure
                 begin
                     KgsdumMainForm.AppException(nil, e);
-                    FormJournal.NewEntry(loglevError, format('%s, %s',
-                      [e.ClassName, e.Message]));
+//                    FormJournal.NewEntry(loglevError, format('%s, %s',
+//                      [e.ClassName, e.Message]));
                 end);
         end;
     end;

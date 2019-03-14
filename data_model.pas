@@ -51,7 +51,7 @@ type
 
     end;
 
-    TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError);
+    TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError, loglevException);
 
     TLogEntry = record
         Time: TDateTime;

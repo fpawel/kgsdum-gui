@@ -57,11 +57,11 @@ object FormJournal: TFormJournal
       OnDrawCell = StringGrid1DrawCell
       OnKeyDown = StringGrid1KeyDown
       OnSelectCell = StringGrid1SelectCell
-      ExplicitLeft = 0
-      ExplicitTop = 35
       ColWidths = (
         64
         64)
+      RowHeights = (
+        22)
     end
     object ComboBox1: TComboBox
       Left = 0
@@ -77,9 +77,6 @@ object FormJournal: TFormJournal
       OnChange = ComboBox1Change
       Items.Strings = (
         '11.11.2018')
-      ExplicitLeft = 56
-      ExplicitTop = 120
-      ExplicitWidth = 129
     end
   end
 end

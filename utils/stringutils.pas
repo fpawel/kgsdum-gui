@@ -11,7 +11,10 @@ function inttostr2(n: integer): string;
 function month_name(month_number:integer):string;
 function try_str_to_float(s:string; var v:double):boolean;
 
-function BytesToHex(BA: TArray<byte>; Sep: string = ' '): string;
+function BytesToHex(BA: TArray<byte>; Sep: string = ' ';
+    index_from : integer = -1;
+    index_to : integer = -1
+    ): string;
 
 implementation
 
@@ -66,21 +69,32 @@ end;
 
 
 
-function BytesToHex(BA: TArray<byte>; Sep: string ): string;
+function BytesToHex(BA: TArray<byte>; Sep: string;
+    index_from : integer;
+    index_to : integer
+    ): string;
 var
     i, k: integer;
 begin
     result := '';
 
+    if index_from = -1 then
+        index_from := low(BA);
+    if index_to = -1 then
+        index_to := high(BA);
+
+
+
+
     if Sep = '' then
     begin
-        for i := low(BA) to high(BA) do
+        for i := index_from to index_to do
             result := result + IntToHex(BA[i], 2);
     end
     else
     begin
-        k := high(BA);
-        for i := low(BA) to k do
+        k := index_to;
+        for i := index_from to k do
         begin
             result := result + IntToHex(BA[i], 2);
             if k <> i then
