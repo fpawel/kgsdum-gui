@@ -2,13 +2,21 @@ unit run_work;
 
 interface
 
-uses comport, Classes, data_model, UnitFormConsole;
+uses comport, Classes, data_model;
 
 type
     TWorkProcedure = reference to procedure;
 
+    TWork = record
+        Name: string;
+        Proc: TWorkProcedure;
+        constructor Create(AName: string; AProc: TWorkProcedure);
+    end;
+
+    TWorks = TArray<TWork>;
+
 function IsWorkRunning: boolean;
-procedure RunWork(what: string; proc: TWorkProcedure);
+procedure RunWorks(works: TWorks);
 
 function ComportProducts: THandle;
 
@@ -20,8 +28,6 @@ procedure Synchronize(p: TThreadProcedure); overload;
 procedure Synchronize(m: TThreadMethod); overload;
 procedure DoEachProduct(func: TProductProcedure);
 
-procedure AddWorkLog(ALevel: TLogLevel; AText: string);
-
 var
     ComportProductsConfig, ComportGasConfig, ComportTermoConfig
       : TConfigGetResponse;
@@ -30,11 +36,11 @@ implementation
 
 uses UnitKgsdumMainForm, windows, sysutils, errors,
     FireDAC.Comp.Client, UnitFormProperties, UnitFormLastParty, UnitKgsdumData,
-    stringutils;
+    stringutils, UnitFormJournal;
 
 type
     TWorkThread = class(TThread)
-        FProc: TWorkProcedure;
+        FWorks: TWorks;
         procedure Execute; override;
     end;
 
@@ -42,25 +48,11 @@ var
     _flag_running, _flag_canceled: longint;
     _hComportProducts, _hComportTermo: THandle;
     _thread: TWorkThread;
-    _work: string;
 
-procedure AddWorkLog(ALevel: TLogLevel; AText: string);
+constructor TWork.Create(AName: string; AProc: TWorkProcedure);
 begin
-    FormConsole.AddLine(ALevel, _work, AText);
-
-    with TFDQuery.Create(nil) do
-    begin
-        Connection := KgsdumData.ConnJournal;
-        SQL.Text := 'INSERT INTO entry(work_id, created_at, level, message) VALUES ' +
-          '((SELECT * FROM last_work_id), :created_at, :level, :message)';
-        ParamByName('level').Value := integer(ALevel);
-        ParamByName('created_at').Value := now;
-        ParamByName('message').Value := AText;
-
-        ExecSQL;
-        Close;
-        Free;
-    end;
+    Name := AName;
+    Proc := AProc;
 end;
 
 procedure Synchronize(p: TThreadProcedure);
@@ -119,26 +111,13 @@ begin
     result := AtomicIncrement(_flag_running, 0) = 1;
 end;
 
-procedure RunWork(what: string; proc: TWorkProcedure);
+procedure RunWorks(works: TWorks);
 begin
     if IsWorkRunning then
         raise Exception.Create('already running');
-    _work := what;
-
-    with TFDQuery.Create(nil) do
-    begin
-        Connection := KgsdumData.ConnJournal;
-        SQL.Text := 'INSERT INTO work(name) VALUES (:work);';
-        ParamByName('work').Value := what;
-        ExecSQL;
-        Close;
-        Free;
-    end;
-    AddWorkLog(loglevInfo, 'начало выполнения');
-    KgsdumMainForm.LabelStatusTop.Caption := what;
     _thread := TWorkThread.Create(true);
     _thread.FreeOnTerminate := true;
-    _thread.FProc := proc;
+    _thread.FWorks := works;
     _thread.Start;
 
 end;
@@ -153,12 +132,24 @@ begin
 end;
 
 procedure TWorkThread.Execute;
+var
+    work: TWork;
 begin
     AtomicExchange(_flag_running, 1);
     AtomicExchange(_flag_canceled, 0);
     Synchronize(KgsdumMainForm.OnStartWork);
     try
-        FProc;
+        for work in FWorks do
+        begin
+            if AtomicIncrement(_flag_canceled, 0) = 1 then
+                raise EAbort.Create('выполнение прервано');
+            Synchronize(
+                procedure
+                begin
+                    KgsdumMainForm.NewWork(work.Name);
+                end);
+            work.Proc();
+        end;
     except
         on e: EAbort do
         begin
@@ -166,7 +157,7 @@ begin
             Synchronize(
                 procedure
                 begin
-                    AddWorkLog(loglevWarn, 'выполнение прервано');
+                    FormJournal.NewEntry(loglevWarn, 'выполнение прервано');
                 end);
 
         end;
@@ -176,24 +167,17 @@ begin
                 procedure
                 begin
                     KgsdumMainForm.AppException(nil, e);
-                    AddWorkLog(loglevError, format('%s, %s',
+                    FormJournal.NewEntry(loglevError, format('%s, %s',
                       [e.ClassName, e.Message]));
                 end);
         end;
     end;
 
-    Synchronize(
-        procedure
-        begin
-            KgsdumMainForm.OnStopWork;
-            AddWorkLog(loglevInfo, 'выполнено');
-        end);
+    Synchronize(KgsdumMainForm.OnStopWork);
 
     CloseComport(_hComportProducts);
     CloseComport(_hComportTermo);
     AtomicExchange(_flag_running, 0);
-    _work := '';
-
 end;
 
 procedure _do_each_product1(func: TProductProcedure);
@@ -229,7 +213,7 @@ begin
                     begin
                         FormLastParty.SetProductConnectionError(p.FPlace,
                           e.Message);
-                        AddWorkLog(loglevError, format('%s: %s %s',
+                        FormJournal.NewEntry(loglevError, format('%s: %s %s',
                           [p.FormatID, e.ClassName, e.Message]));
                     end);
 
@@ -241,8 +225,8 @@ begin
                     begin
                         FormLastParty.SetProductConnectionError(p.FPlace,
                           'не отвечает');
-                        AddWorkLog(loglevError, format('%s: не отвечает',
-                          [p.FormatID]));
+                        FormJournal.NewEntry(loglevError,
+                          format('%s: не отвечает', [p.FormatID]));
                     end);
             end;
         end;
@@ -264,29 +248,12 @@ begin
 
 end;
 
-procedure AddComportLog(AComport: string; ARequest, AResponse: TBytes;
-millis, attempt: Integer);
-var
-    s: string;
-begin
-    s := AComport + ' : ' + BytesToHex(ARequest);
-    if length(AResponse) > 0 then
-        s := s + ' --> ' + BytesToHex(ARequest);
-
-    s := s + ' ' + Inttostr(millis) + ' мс';
-
-    if attempt > 1 then
-        s := s + ' (' + Inttostr(attempt) + ')';
-    AddWorkLog(loglevDebug, s);
-end;
-
 initialization
 
 _thread := nil;
 _flag_running := 0;
 _hComportProducts := INVALID_HANDLE_VALUE;
 _hComportTermo := INVALID_HANDLE_VALUE;
-_work := '';
 
 ComportProductsConfig := TConfigGetResponse.Create(500, 30, 2);
 ComportGasConfig := TConfigGetResponse.Create(500, 30, 2);
@@ -299,6 +266,7 @@ comport.SetcomportLogHook(
             procedure
             var
                 comport: string;
+                s: string;
             begin
                 comport := 'COM?';
                 if r.HComport = _hComportProducts then
@@ -306,8 +274,17 @@ comport.SetcomportLogHook(
                 else if r.HComport = _hComportTermo then
                     comport := FormProperties.ComportTermo.Value +
                       '-термокамера';
-                AddComportLog(comport, r.Request, r.Response, r.millis,
-                  r.attempt);
+
+                s := comport + ' : ' + BytesToHex(r.Request);
+                if length(r.Response) > 0 then
+                    s := s + ' --> ' + BytesToHex(r.Request);
+
+                s := s + ' ' + Inttostr(r.millis) + ' мс';
+
+                if r.attempt > 1 then
+                    s := s + ' (' + Inttostr(r.attempt) + ')';
+
+                FormJournal.NewEntry(loglevDebug, s);
             end);
     end);
 

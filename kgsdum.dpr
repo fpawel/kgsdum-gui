@@ -23,7 +23,8 @@ uses
   modbus in 'hardware\modbus.pas',
   UnitFormConsole in 'UnitFormConsole.pas' {FormConsole},
   richeditutils in 'utils\richeditutils.pas',
-  UnitFormJournal in 'UnitFormJournal.pas' {FormJournal};
+  UnitFormJournal in 'UnitFormJournal.pas' {FormJournal},
+  bcd in 'hardware\bcd.pas';
 
 {$R *.res}
 

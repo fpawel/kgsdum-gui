@@ -11,11 +11,8 @@ uses
 
 type
     TKgsdumMainForm = class(TForm)
-        PageControlMain: TPageControl;
-        TabSheetParty: TTabSheet;
-        TabSheetJournal: TTabSheet;
         ImageList4: TImageList;
-        Panel3: TPanel;
+    PanelTop: TPanel;
         LabelStatusTop: TLabel;
         ToolBar1: TToolBar;
         ToolButtonRun: TToolButton;
@@ -34,14 +31,11 @@ type
         ToolButton2: TToolButton;
         ToolBar4: TToolBar;
         ToolButton5: TToolButton;
-        TabSheetConsole: TTabSheet;
-        procedure PageControlMainDrawTab(Control: TCustomTabControl;
-          TabIndex: Integer; const Rect: TRect; Active: Boolean);
-        procedure PageControlMainChange(Sender: TObject);
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
         procedure ToolButton2Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
     private
         { Private declarations }
     public
@@ -50,6 +44,7 @@ type
         procedure AppException(Sender: TObject; E: Exception);
         procedure OnStartWork;
         procedure OnStopWork;
+        procedure NewWork(work: string);
     end;
 
 var
@@ -59,9 +54,14 @@ implementation
 
 {$R *.dfm}
 
-uses JclDebug, vclutils, UnitFormLastParty, UnitKgsdumData,
+uses FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils, UnitFormLastParty,
     UnitFormSelectWorksDialog,
-    UnitFormProperties, works, run_work, UnitFormConsole;
+    UnitFormProperties, works, run_work, UnitFormConsole, UnitFormJournal;
+
+procedure TKgsdumMainForm.FormCreate(Sender: TObject);
+begin
+    LabelStatusTop.Caption := '';
+end;
 
 procedure TKgsdumMainForm.FormShow(Sender: TObject);
 begin
@@ -69,32 +69,23 @@ begin
     with FormLastParty do
     begin
         Font.Assign(self.Font);
-        Parent := TabSheetParty;
+        Parent := Self;
         BorderStyle := bsNone;
-        Align := alClient;
+        Align := alTop;
         Show;
     end;
 
-    with FormConsole do
+    with FormJournal do
     begin
         Font.Assign(self.Font);
-        Parent := TabSheetConsole;
+        Parent := Self;
         BorderStyle := bsNone;
         Align := alClient;
         Show;
     end;
 
-end;
+    PanelTop.Top := 0;
 
-procedure TKgsdumMainForm.PageControlMainChange(Sender: TObject);
-begin
-    (Sender as TPageControl).Repaint;
-end;
-
-procedure TKgsdumMainForm.PageControlMainDrawTab(Control: TCustomTabControl;
-  TabIndex: Integer; const Rect: TRect; Active: Boolean);
-begin
-    PageControl_DrawVerticalTab(Control, TabIndex, Rect, Active);
 end;
 
 procedure TKgsdumMainForm.ToolButton2Click(Sender: TObject);
@@ -189,6 +180,12 @@ begin
     end;
     ToolBarStop.Visible := false;
     LabelStatusTop.Caption := LabelStatusTop.Caption + ': выполнено';
+end;
+
+procedure TKgsdumMainForm.NewWork(work: string);
+begin
+    FormJournal.NewWork(work);
+    LabelStatusTop.Caption := work;
 
 end;
 

@@ -11,38 +11,11 @@ object KgsdumMainForm: TKgsdumMainForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 19
-  object PageControlMain: TPageControl
-    Left = 0
-    Top = 31
-    Width = 1056
-    Height = 659
-    ActivePage = TabSheetParty
-    Align = alClient
-    MultiLine = True
-    OwnerDraw = True
-    TabHeight = 100
-    TabOrder = 0
-    TabPosition = tpLeft
-    TabWidth = 50
-    OnChange = PageControlMainChange
-    OnDrawTab = PageControlMainDrawTab
-    object TabSheetParty: TTabSheet
-      Caption = #1055#1072#1088#1090#1080#1103
-      ImageIndex = 4
-    end
-    object TabSheetConsole: TTabSheet
-      Caption = #1050#1086#1085#1089#1086#1083#1100
-      ImageIndex = 2
-    end
-    object TabSheetJournal: TTabSheet
-      Caption = #1046#1091#1088#1085#1072#1083
-      ImageIndex = 1
-    end
-  end
-  object Panel3: TPanel
+  object PanelTop: TPanel
     Left = 0
     Top = 0
     Width = 1056
@@ -58,7 +31,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Font.Style = []
     ParentBackground = False
     ParentFont = False
-    TabOrder = 1
+    TabOrder = 0
     object LabelStatusTop: TLabel
       AlignWithMargins = True
       Left = 71
@@ -315,7 +288,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010A002403040514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010A0024030C0514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

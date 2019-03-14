@@ -11,6 +11,8 @@ object FormJournal: TFormJournal
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 18
   object Splitter1: TSplitter
@@ -31,13 +33,13 @@ object FormJournal: TFormJournal
     object StringGrid1: TStringGrid
       AlignWithMargins = True
       Left = 3
-      Top = 44
+      Top = 32
       Width = 243
-      Height = 253
+      Height = 265
       Align = alClient
       BorderStyle = bsNone
       ColCount = 2
-      DefaultRowHeight = 20
+      DefaultRowHeight = 22
       DefaultDrawing = False
       FixedColor = clBackground
       FixedCols = 0
@@ -49,36 +51,35 @@ object FormJournal: TFormJournal
       Font.Name = 'Tahoma'
       Font.Style = []
       GradientEndColor = clBlack
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
       ParentFont = False
       TabOrder = 0
-      ExplicitTop = 24
-      ExplicitWidth = 222
-      ExplicitHeight = 273
+      OnDrawCell = StringGrid1DrawCell
+      OnKeyDown = StringGrid1KeyDown
+      OnSelectCell = StringGrid1SelectCell
+      ExplicitLeft = 0
+      ExplicitTop = 35
       ColWidths = (
         64
         64)
-      RowHeights = (
-        20)
     end
-    object Panel2: TPanel
+    object ComboBox1: TComboBox
       Left = 0
       Top = 0
       Width = 249
-      Height = 41
+      Height = 29
       Align = alTop
-      BevelOuter = bvNone
+      Style = csOwnerDrawFixed
+      ItemHeight = 23
+      ItemIndex = 0
       TabOrder = 1
-      ExplicitLeft = 64
-      ExplicitTop = 128
-      ExplicitWidth = 185
-      object ComboBox1: TComboBox
-        Left = 10
-        Top = 8
-        Width = 135
-        Height = 26
-        TabOrder = 0
-        Text = '13.03.2019'
-      end
+      Text = '11.11.2018'
+      OnChange = ComboBox1Change
+      Items.Strings = (
+        '11.11.2018')
+      ExplicitLeft = 56
+      ExplicitTop = 120
+      ExplicitWidth = 129
     end
   end
 end

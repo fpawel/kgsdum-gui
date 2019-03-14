@@ -433,6 +433,7 @@ begin
               IncHour(FCreatedAt, 3))]);
     FProducts := GetLastPartyProducts;
     reset_products;
+    Height := StringGrid1.DefaultRowHeight * (Length(FProducts) + 1) + 50;
 end;
 
 function TFormLastParty.GetProductValue(ColumnIndex, RowIndex: Integer): string;

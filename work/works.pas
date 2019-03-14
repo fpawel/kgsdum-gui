@@ -13,12 +13,15 @@ procedure RunReadCoefficients(ACoefficient: byte);
 implementation
 
 uses sysutils, comport, UnitFormProperties, kgs, UnitFormLastParty,
-    classes, windows, run_work, errors, UnitFormConsole;
+    classes, windows, run_work, errors, UnitFormJournal;
 
 
+procedure RunWork(AName:string; AWork:TWorkProcedure);
+begin
+    RunWorks([TWork.Create(AName, AWork)]);
+end;
 
-
-function ReadProductConc(p: TProduct; w: TComportWorker; log: boolean): double;
+function ReadProductConc(p: TProduct; w: TComportWorker): double;
 var
     v: double;
 begin
@@ -27,9 +30,8 @@ begin
         procedure
         begin
             FormLastParty.SetProductConc(p.FPlace, v);
-            if log then
-                AddWorkLog(loglevInfo, Format('%s: конц.=%s',
-                  [p.FormatID, 72, floattostr(v)]));
+            FormJournal.NewEntry(loglevInfo, Format('%s: конц.=%s',
+                  [p.FormatID, floattostr(v)]));
 
         end);
 end;
@@ -45,13 +47,13 @@ begin
             if FormLastParty.FindProductWithAddr(addr,
                 procedure(p: TProduct)
                 begin
-                    AddworkLog(loglevInfo,
+                    FormJournal.NewEntry(loglevInfo,
                       Format('%s: var%d=%s', [p.FormatID, AVar,
                       floattostr(v)]));
 
                 end) then
                 exit;
-            AddworkLog(loglevInfo,
+            FormJournal.NewEntry(loglevInfo,
             Format('адр.%d: var%d=%s',
               [addr, AVar, floattostr(v)]));
         end);
@@ -68,13 +70,13 @@ begin
             if FormLastParty.FindProductWithAddr(addr,
                 procedure(p: TProduct)
                 begin
-                    AddworkLog(loglevInfo,
+                    FormJournal.NewEntry(loglevInfo,
                       Format('%s: коэф.%d=%s', [p.FormatID, ACoefficient,
                       floattostr(v)]));
 
                 end) then
                 exit;
-            AddworkLog(loglevInfo,
+            FormJournal.NewEntry(loglevInfo,
                 Format('адр.%d: коэф.%d=%s',
               [addr, ACoefficient, floattostr(v)]));
         end);
@@ -90,7 +92,7 @@ begin
                 DoEachProduct(
                     procedure(p: TProduct)
                     begin
-                        ReadProductConc(p, ComportProductsWorker, false);
+                        ReadProductConc(p, ComportProductsWorker);
                     end);
             end;
         end);

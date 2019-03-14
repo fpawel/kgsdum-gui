@@ -7,17 +7,11 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
     Vcl.Samples.Spin, Vcl.ToolWin, System.ImageList, Vcl.ImgList, Vcl.ExtCtrls,
-    Vcl.Grids;
+    Vcl.Grids, data_model;
 
 type
 
-    TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError);
-
-    TLogEntry = record
-        Time: TDateTime;
-        Level: TLogLevel;
-        Work, Text: string;
-    end;
+    
 
     TFormConsole = class(TForm)
         ImageList4: TImageList;
@@ -32,12 +26,14 @@ type
     private
         { Private declarations }
         FEntries: TArray<TLogEntry>;
+        
 
     public
         { Public declarations }
-        procedure AddComportMessage(AWork, AComport: string;
+        procedure AddComportMessage( AComport: string;
           ARequest, AResponse: TBytes; millis, attempt: Integer);
-        procedure AddLine(ALevel: TLogLevel; AWork, AText: string);
+        procedure NewLine(ACreatedAt:TDatetime; ALevel: data_model.TLogLevel; AWork, AText: string);
+        procedure Clear;
     end;
 
 var
@@ -45,13 +41,16 @@ var
 
 implementation
 
-uses Rest.Json, dateutils, richeditutils, stringutils, stringgridutils;
+uses FireDAC.Comp.Client, Rest.Json, dateutils, richeditutils, stringutils,
+    stringgridutils,
+    UnitKgsdumData, comport;
 
 {$R *.dfm}
 
 procedure TFormConsole.FormCreate(Sender: TObject);
 begin
     SetLength(FEntries, 1);
+   
 
 end;
 
@@ -121,27 +120,38 @@ begin
 
 end;
 
-procedure TFormConsole.AddLine(ALevel: TLogLevel; AWork, AText: string);
+procedure TFormConsole.Clear;
+begin
+    with StringGrid1 do
+    begin
+        Rowcount := 1;
+        Cells[0,0] := '';
+        Cells[1,0] := '';
+    end;
+    SetLength(FEntries, 1);
+end;
+
+procedure TFormConsole.NewLine(ACreatedAt:TDatetime;  ALevel: data_model.TLogLevel; AWork, AText: string);
 begin
     SetLength(FEntries, Length(FEntries) + 1);
     with FEntries[Length(FEntries) - 2] do
     begin
-        Level := ALevel;
         Work := AWork;
+        Level := ALevel;
         Text := AText;
-        Time := now;
+        Time := ACreatedAt;
     end;
 
     with StringGrid1 do
     begin
-        Row := RowCount - 1;
-        Cells[0, RowCount - 1] := formatDatetime('hh:mm:ss', now);
+        Cells[0, RowCount - 1] := formatDatetime('hh:mm:ss', ACreatedAt);
         Cells[1, RowCount - 1] := AWork + ': ' + AText;
         RowCount := RowCount + 1;
     end;
 end;
 
-procedure TFormConsole.AddComportMessage(AWork, AComport: string;
+
+procedure TFormConsole.AddComportMessage( AComport: string;
   ARequest, AResponse: TBytes; millis, attempt: Integer);
 var
     s: string;
@@ -154,7 +164,7 @@ begin
 
     if attempt > 1 then
         s := s + ' (' + Inttostr(attempt) + ')';
-    AddLine(loglevDebug, AWork, s);
+    //NewEntry(loglevDebug, s);
 end;
 
 end.

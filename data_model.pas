@@ -51,6 +51,21 @@ type
 
     end;
 
+    TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError);
+
+    TLogEntry = record
+        Time: TDateTime;
+        Level: TLogLevel;
+        Work, Text: string;
+    end;
+
+    TWorkEntryInfo = record
+        WorkID: longint;
+        CreatedAt: TDateTime;
+        Name: string;
+        ErrorOccurred: boolean;
+    end;
+
 function ProductColumnWidth(column: TProductField; canvas: TCanvas;
   prods: TArray<TProduct>; err_det: TErrorDetail): integer;
 
