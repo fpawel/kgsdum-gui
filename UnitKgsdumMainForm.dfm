@@ -37,11 +37,12 @@ object KgsdumMainForm: TKgsdumMainForm
       Left = 71
       Top = 5
       Width = 100
-      Height = 18
+      Height = 23
       Margins.Left = 5
       Margins.Top = 5
       Align = alLeft
       Caption = 'LabelStatusTop'
+      ExplicitHeight = 18
     end
     object ToolBar1: TToolBar
       Left = 0
@@ -120,7 +121,7 @@ object KgsdumMainForm: TKgsdumMainForm
         Left = 5
         Top = 3
         Width = 58
-        Height = 18
+        Height = 25
         Margins.Left = 5
         Margins.Right = 5
         Align = alLeft
@@ -132,13 +133,14 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
+        ExplicitHeight = 18
       end
       object LabelProgress: TLabel
         AlignWithMargins = True
         Left = 712
         Top = 3
         Width = 31
-        Height = 18
+        Height = 25
         Margins.Left = 5
         Margins.Right = 5
         Align = alRight
@@ -150,13 +152,14 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
+        ExplicitHeight = 18
       end
       object LabelWhat: TLabel
         AlignWithMargins = True
         Left = 73
         Top = 3
         Width = 23
-        Height = 18
+        Height = 25
         Margins.Left = 5
         Margins.Right = 5
         Align = alLeft
@@ -168,6 +171,7 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
+        ExplicitHeight = 18
       end
       object ToolBar6: TToolBar
         Left = 748
@@ -274,6 +278,25 @@ object KgsdumMainForm: TKgsdumMainForm
       end
     end
   end
+  object Panel1: TPanel
+    Left = 0
+    Top = 31
+    Width = 1056
+    Height = 31
+    Align = alTop
+    Alignment = taLeftJustify
+    BevelOuter = bvNone
+    Caption = '        '#1046#1091#1088#1085#1072#1083
+    Color = clGradientInactiveCaption
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -15
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentBackground = False
+    ParentFont = False
+    TabOrder = 1
+  end
   object ImageList4: TImageList
     ColorDepth = cd32Bit
     BlendColor = clWindow
@@ -284,7 +307,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010A002403100514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010A002403180514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

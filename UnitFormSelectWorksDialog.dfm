@@ -22,7 +22,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     Top = 0
     Width = 513
     Height = 249
-    ActivePage = TabSheet2
+    ActivePage = TabSheet3
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = #1057#1094#1077#1085#1072#1088#1080#1081
@@ -205,54 +205,67 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         Height = 35
         Caption = #1042#1099#1082#1083#1102#1095#1080#1090#1100
         TabOrder = 0
+        OnClick = Button6Click
       end
       object Button6: TButton
-        Left = 274
+        Tag = 1
+        Left = 273
         Top = 13
         Width = 105
         Height = 35
         Caption = #1050#1083#1072#1087#1072#1085' 1'
         TabOrder = 1
+        OnClick = Button6Click
       end
       object Button7: TButton
+        Tag = 3
         Left = 273
         Top = 54
         Width = 105
         Height = 35
         Caption = #1050#1083#1072#1087#1072#1085' 3'
         TabOrder = 2
+        OnClick = Button6Click
       end
       object Button8: TButton
+        Tag = 4
         Left = 384
         Top = 54
         Width = 105
         Height = 35
         Caption = #1050#1083#1072#1087#1072#1085' 4'
         TabOrder = 3
+        OnClick = Button6Click
       end
       object Button9: TButton
+        Tag = 2
         Left = 385
         Top = 13
         Width = 105
         Height = 35
         Caption = #1050#1083#1072#1087#1072#1085' 2'
         TabOrder = 4
+        OnClick = Button6Click
       end
       object Button10: TButton
+        Tag = 5
         Left = 273
         Top = 95
         Width = 105
         Height = 35
         Caption = #1050#1083#1072#1087#1072#1085' 5'
         TabOrder = 5
+        OnClick = Button6Click
       end
       object Button15: TButton
+        Tag = 6
         Left = 384
         Top = 95
         Width = 105
         Height = 35
         Caption = #1050#1083#1072#1087#1072#1085' 6'
         TabOrder = 6
+        OnClick = Button6Click
       end
     end
     object TabSheet4: TTabSheet

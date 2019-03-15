@@ -28,7 +28,7 @@ function KgsReadVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
 
 implementation
 
-uses bcd, math, sysutils, stringutils, errors;
+uses bcd, math, sysutils, stringutils, hardware_errors;
 
 type
     KgsRequest = record

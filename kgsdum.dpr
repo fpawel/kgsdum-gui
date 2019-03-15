@@ -14,7 +14,7 @@ uses
   kgs in 'hardware\kgs.pas',
   UnitFormSelectWorksDialog in 'UnitFormSelectWorksDialog.pas' {FormSelectWorksDialog},
   run_work in 'work\run_work.pas',
-  errors in 'errors.pas',
+  hardware_errors in 'hardware\hardware_errors.pas',
   works in 'work\works.pas',
   PropertyValueEditors in 'settings\PropertyValueEditors.pas',
   UnitFormProperties in 'settings\UnitFormProperties.pas' {FormProperties},
@@ -24,7 +24,8 @@ uses
   UnitFormConsole in 'UnitFormConsole.pas' {FormConsole},
   richeditutils in 'utils\richeditutils.pas',
   UnitFormJournal in 'UnitFormJournal.pas' {FormJournal},
-  bcd in 'hardware\bcd.pas';
+  bcd in 'hardware\bcd.pas',
+  termo in 'hardware\termo.pas';
 
 {$R *.res}
 

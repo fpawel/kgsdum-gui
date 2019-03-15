@@ -31,6 +31,7 @@ type
         ToolButton2: TToolButton;
         ToolBar4: TToolBar;
         ToolButton5: TToolButton;
+        Panel1: TPanel;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
@@ -46,6 +47,9 @@ type
         procedure OnStartWork;
         procedure OnStopWork;
         procedure NewWork(work: string);
+
+        function ErrorMessageBox(AMsg: string): boolean;
+
     end;
 
 var
@@ -86,6 +90,7 @@ begin
     end;
 
     PanelTop.Top := 0;
+    Panel1.Top := 100500;
 
 end;
 
@@ -152,13 +157,15 @@ begin
 
     CloseFile(FErrorLog);
 
-    FormJournal.NewExceptionEntry(e.ClassName + ': '+e.Message + ': '+stacktrace);
+    FormJournal.NewExceptionEntry(E.ClassName + ': ' + E.Message + ': ' +
+      stacktrace);
 
-    if MessageDlg(E.Message, mtError, [mbAbort, mbIgnore], 0) = mrAbort then
+    if not ErrorMessageBox(E.Message +
+      #10#13#10#13'Ignore - продолжить работу'#10#13#10#13'Abort - выйти из приложения')
+    then
     begin
         Application.OnException := nil;
         Application.Terminate;
-        exit;
     end;
 end;
 
@@ -204,6 +211,11 @@ procedure TKgsdumMainForm.NewWork(work: string);
 begin
     FormJournal.NewWork(work);
     LabelStatusTop.Caption := work;
+end;
+
+function TKgsdumMainForm.ErrorMessageBox(AMsg: string): boolean;
+begin
+    result := MessageDlg(AMsg, mtError, [mbAbort, mbIgnore], 0) = mrIgnore;
 
 end;
 

@@ -30,6 +30,8 @@ type
         FWorks: TArray<TWorkEntryInfo>;
         FCurrentWork: string;
         FCurrentWorkID: longint;
+
+        procedure _DoNewWork(work: string);
     public
         { Public declarations }
         procedure fetch_days;
@@ -218,6 +220,12 @@ begin
     combobox_date := StrToDate(ComboBox1.Text);
     StringGrid1.RowCount := 1;
     SetLength(FWorks, 1);
+    with FWorks[0] do
+    begin
+        WorkID := 0;
+        Name := '';
+        ErrorOccurred := false;
+    end;
 
     with TFDQuery.Create(nil) do
     begin
@@ -307,14 +315,8 @@ begin
     end;
 end;
 
-procedure TFormJournal.NewWork(work: string);
+procedure TFormJournal._DoNewWork(work: string);
 begin
-    FCurrentWork := work;
-    FCurrentWorkID := 0;
-
-    if FCurrentWork = 'опрос' then
-        exit;
-
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnJournal;
@@ -356,6 +358,15 @@ begin
         Cells[1, RowCount - 1] := work;
     end;
 
+end;
+
+procedure TFormJournal.NewWork(work: string);
+begin
+    FCurrentWork := work;
+    FCurrentWorkID := 0;
+    if FCurrentWork = 'опрос' then
+        exit;
+    _DoNewWork(work);
     NewEntry(loglevInfo, 'начало выполнения');
 end;
 
@@ -394,29 +405,8 @@ end;
 
 procedure TFormJournal.NewExceptionEntry(AText: string);
 begin
-    with TFDQuery.Create(nil) do
-    begin
-        Connection := KgsdumData.ConnJournal;
-
-        SQL.Text :=
-          'INSERT INTO work(name, created_at) VALUES (''Исключителная ситуация'', :created_at );';
-        ParamByName('created_at').Value := now;
-
-        ExecSQL;
-
-        SQL.Text :=
-          'INSERT INTO entry(work_id, created_at, level, message) VALUES ' +
-          '((SELECT work_id FROM last_work), :created_at, :level, :message)';
-
-        ParamByName('level').Value := loglevException;
-        ParamByName('created_at').Value := now;
-        ParamByName('message').Value := AText;
-
-        ExecSQL;
-
-        Close;
-        Free;
-    end;
+    _DoNewWork('Исключителная ситуация');
+    NewEntry(loglevException, AText);
 
 end;
 

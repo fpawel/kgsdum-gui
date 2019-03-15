@@ -13,13 +13,8 @@ procedure RunReadCoefficients(ACoefficient: byte);
 implementation
 
 uses sysutils, comport, UnitFormProperties, kgs, UnitFormLastParty,
-    classes, windows, run_work, errors, UnitFormJournal;
+    classes, windows, run_work, hardware_errors, UnitFormJournal;
 
-
-procedure RunWork(AName:string; AWork:TWorkProcedure);
-begin
-    RunWorks([TWork.Create(AName, AWork)]);
-end;
 
 function ReadProductConc(p: TProduct; w: TComportWorker): double;
 var

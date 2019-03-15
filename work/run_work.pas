@@ -28,15 +28,21 @@ procedure Synchronize(p: TThreadProcedure); overload;
 procedure Synchronize(m: TThreadMethod); overload;
 procedure DoEachProduct(func: TProductProcedure);
 
+procedure SwitchGasBlock6006(code: byte);
+
+procedure TryWithErrorMessage(Proc: TWorkProcedure);
+
+procedure RunWork(AName: string; AWork: TWorkProcedure);
+
 var
     ComportProductsConfig, ComportGasConfig, ComportTermoConfig
       : TConfigGetResponse;
 
 implementation
 
-uses UnitKgsdumMainForm, windows, sysutils, errors,
+uses UnitKgsdumMainForm, windows, sysutils, hardware_errors,
     FireDAC.Comp.Client, UnitFormProperties, UnitFormLastParty, UnitKgsdumData,
-    stringutils, UnitFormJournal;
+    stringutils, UnitFormJournal, modbus;
 
 type
     TWorkThread = class(TThread)
@@ -74,13 +80,12 @@ procedure _on_comport_background;
 begin
     if AtomicIncrement(_flag_canceled, 0) = 1 then
         raise EAbort.Create('выполнение прервано');
-    sleep(10);
 end;
 
 function ComportProductsWorker: TComportWorker;
 begin
-    result := TComportWorker.Create(ComportProducts,
-      TConfigGetResponse.Create(1000, 50, 3), _on_comport_background);
+    result := TComportWorker.Create(ComportProducts, ComportProductsConfig,
+      _on_comport_background);
 end;
 
 function ComportProducts: THandle;
@@ -109,6 +114,11 @@ end;
 function IsWorkRunning: boolean;
 begin
     result := AtomicIncrement(_flag_running, 0) = 1;
+end;
+
+procedure RunWork(AName: string; AWork: TWorkProcedure);
+begin
+    RunWorks([TWork.Create(AName, AWork)]);
 end;
 
 procedure RunWorks(works: TWorks);
@@ -167,8 +177,8 @@ begin
                 procedure
                 begin
                     KgsdumMainForm.AppException(nil, e);
-//                    FormJournal.NewEntry(loglevError, format('%s, %s',
-//                      [e.ClassName, e.Message]));
+                    // FormJournal.NewEntry(loglevError, format('%s, %s',
+                    // [e.ClassName, e.Message]));
                 end);
         end;
     end;
@@ -206,28 +216,17 @@ begin
         try
             func(p);
         except
-            on e: EBadResponse do
+            on e: EHardwareError do
             begin
                 Synchronize(
                     procedure
                     begin
                         FormLastParty.SetProductConnectionError(p.FPlace,
                           e.Message);
-                        FormJournal.NewEntry(loglevError, format('%s: %s %s',
+                        FormJournal.NewEntry(loglevError, format('%s: %s, %s',
                           [p.FormatID, e.ClassName, e.Message]));
                     end);
 
-            end;
-            on e: EDeadlineExceeded do
-            begin
-                Synchronize(
-                    procedure
-                    begin
-                        FormLastParty.SetProductConnectionError(p.FPlace,
-                          'не отвечает');
-                        FormJournal.NewEntry(loglevError,
-                          format('%s: не отвечает', [p.FormatID]));
-                    end);
             end;
         end;
     end;
@@ -245,7 +244,67 @@ begin
                 FormLastParty.SetProductInterrogate(-1);
             end);
     end;
+end;
 
+procedure SwitchGasBlock6006(code: byte);
+begin
+    try
+        modbus.GetResponse($20, $10, [0, $10, 0, 1, 2, 0, code],
+          TComportWorker.Create(ComportProducts, ComportGasConfig,
+          _on_comport_background),
+            procedure(_: TBytes)
+            begin
+            end);
+
+    except
+        on e: EHardwareError do
+        begin
+            e.Message := 'газовый блок: ' + e.Message;
+            raise;
+        end;
+    end;
+
+    Synchronize(
+        procedure
+        begin
+            FormJournal.NewEntry(loglevInfo, '√азовый блок 6006: ' +
+              IntToStr(code));
+        end);
+end;
+
+function _message_box(AMsg: string): boolean;
+var
+    v: boolean;
+begin
+    Synchronize(
+        procedure
+        begin
+            v := KgsdumMainForm.ErrorMessageBox(AMsg);
+        end);
+    result := v;
+
+end;
+
+procedure TryWithErrorMessage(Proc: TWorkProcedure);
+var
+    _continue: boolean;
+begin
+    try
+        Proc();
+    except
+        on e: EHardwareError do
+        begin
+            Synchronize(
+                procedure
+                begin
+                    _continue := KgsdumMainForm.ErrorMessageBox
+                      (format('Ќет св€зи с оборудованием: %s, %s'#10#13#10#13 +
+                      'Ignore - продолжить выполнение настройки'#10#13#10#13 +
+                      'Abort - прекратить настройку', [e.ClassName,
+                      e.Message]));
+                end);
+        end;
+    end
 end;
 
 initialization
@@ -279,10 +338,10 @@ comport.SetcomportLogHook(
                 if length(r.Response) > 0 then
                     s := s + ' --> ' + BytesToHex(r.Request);
 
-                s := s + ' ' + Inttostr(r.millis) + ' мс';
+                s := s + ' ' + IntToStr(r.millis) + ' мс';
 
                 if r.attempt > 1 then
-                    s := s + ' (' + Inttostr(r.attempt) + ')';
+                    s := s + ' (' + IntToStr(r.attempt) + ')';
 
                 FormJournal.NewEntry(loglevDebug, s);
             end);

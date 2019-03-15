@@ -56,7 +56,7 @@ function GetResponse(request: TBytes; w: TComportWorker;
 
 implementation
 
-uses registry, windows, stringutils, errors;
+uses registry, windows, stringutils, hardware_errors;
 
 var _logHook : TComportLogHook;
 
@@ -212,6 +212,7 @@ begin
     begin
 
         w.BackgroundWork();
+        Sleep(5);
 
         if not ClearCommError(w.HComport, commErrors, @commStat) then
             raise EComportError.Create(SysErrorMessage(GetLastError));
@@ -230,6 +231,7 @@ begin
         begin
 
             w.BackgroundWork();
+            Sleep(5);
 
             if not ClearCommError(w.HComport, commErrors, @commStat) then
                 raise EComportError.Create(SysErrorMessage(GetLastError));

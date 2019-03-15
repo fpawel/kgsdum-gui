@@ -8,7 +8,7 @@ uses
   Winapi.Windows,
   comport in 'hardware\comport.pas',
   stringutils in 'utils\stringutils.pas',
-  errors in 'errors.pas',
+  hardware_errors in 'hardware\hardware_errors.pas',
   kgs in 'hardware\kgs.pas';
 
 var

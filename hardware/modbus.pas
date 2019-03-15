@@ -14,7 +14,7 @@ function Read3(addr: byte; AVar: word; w: TComportWorker): double;
 
 implementation
 
-uses errors, sysutils, stringutils, bcd;
+uses hardware_errors, sysutils, stringutils, bcd;
 
 type
     TModbusRequest = record

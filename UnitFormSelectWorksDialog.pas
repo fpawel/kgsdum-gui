@@ -47,6 +47,7 @@ type
     procedure FormDeactivate(Sender: TObject);
     procedure Button16Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -60,7 +61,7 @@ implementation
 
 {$R *.dfm}
 
-uses works;
+uses works, run_work;
 
 procedure TFormSelectWorksDialog.Button16Click(Sender: TObject);
 begin
@@ -82,6 +83,15 @@ begin
         else
             RunReadCoefficient(StrToInt(EditVar.Text), StrToInt(EditVar.Text));
     end
+end;
+
+procedure TFormSelectWorksDialog.Button6Click(Sender: TObject);
+begin
+    RunWork('Газовый блок: '+IntTostr((Sender as TComponent ).Tag),
+        procedure
+        begin
+            SwitchGasBlock6006((Sender as TComponent ).Tag);
+        end);
 end;
 
 procedure TFormSelectWorksDialog.FormCreate(Sender: TObject);
