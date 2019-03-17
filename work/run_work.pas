@@ -2,9 +2,11 @@ unit run_work;
 
 interface
 
-uses comport, Classes, data_model;
+uses comport, Classes, data_model, sysutils;
 
 type
+    EConfigError = class (Exception);
+
     TWorkProcedure = reference to procedure;
 
     TWork = record
@@ -33,6 +35,9 @@ procedure SwitchGasBlock6006(code: byte);
 procedure TryWithErrorMessage(Proc: TWorkProcedure);
 
 procedure RunWork(AName: string; AWork: TWorkProcedure);
+procedure NewWorkLogEntry(ALevel: TLogLevel; AText: string);
+
+function CurrentWorksCount: integer;
 
 var
     ComportProductsConfig, ComportGasConfig, ComportTermoConfig
@@ -40,13 +45,14 @@ var
 
 implementation
 
-uses UnitKgsdumMainForm, windows, sysutils, hardware_errors,
+uses UnitKgsdumMainForm, windows, hardware_errors,
     FireDAC.Comp.Client, UnitFormProperties, UnitFormLastParty, UnitKgsdumData,
-    stringutils, UnitFormJournal, modbus;
+    stringutils, UnitFormJournal, modbus, UnitFormConsole;
 
 type
     TWorkThread = class(TThread)
         FWorks: TWorks;
+        FWork: TWork;
         procedure Execute; override;
     end;
 
@@ -124,7 +130,7 @@ end;
 procedure RunWorks(works: TWorks);
 begin
     if IsWorkRunning then
-        raise Exception.Create('already running');
+        raise EConfigError.Create('already running');
     _thread := TWorkThread.Create(true);
     _thread.FreeOnTerminate := true;
     _thread.FWorks := works;
@@ -141,44 +147,76 @@ begin
     end;
 end;
 
+function CurrentWorksCount: integer;
+begin
+    result := length(_thread.FWorks);
+
+end;
+
+procedure NewWorkLogEntry(ALevel: TLogLevel; AText: string);
+begin
+    _thread.Synchronize(
+        procedure
+        begin
+            if CurrentWorksCount > 1 then
+            begin
+                FormJournal.NewEntry(ALevel, AText);
+                FormConsole.NewLine(now, ALevel, _thread.FWork.Name, AText)
+            end
+            else
+                FormConsole.NewLine(now, ALevel, '', AText);
+            with FormConsole.StringGrid1 do
+                Row := RowCount - 1;
+
+        end);
+
+end;
+
 procedure TWorkThread.Execute;
 var
-    work: TWork;
+    AWork: TWork;
 begin
     AtomicExchange(_flag_running, 1);
     AtomicExchange(_flag_canceled, 0);
     Synchronize(KgsdumMainForm.OnStartWork);
     try
-        for work in FWorks do
+        for AWork in FWorks do
         begin
             if AtomicIncrement(_flag_canceled, 0) = 1 then
                 raise EAbort.Create('выполнение прервано');
+            FWork := AWork;
             Synchronize(
                 procedure
                 begin
-                    KgsdumMainForm.NewWork(work.Name);
+                    KgsdumMainForm.NewWork(FWork.Name);
+                    if length(FWorks) > 1 then
+                        FormJournal.NewWork(FWork.Name);
                 end);
-            work.Proc();
+            FWork.Proc();
         end;
     except
+
         on e: EAbort do
+            NewWorkLogEntry(loglevWarn, 'выполнение перрвано');
+
+
+        on e: EHardwareError do
         begin
-            // if _work <> 'опрос' then
+            NewWorkLogEntry(loglevError, e.ClassName + ': ' + e.Message);
             Synchronize(
                 procedure
                 begin
-                    FormJournal.NewEntry(loglevWarn, 'выполнение прервано');
+                    KgsdumMainForm.ShowNonModalErrorMessage(e.ClassName,
+                      e.Message);
                 end);
-
         end;
+
         on e: Exception do
         begin
             Synchronize(
                 procedure
                 begin
                     KgsdumMainForm.AppException(nil, e);
-                    // FormJournal.NewEntry(loglevError, format('%s, %s',
-                    // [e.ClassName, e.Message]));
                 end);
         end;
     end;
@@ -188,6 +226,7 @@ begin
     CloseComport(_hComportProducts);
     CloseComport(_hComportTermo);
     AtomicExchange(_flag_running, 0);
+    _thread := nil;
 end;
 
 procedure _do_each_product1(func: TProductProcedure);
@@ -203,7 +242,7 @@ begin
         end);
 
     if length(Products) = 0 then
-        raise Exception.Create('нет выбранных приборов для опроса');
+        raise EConfigError.Create('не отмечено ни одного прибора в таблице');
 
     for p in Products do
     begin
@@ -216,15 +255,15 @@ begin
         try
             func(p);
         except
-            on e: EHardwareError do
+            on e: EConnectionError do
             begin
+                NewWorkLogEntry(loglevError,
+                  format('%s: %s, %s', [p.FormatID, e.ClassName, e.Message]));
                 Synchronize(
                     procedure
                     begin
                         FormLastParty.SetProductConnectionError(p.FPlace,
                           e.Message);
-                        FormJournal.NewEntry(loglevError, format('%s: %s, %s',
-                          [p.FormatID, e.ClassName, e.Message]));
                     end);
 
             end;
@@ -264,12 +303,7 @@ begin
         end;
     end;
 
-    Synchronize(
-        procedure
-        begin
-            FormJournal.NewEntry(loglevInfo, 'Газовый блок 6006: ' +
-              IntToStr(code));
-        end);
+    NewWorkLogEntry(loglevInfo, 'Газовый блок 6006: ' + IntToStr(code));
 end;
 
 function _message_box(AMsg: string): boolean;
@@ -343,7 +377,7 @@ comport.SetcomportLogHook(
                 if r.attempt > 1 then
                     s := s + ' (' + IntToStr(r.attempt) + ')';
 
-                FormJournal.NewEntry(loglevDebug, s);
+                NewWorkLogEntry(loglevDebug, s);
             end);
     end);
 

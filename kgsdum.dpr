@@ -25,7 +25,8 @@ uses
   richeditutils in 'utils\richeditutils.pas',
   UnitFormJournal in 'UnitFormJournal.pas' {FormJournal},
   bcd in 'hardware\bcd.pas',
-  termo in 'hardware\termo.pas';
+  termo in 'hardware\termo.pas',
+  UnitFormPopup in 'UnitFormPopup.pas' {FormPopup};
 
 {$R *.res}
 
@@ -39,5 +40,6 @@ begin
   Application.CreateForm(TFormProperties, FormProperties);
   Application.CreateForm(TFormConsole, FormConsole);
   Application.CreateForm(TFormJournal, FormJournal);
+  Application.CreateForm(TFormPopup, FormPopup);
   Application.Run;
 end.

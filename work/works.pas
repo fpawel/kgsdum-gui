@@ -13,20 +13,19 @@ procedure RunReadCoefficients(ACoefficient: byte);
 implementation
 
 uses sysutils, comport, UnitFormProperties, kgs, UnitFormLastParty,
-    classes, windows, run_work, hardware_errors, UnitFormJournal;
-
+    classes, windows, run_work, hardware_errors;
 
 function ReadProductConc(p: TProduct; w: TComportWorker): double;
 var
     v: double;
 begin
     v := KgsReadVar(p.FAddr, 72, w);
+    NewWorkLogEntry(loglevInfo, Format('%s: конц.=%s',
+      [p.FormatID, floattostr(v)]));
     Synchronize(
         procedure
         begin
             FormLastParty.SetProductConc(p.FPlace, v);
-            FormJournal.NewEntry(loglevInfo, Format('%s: конц.=%s',
-                  [p.FormatID, floattostr(v)]));
 
         end);
 end;
@@ -36,22 +35,15 @@ var
     v: double;
 begin
     v := KgsReadVar(addr, AVar, ComportProductsWorker);
-    Synchronize(
-        procedure
+    if FormLastParty.FindProductWithAddr(addr,
+        procedure(p: TProduct)
         begin
-            if FormLastParty.FindProductWithAddr(addr,
-                procedure(p: TProduct)
-                begin
-                    FormJournal.NewEntry(loglevInfo,
-                      Format('%s: var%d=%s', [p.FormatID, AVar,
-                      floattostr(v)]));
-
-                end) then
-                exit;
-            FormJournal.NewEntry(loglevInfo,
-            Format('адр.%d: var%d=%s',
-              [addr, AVar, floattostr(v)]));
-        end);
+            NewWorkLogEntry(loglevInfo, Format('%s: var%d=%s',
+              [p.FormatID, AVar, floattostr(v)]));
+        end) then
+        exit;
+    NewWorkLogEntry(loglevInfo, Format('адр.%d: var%d=%s',
+      [addr, AVar, floattostr(v)]));
 end;
 
 function ReadAddrCoefficient(addr: byte; ACoefficient: byte): double;
@@ -59,22 +51,15 @@ var
     v: double;
 begin
     v := KgsReadCoefficient(addr, ACoefficient, ComportProductsWorker);
-    Synchronize(
-        procedure
+    if FormLastParty.FindProductWithAddr(addr,
+        procedure(p: TProduct)
         begin
-            if FormLastParty.FindProductWithAddr(addr,
-                procedure(p: TProduct)
-                begin
-                    FormJournal.NewEntry(loglevInfo,
-                      Format('%s: коэф.%d=%s', [p.FormatID, ACoefficient,
-                      floattostr(v)]));
-
-                end) then
-                exit;
-            FormJournal.NewEntry(loglevInfo,
-                Format('адр.%d: коэф.%d=%s',
-              [addr, ACoefficient, floattostr(v)]));
-        end);
+            NewWorkLogEntry(loglevInfo, Format('%s: коэф.%d=%s',
+              [p.FormatID, ACoefficient, floattostr(v)]));
+        end) then
+        exit;
+    NewWorkLogEntry(loglevInfo, Format('адр.%d: коэф.%d=%s',
+      [addr, ACoefficient, floattostr(v)]));
 end;
 
 procedure RunInterrogate;

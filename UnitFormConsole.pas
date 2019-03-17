@@ -20,6 +20,7 @@ type
           Rect: TRect; State: TGridDrawState);
         procedure StringGrid1MouseDown(Sender: TObject; Button: TMouseButton;
           Shift: TShiftState; X, Y: Integer);
+        procedure StringGrid1DblClick(Sender: TObject);
 
     private
         { Private declarations }
@@ -41,7 +42,7 @@ implementation
 
 uses FireDAC.Comp.Client, Rest.Json, dateutils, richeditutils, stringutils,
     stringgridutils,
-    UnitKgsdumData, comport;
+    UnitKgsdumData, comport, UnitFormPopup;
 
 {$R *.dfm}
 
@@ -57,6 +58,22 @@ begin
     begin
         ColWidths[0] := 70;
         ColWidths[1] := self.Width - ColWidths[0] - 30;
+    end;
+end;
+
+procedure TFormConsole.StringGrid1DblClick(Sender: TObject);
+var
+    r: TRect;
+    pt: TPoint;
+begin
+    with StringGrid1 do
+    begin
+        FormPopup.RichEdit1.Text := Cells[1, Row];
+        r := CellRect(Col, Row);
+        pt := StringGrid1.ClientToScreen(r.TopLeft);
+        FormPopup.Left := pt.X + 5;
+        FormPopup.Top := pt.Y + 5;
+        FormPopup.Show;
     end;
 end;
 
@@ -93,13 +110,9 @@ begin
                         cnv.Font.Color := clNavy;
                     loglevWarn:
                         cnv.Font.Color := clMaroon;
-                    loglevError:
+                    loglevError, loglevException:
                         cnv.Font.Color := clRed;
-                    loglevException:
-                        begin
-                            cnv.Font.Color := clYellow;
-                            cnv.Brush.Color := clBlack;
-                        end;
+
                 end;
             end;
 
@@ -148,7 +161,10 @@ begin
     with StringGrid1 do
     begin
         Cells[0, Rowcount - 1] := formatDatetime('hh:mm:ss', ACreatedAt);
-        Cells[1, Rowcount - 1] := AWork + ': ' + AText;
+        if AWork <> '' then
+            Cells[1, Rowcount - 1] := AWork + ': ' + AText
+        else
+            Cells[1, Rowcount - 1] := AText;
         Rowcount := Rowcount + 1;
         Cells[0, Rowcount - 1] := '';
         Cells[1, Rowcount - 1] := '';

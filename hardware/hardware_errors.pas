@@ -6,8 +6,9 @@ uses sysutils;
 
 type
     EHardwareError = class(Exception);
-    EBadResponse = class(EHardwareError);
-    EDeadlineExceeded = class(EHardwareError);
+    EConnectionError = class(EHardwareError);
+    EBadResponse = class(EConnectionError);
+    EDeadlineExceeded = class(EConnectionError);
 
 implementation
 

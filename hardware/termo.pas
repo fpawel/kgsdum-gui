@@ -6,7 +6,7 @@ uses comport, data_model;
 
 implementation
 
-uses hardware_errors, sysutils, StrUtils, UnitFormJournal, run_work;
+uses hardware_errors, sysutils, StrUtils, run_work;
 
 const
     reqStart = '01WRD,01,0101,0001';

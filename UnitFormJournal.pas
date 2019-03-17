@@ -14,7 +14,8 @@ type
         Panel1: TPanel;
         StringGrid1: TStringGrid;
         Splitter1: TSplitter;
-        ComboBox1: TComboBox;
+    Panel3: TPanel;
+    ComboBox1: TComboBox;
         procedure Panel1Resize(Sender: TObject);
         procedure FormShow(Sender: TObject);
         procedure FormCreate(Sender: TObject);
@@ -28,8 +29,8 @@ type
     private
         { Private declarations }
         FWorks: TArray<TWorkEntryInfo>;
-        FCurrentWork: string;
-        FCurrentWorkID: longint;
+//        FCurrentWork: string;
+//        FCurrentWorkID: longint;
 
         procedure _DoNewWork(work: string);
     public
@@ -38,7 +39,7 @@ type
         procedure NewWork(work: string);
         procedure NewEntry(ALevel: data_model.TLogLevel; AText: string);
 
-        procedure NewExceptionEntry(AText: string);
+        procedure NewExceptionEntry(What, AText: string);
     end;
 
 var
@@ -46,17 +47,17 @@ var
 
 implementation
 
-uses FireDAC.Comp.Client, UnitKgsdumData, dateutils,
+uses FireDAC.Comp.Client, FireDAC.stan.param, UnitKgsdumData, dateutils,
     stringgridutils;
 
 {$R *.dfm}
 
 procedure TFormJournal.FormCreate(Sender: TObject);
 begin
-    FCurrentWork := '';
-    FCurrentWorkID := 0;
+//    FCurrentWork := '';
+//    FCurrentWorkID := 0;
     SetLength(FWorks, 1);
-    StringGrid1.Cells[1, 0] := 'За сутки';
+    StringGrid1.Cells[0, 0] := 'За сутки';
     fetch_days;
 
 end;
@@ -75,8 +76,6 @@ begin
 end;
 
 procedure TFormJournal.Panel1Resize(Sender: TObject);
-var
-    r: TRect;
 begin
     with StringGrid1 do
     begin
@@ -102,6 +101,7 @@ begin
     if gdSelected in State then
         cnv.Brush.Color := clGradientInactiveCaption;
 
+    ta := taLeftJustify;
     case ACol of
         0:
             begin
@@ -121,8 +121,8 @@ begin
 
     if ARow = 0 then
     begin
-        cnv.Font.Style := [fsBold];
-        cnv.Font.Color := clNavy;
+        // cnv.Font.Style := [fsBold];
+        // cnv.Font.Color := clNavy;
     end;
 
     DrawCellText(StringGrid1, ACol, ARow, Rect, ta,
@@ -160,10 +160,8 @@ end;
 procedure TFormJournal.StringGrid1SelectCell(Sender: TObject;
   ACol, ARow: Integer; var CanSelect: boolean);
 var
-    created_at, combobox_date: TDateTime;
-    Name, _message: string;
-    level: Integer;
-    r: TRect;
+    combobox_date, created_at: TDateTime;
+    _message: string;
 begin
 
     FormConsole.Clear;
@@ -192,6 +190,7 @@ begin
                   'WHERE entry.work_id = :work_id';
                 ParamByName('work_id').Value := FWorks[ARow].WorkID;
             end;
+
             Open;
             First;
             while not eof do
@@ -340,14 +339,7 @@ begin
             ErrorOccurred := false;
         end;
 
-        SQL.Text := 'SELECT * FROM last_work';
-        Open;
-        First;
-        if not eof then
-            FCurrentWork := FieldValues['name'];
-        FCurrentWorkID := FieldValues['work_id'];
         Close;
-
         Free;
     end;
 
@@ -362,25 +354,12 @@ end;
 
 procedure TFormJournal.NewWork(work: string);
 begin
-    FCurrentWork := work;
-    FCurrentWorkID := 0;
-    if FCurrentWork = 'опрос' then
-        exit;
     _DoNewWork(work);
     NewEntry(loglevInfo, 'начало выполнения');
 end;
 
 procedure TFormJournal.NewEntry(ALevel: TLogLevel; AText: string);
 begin
-    with FormConsole do
-    begin
-        NewLine(now, ALevel, FCurrentWork, AText);
-        with StringGrid1 do
-            Row := RowCount - 1;
-    end;
-
-    if FCurrentWork = 'опрос' then
-        exit;
 
     if ALevel >= loglevError then
     begin
@@ -403,10 +382,10 @@ begin
     end;
 end;
 
-procedure TFormJournal.NewExceptionEntry(AText: string);
+procedure TFormJournal.NewExceptionEntry(What, AText: string);
 begin
-    _DoNewWork('Исключителная ситуация');
-    NewEntry(loglevException, AText);
+    _DoNewWork(What);
+    NewEntry( loglevException, AText);
 
 end;
 

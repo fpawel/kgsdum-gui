@@ -7,7 +7,7 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ToolWin,
     Vcl.StdCtrls,
-    Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, inifiles;
+    Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, inifiles, Vcl.Imaging.pngimage;
 
 type
     TKgsdumMainForm = class(TForm)
@@ -31,15 +31,24 @@ type
         ToolButton2: TToolButton;
         ToolBar4: TToolBar;
         ToolButton5: TToolButton;
-        Panel1: TPanel;
+        PanelMessageBox: TPanel;
+        ImageError: TImage;
+        ImageInfo: TImage;
+        PanelMessageBoxTitle: TPanel;
+        ToolBar2: TToolBar;
+        ToolButton3: TToolButton;
+        RichEditlMessageBoxText: TRichEdit;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
         procedure ToolButton2Click(Sender: TObject);
         procedure FormCreate(Sender: TObject);
+        procedure FormResize(Sender: TObject);
+        procedure ToolButton3Click(Sender: TObject);
     private
         { Private declarations }
         procedure DoAppException(Sender: TObject; E: Exception);
+
     public
         { Public declarations }
         Ini: TIniFile;
@@ -49,11 +58,14 @@ type
         procedure NewWork(work: string);
 
         function ErrorMessageBox(AMsg: string): boolean;
+        procedure ShowNonModalErrorMessage(title, error: string);
 
     end;
 
 var
     KgsdumMainForm: TKgsdumMainForm;
+
+Function GetTextSize(const Text: String; Font: TFont): TSize;
 
 implementation
 
@@ -61,11 +73,24 @@ implementation
 
 uses FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils, UnitFormLastParty,
     UnitFormSelectWorksDialog,
-    UnitFormProperties, works, run_work, UnitFormConsole, UnitFormJournal;
+    UnitFormProperties, works, run_work, UnitFormConsole, UnitFormJournal,
+    hardware_errors;
 
 procedure TKgsdumMainForm.FormCreate(Sender: TObject);
 begin
     LabelStatusTop.Caption := '';
+    PanelMessageBox.Width := 700;
+    PanelMessageBox.Height := 350;
+end;
+
+procedure TKgsdumMainForm.FormResize(Sender: TObject);
+begin
+    if PanelMessageBox.Visible then
+    begin
+        PanelMessageBox.Left := ClientWidth div 2 - PanelMessageBox.Width div 2;
+        PanelMessageBox.Top := ClientHeight div 2 -
+          PanelMessageBox.Height div 2;
+    end;
 end;
 
 procedure TKgsdumMainForm.FormShow(Sender: TObject);
@@ -90,13 +115,16 @@ begin
     end;
 
     PanelTop.Top := 0;
-    Panel1.Top := 100500;
-
 end;
 
 procedure TKgsdumMainForm.ToolButton2Click(Sender: TObject);
 begin
     CancelExecution;
+end;
+
+procedure TKgsdumMainForm.ToolButton3Click(Sender: TObject);
+begin
+    PanelMessageBox.Hide;
 end;
 
 procedure TKgsdumMainForm.ToolButton4Click(Sender: TObject);
@@ -129,9 +157,15 @@ var
     ErrorLogFileName: string;
 begin
 
+    if e is EConfigError then
+    begin
+        MessageDlg(e.Message, mtError, [mbAbort], 0);
+        exit;
+    end;
+
     stackList := JclCreateStackList(false, 0, Caller(0, false));
     sl := TStringList.Create;
-    stackList.AddToStrings(sl, true, false, true, false);
+    stackList.AddToStrings(sl, false, false, false, false);
     stacktrace := sl.Text;
     sl.Free;
     stackList.Free;
@@ -157,8 +191,8 @@ begin
 
     CloseFile(FErrorLog);
 
-    FormJournal.NewExceptionEntry(E.ClassName + ': ' + E.Message + ': ' +
-      stacktrace);
+    FormJournal.NewExceptionEntry('Произошла ошибка',
+        E.ClassName + ': ' + E.Message + #13 + stacktrace);
 
     if not ErrorMessageBox(E.Message +
       #10#13#10#13'Ignore - продолжить работу'#10#13#10#13'Abort - выйти из приложения')
@@ -193,6 +227,7 @@ begin
         Hide;
     end;
     ToolBarStop.Visible := true;
+    PanelMessageBox.Hide;
 
 end;
 
@@ -209,14 +244,47 @@ end;
 
 procedure TKgsdumMainForm.NewWork(work: string);
 begin
-    FormJournal.NewWork(work);
+
     LabelStatusTop.Caption := work;
 end;
 
 function TKgsdumMainForm.ErrorMessageBox(AMsg: string): boolean;
 begin
     result := MessageDlg(AMsg, mtError, [mbAbort, mbIgnore], 0) = mrIgnore;
+end;
 
+procedure TKgsdumMainForm.ShowNonModalErrorMessage(title, error: string);
+var
+    sz: TSize;
+begin
+    ImageInfo.Hide;
+    ImageError.Show;
+
+    RichEditlMessageBoxText.Text := '';
+    PanelMessageBoxTitle.Caption := title;
+    RichEditlMessageBoxText.Text := RichEditlMessageBoxText.Text + error;
+    RichEditlMessageBoxText.Font.Color := clRed;
+
+    sz := GetTextSize(RichEditlMessageBoxText.Text,
+      RichEditlMessageBoxText.Font);
+
+    PanelMessageBox.Show;
+    PanelMessageBox.BringToFront;
+    FormResize(self);
+end;
+
+
+Function GetTextSize(const Text: String; Font: TFont): TSize;
+var
+    LBmp: TBitmap;
+begin
+    LBmp := TBitmap.Create;
+    try
+        LBmp.Canvas.Font := Font;
+        result := LBmp.Canvas.TextExtent(Text);
+    finally
+        LBmp.Free;
+    end;
 end;
 
 end.

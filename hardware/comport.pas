@@ -2,11 +2,11 @@ unit comport;
 
 interface
 
-uses classes, sysutils;
+uses classes, sysutils, hardware_errors;
 
 type
 
-    EComportError = class(Exception);
+    EComportError = class(EHardwareError);
 
     TConfigGetResponse = record
         TimeoutMillis, ByteTimeoutMillis, MaxAttemptCount: integer;
@@ -56,7 +56,7 @@ function GetResponse(request: TBytes; w: TComportWorker;
 
 implementation
 
-uses registry, windows, stringutils, hardware_errors;
+uses registry, windows, stringutils;
 
 var _logHook : TComportLogHook;
 
