@@ -6,7 +6,7 @@
         <Projects Include="kgsdum.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="test_comport.dproj">
+        <Projects Include="parse_termo.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -26,23 +26,23 @@
     <Target Name="kgsdum:Make">
         <MSBuild Projects="kgsdum.dproj" Targets="Make"/>
     </Target>
-    <Target Name="test_comport">
-        <MSBuild Projects="test_comport.dproj"/>
+    <Target Name="parse_termo">
+        <MSBuild Projects="parse_termo.dproj"/>
     </Target>
-    <Target Name="test_comport:Clean">
-        <MSBuild Projects="test_comport.dproj" Targets="Clean"/>
+    <Target Name="parse_termo:Clean">
+        <MSBuild Projects="parse_termo.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="test_comport:Make">
-        <MSBuild Projects="test_comport.dproj" Targets="Make"/>
+    <Target Name="parse_termo:Make">
+        <MSBuild Projects="parse_termo.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="kgsdum;test_comport"/>
+        <CallTarget Targets="kgsdum;parse_termo"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="kgsdum:Clean;test_comport:Clean"/>
+        <CallTarget Targets="kgsdum:Clean;parse_termo:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="kgsdum:Make;test_comport:Make"/>
+        <CallTarget Targets="kgsdum:Make;parse_termo:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

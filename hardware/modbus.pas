@@ -57,7 +57,7 @@ begin
         raise EBadREsponse.Create(Format('длина ответа %d менее 9',
           [length(response)]));
 
-    crc := CRC16(response, 0, length(response));
+    crc := CRC16(response, 0, length(response)-1);
 
     if crc <> 0 then
         raise EBadREsponse.Create('CRC16 не ноль');

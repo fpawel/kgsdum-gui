@@ -48,6 +48,10 @@ type
     procedure Button16Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
+    procedure Button12Click(Sender: TObject);
+    procedure Button13Click(Sender: TObject);
+    procedure Button14Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -61,7 +65,44 @@ implementation
 
 {$R *.dfm}
 
-uses works, run_work;
+uses works, run_work, data_model;
+
+procedure TFormSelectWorksDialog.Button11Click(Sender: TObject);
+begin
+     RunWork('термокамера: старт',
+        procedure
+        begin
+            TermochamberStart;
+        end);
+end;
+
+procedure TFormSelectWorksDialog.Button12Click(Sender: TObject);
+begin
+    RunWork('термокамера: стоп',
+        procedure
+        begin
+            TermochamberStop;
+        end);
+end;
+
+procedure TFormSelectWorksDialog.Button13Click(Sender: TObject);
+begin
+    RunWork('термокамера: уставка ' + Edit2.Text,
+        procedure
+        begin
+            TermochamberSetSetpoint(StrToFloat(Edit2.Text));
+        end);
+end;
+
+procedure TFormSelectWorksDialog.Button14Click(Sender: TObject);
+begin
+    RunWork('термокамера: температура',
+        procedure
+        begin
+            TermochamberReadTemperature;
+        end);
+
+end;
 
 procedure TFormSelectWorksDialog.Button16Click(Sender: TObject);
 begin

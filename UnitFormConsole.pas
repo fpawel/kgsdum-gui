@@ -7,20 +7,21 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
     Vcl.Samples.Spin, Vcl.ToolWin, System.ImageList, Vcl.ImgList, Vcl.ExtCtrls,
-    Vcl.Grids, data_model;
+    Vcl.Grids, data_model, Vcl.Menus;
 
 type
 
     TFormConsole = class(TForm)
         ImageList4: TImageList;
         StringGrid1: TStringGrid;
+    PopupMenu1: TPopupMenu;
+    N1: TMenuItem;
         procedure FormCreate(Sender: TObject);
         procedure FormResize(Sender: TObject);
         procedure StringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer;
           Rect: TRect; State: TGridDrawState);
-        procedure StringGrid1MouseDown(Sender: TObject; Button: TMouseButton;
-          Shift: TShiftState; X, Y: Integer);
         procedure StringGrid1DblClick(Sender: TObject);
+    procedure N1Click(Sender: TObject);
 
     private
         { Private declarations }
@@ -123,18 +124,6 @@ begin
     // StringGrid_DrawCellBounds(StringGrid1.Canvas, ACol, ARow, Rect);
 end;
 
-procedure TFormConsole.StringGrid1MouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-    if Button = TMouseButton.mbRight then
-        with StringGrid1 do
-        begin
-            Col := -1;
-            Row := -1;
-        end;
-
-end;
-
 procedure TFormConsole.Clear;
 begin
     with StringGrid1 do
@@ -144,6 +133,11 @@ begin
         Cells[1, 0] := '';
     end;
     SetLength(FEntries, 1);
+end;
+
+procedure TFormConsole.N1Click(Sender: TObject);
+begin
+    StringGrid_CopytoClipboard(StringGrid1);
 end;
 
 procedure TFormConsole.NewLine(ACreatedAt: TDatetime;

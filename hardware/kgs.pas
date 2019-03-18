@@ -38,7 +38,6 @@ type
         Value: double;
         function Bytes: TBytes;
         function ParseResponse(response: TBytes): double;
-
     end;
 
 const

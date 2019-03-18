@@ -4,6 +4,8 @@ interface
 
 uses vcl.grids, system.types, system.Classes, vcl.graphics, vcl.controls;
 
+procedure StringGrid_CopytoClipboard(StringGrid1: TStringGrid);
+
 procedure StringGrid_Clear(grd: TStringGrid);
 procedure StringGrid_DrawCheckBoxCell(grd: TStringGrid; acol, arow: integer;
   Rect: TRect; State: TGridDrawState; checked: boolean);
@@ -24,14 +26,15 @@ procedure StringGrid_DrawCellBounds(cnv: TCanvas; acol, arow: integer;
 procedure StringGrid_DrawCellBmp(grd: TStringGrid; Rect: TRect;
   bmp: vcl.graphics.TBitmap);
 
-procedure StringGrid_RedrawCol(grd: TStringGrid; aCol: integer);
+procedure StringGrid_RedrawCol(grd: TStringGrid; acol: integer);
 
-procedure DrawCellText(StringGrid1:TStringGrid; ACol, ARow: Integer; Rect: TRect;
-  ta: TAlignment; text: string);
+procedure DrawCellText(StringGrid1: TStringGrid; acol, arow: integer;
+  Rect: TRect; ta: TAlignment; text: string);
 
 implementation
 
-uses winapi.windows, system.math, winapi.uxtheme, stringutils, vclutils;
+uses Clipbrd, winapi.windows, system.math, winapi.uxtheme, stringutils,
+    vclutils;
 
 procedure StringGrid_DrawCellBounds(cnv: TCanvas; acol, arow: integer;
   Rect: TRect);
@@ -84,15 +87,15 @@ begin
                 Cells[I, arow] := Cells[I, arow];
 end;
 
-procedure StringGrid_RedrawCol(grd: TStringGrid; aCol: integer);
+procedure StringGrid_RedrawCol(grd: TStringGrid; acol: integer);
 var
     I: integer;
 begin
     with grd do
-        if (aCol >= 0) AND (aCol < rowcount) then
+        if (acol >= 0) AND (acol < rowcount) then
             for I := 0 to colcount - 1 do
 
-                Cells[aCol, 1] := Cells[aCol, i];
+                Cells[acol, 1] := Cells[acol, I];
 end;
 
 procedure StringGrid_Clear(grd: TStringGrid);
@@ -260,11 +263,10 @@ begin
     grd.Canvas.Draw(r.Left + 2, Rect.Top + 3, bmp);
 end;
 
-
-procedure DrawCellText(StringGrid1:TStringGrid; ACol, ARow: Integer; Rect: TRect;
-  ta: TAlignment; text: string);
+procedure DrawCellText(StringGrid1: TStringGrid; acol, arow: integer;
+  Rect: TRect; ta: TAlignment; text: string);
 var
-    X, Y, txt_width, txt_height: Integer;
+    x, Y, txt_width, txt_height: integer;
 begin
     with StringGrid1.Canvas do
     begin
@@ -273,14 +275,36 @@ begin
             text := cut_str(text, StringGrid1.Canvas, Rect.Width);
         txt_width := TextWidth(text);
         txt_height := TextHeight(text);
-        X := Rect.Left + 3;
+        x := Rect.Left + 3;
         if ta = taRightJustify then
-            X := Rect.Right - 3 - round(txt_width)
+            x := Rect.Right - 3 - round(txt_width)
         else if ta = taCenter then
-            X := Rect.Left + round((Rect.Width - txt_width) / 2.0);
+            x := Rect.Left + round((Rect.Width - txt_width) / 2.0);
         Y := Rect.Top + round((Rect.Height - txt_height) / 2.0);
-        TextRect(Rect, X, Y, text);
+        TextRect(Rect, x, Y, text);
     end;
+end;
+
+procedure StringGrid_CopytoClipboard(StringGrid1: TStringGrid);
+var
+    c, r: integer;
+    s : string;
+begin
+    s := '';
+    with StringGrid1 do
+        for r := Selection.Top to Selection.Bottom do
+            for c := Selection.Left to Selection.Right do
+            begin
+                s := s + Cells[c, r];
+                if c < Selection.Right then
+                    s := s + #9
+                else
+                begin
+                    if r < Selection.Bottom then
+                        s := s + #13;
+                end;
+            end;
+    Clipboard.AsText := s;
 end;
 
 end.

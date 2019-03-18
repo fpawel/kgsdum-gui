@@ -22,7 +22,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     Top = 0
     Width = 513
     Height = 249
-    ActivePage = TabSheet3
+    ActivePage = TabSheet4
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = #1057#1094#1077#1085#1072#1088#1080#1081
@@ -286,6 +286,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         Height = 35
         Caption = #1057#1090#1072#1088#1090
         TabOrder = 0
+        OnClick = Button11Click
       end
       object Button12: TButton
         Left = 384
@@ -294,6 +295,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         Height = 35
         Caption = #1057#1090#1086#1087
         TabOrder = 1
+        OnClick = Button12Click
       end
       object Button13: TButton
         Left = 384
@@ -302,6 +304,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         Height = 35
         Caption = #1059#1089#1090#1072#1074#1082#1072
         TabOrder = 2
+        OnClick = Button13Click
       end
       object Button14: TButton
         Left = 384
@@ -310,6 +313,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         Height = 35
         Caption = #1058#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072
         TabOrder = 3
+        OnClick = Button14Click
       end
       object Edit2: TEdit
         AlignWithMargins = True

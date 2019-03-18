@@ -5,9 +5,9 @@ interface
 uses classes, graphics;
 
 type
-    TProductField = (pcPlace, pcAddr, pcSerial, pcConnection, pcBegNorm,
-      pcMidNorm, pcEndNorm, pcBegMinus, pcMidMinus, pcEndMinus, pcBegPlus,
-      pcMidPlus, pcEndPlus);
+    TProductField = (pcPlace, pcAddr, pcSerial,  pcConc, pcVar0,
+      pcVar1, pcTemp, pcBegNorm, pcMidNorm, pcEndNorm, pcBegMinus, pcMidMinus,
+      pcEndMinus, pcBegPlus, pcMidPlus, pcEndPlus, pcConnection);
 
     TScaleConc = (scaleConcBegin, scaleConcMidle, scaleConcEnd);
     TScaleTemp = (scaleTempNorm, scaleTempMinus, scaleTempPlus);
@@ -33,6 +33,9 @@ type
         FPlace, FAddr: integer;
         FSerial: string;
         FConnection: string;
+
+        FValueConc, FValueVar0, FValueVar1, FValueTemp : string;
+
         FConnectionFailed: boolean;
         FConc: array [TScaleConc, TScaleTemp] of TConcValue;
         FCreatedAt: TDateTime;
@@ -40,7 +43,7 @@ type
         function FormatID: string;
     end;
 
-    TProductProcedure = reference to procedure(_:TProduct);
+    TProductProcedure = reference to procedure(_: TProduct);
 
     TErrorDetail = (erdtConc, erdtAbsErr, erdtErrPercent);
 
@@ -51,7 +54,8 @@ type
 
     end;
 
-    TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError, loglevException);
+    TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError,
+      loglevException);
 
     TLogEntry = record
         Time: TDateTime;
@@ -80,8 +84,8 @@ function ProductFieldAlignment(c: TProductField): TAlignment;
 
 const
     product_column_name: array [TProductField] of string = ('π', '¿‰ÂÒÒ',
-      '«‡‚.π', '—‚ˇÁ¸', 'œ√—1.ÌÍÛ', 'œ√—2.ÌÍÛ', 'œ√—3.ÌÍÛ', 'œ√—1-', 'œ√—2-',
-      'œ√—3-', 'œ√—1+', 'œ√—2+', 'œ√—3+'
+      '«‡‚.π',  ' ÓÌˆ.', 'Var0', 'Var1', 'T,"C', 'œ√—1.ÌÍÛ', 'œ√—2.ÌÍÛ',
+      'œ√—3.ÌÍÛ', 'œ√—1-', 'œ√—2-', 'œ√—3-', 'œ√—1+', 'œ√—2+', 'œ√—3+', '—‚ˇÁ¸'
 
       );
 
@@ -91,7 +95,8 @@ uses SysUtils, math;
 
 function TProduct.FormatID: string;
 begin
-    result := Format('¡Œ π %d ‡‰.%d %d-%s', [FPlace+1, FAddr, FProductID, FSerial]);
+    result := Format('¡Œ π %d ‡‰.%d %d-%s', [FPlace + 1, FAddr, FProductID,
+      FSerial]);
 end;
 
 function TConcValue.Check: TCheckValueResult;
@@ -139,6 +144,15 @@ begin
 
             pcConnection:
                 exit(FConnection);
+
+            pcConc:
+                exit(FValueConc);
+            pcVar0:
+                exit(FValueVar0);
+            pcVar1:
+                exit(FValueVar1);
+            pcTemp:
+                exit(FValueTemp);
 
             pcBegNorm:
                 exit(FormatConcValue(FConc[scaleConcBegin, scaleTempNorm],
@@ -194,8 +208,8 @@ begin
         begin
             if FormatProductFieldValue(p, c, erdtConc) <> '' then
             begin
-                SetLength(Result, Length(Result) + 1);
-                Result[Length(Result) - 1] := c;
+                SetLength(result, Length(result) + 1);
+                result[Length(result) - 1] := c;
                 break;
             end;
         end;
@@ -266,15 +280,15 @@ var
     w: integer;
 begin
 
-    Result := 60;
+    result := 60;
     w := canvas.TextWidth(product_column_name[column]);
-    if Result < w + 30 then
-        Result := w + 30;
+    if result < w + 30 then
+        result := w + 30;
     for p in prods do
     begin
         w := canvas.TextWidth(FormatProductFieldValue(p, column, err_det));
-        if Result < w + 30 then
-            Result := w + 30;
+        if result < w + 30 then
+            result := w + 30;
     end;
 end;
 

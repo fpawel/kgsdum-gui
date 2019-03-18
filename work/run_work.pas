@@ -5,7 +5,7 @@ interface
 uses comport, Classes, data_model, sysutils;
 
 type
-    EConfigError = class (Exception);
+    EConfigError = class(Exception);
 
     TWorkProcedure = reference to procedure;
 
@@ -19,8 +19,6 @@ type
 
 function IsWorkRunning: boolean;
 procedure RunWorks(works: TWorks);
-
-function ComportProducts: THandle;
 
 function ComportProductsWorker: TComportWorker;
 
@@ -39,6 +37,11 @@ procedure NewWorkLogEntry(ALevel: TLogLevel; AText: string);
 
 function CurrentWorksCount: integer;
 
+procedure TermochamberStart;
+procedure TermochamberStop;
+procedure TermochamberSetSetpoint(setpoint: double);
+function TermochamberReadTemperature: double;
+
 var
     ComportProductsConfig, ComportGasConfig, ComportTermoConfig
       : TConfigGetResponse;
@@ -47,7 +50,7 @@ implementation
 
 uses UnitKgsdumMainForm, windows, hardware_errors,
     FireDAC.Comp.Client, UnitFormProperties, UnitFormLastParty, UnitKgsdumData,
-    stringutils, UnitFormJournal, modbus, UnitFormConsole;
+    stringutils, UnitFormJournal, modbus, UnitFormConsole, termo;
 
 type
     TWorkThread = class(TThread)
@@ -88,13 +91,7 @@ begin
         raise EAbort.Create('выполнение прервано');
 end;
 
-function ComportProductsWorker: TComportWorker;
-begin
-    result := TComportWorker.Create(ComportProducts, ComportProductsConfig,
-      _on_comport_background);
-end;
-
-function ComportProducts: THandle;
+function _comportProducts: THandle;
 var
     comportName: string;
 begin
@@ -115,6 +112,41 @@ begin
         _hComportProducts := INVALID_HANDLE_VALUE;
         raise;
     end
+end;
+
+function ComportProductsWorker: TComportWorker;
+begin
+    result := TComportWorker.Create(_comportProducts, ComportProductsConfig,
+      _on_comport_background);
+end;
+
+function _comportTermo: THandle;
+var
+    comportName: string;
+begin
+    if _hComportTermo <> INVALID_HANDLE_VALUE then
+        exit(_hComportTermo);
+
+    Synchronize(
+        procedure
+        begin
+            comportName := FormProperties.ComportTermo.Value;
+        end);
+
+    try
+        _hComportTermo := comport.OpenComport(comportName, 9600);
+        exit(_hComportTermo);
+
+    except
+        _hComportTermo := INVALID_HANDLE_VALUE;
+        raise;
+    end
+end;
+
+function _comportTermoWorker: TComportWorker;
+begin
+    result := TComportWorker.Create(_comportTermo, ComportTermoConfig,
+      _on_comport_background);
 end;
 
 function IsWorkRunning: boolean;
@@ -199,7 +231,6 @@ begin
         on e: EAbort do
             NewWorkLogEntry(loglevWarn, 'выполнение перрвано');
 
-
         on e: EHardwareError do
         begin
             NewWorkLogEntry(loglevError, e.ClassName + ': ' + e.Message);
@@ -233,6 +264,7 @@ procedure _do_each_product1(func: TProductProcedure);
 var
     v: double;
     p: TProduct;
+    i : integer;
     Products: TArray<TProduct>;
 begin
     Synchronize(
@@ -244,8 +276,9 @@ begin
     if length(Products) = 0 then
         raise EConfigError.Create('не отмечено ни одного прибора в таблице');
 
-    for p in Products do
+    for i :=0 to length(Products)-1 do
     begin
+        p := Products[i];
         Synchronize(
             procedure
             begin
@@ -259,11 +292,12 @@ begin
             begin
                 NewWorkLogEntry(loglevError,
                   format('%s: %s, %s', [p.FormatID, e.ClassName, e.Message]));
+                p.FConnection := e.Message;
+                p.FConnectionFailed := true;
                 Synchronize(
                     procedure
                     begin
-                        FormLastParty.SetProductConnectionError(p.FPlace,
-                          e.Message);
+                        FormLastParty.SetProduct(p);
                     end);
 
             end;
@@ -289,11 +323,12 @@ procedure SwitchGasBlock6006(code: byte);
 begin
     try
         modbus.GetResponse($20, $10, [0, $10, 0, 1, 2, 0, code],
-          TComportWorker.Create(ComportProducts, ComportGasConfig,
+          TComportWorker.Create(_comportProducts, ComportGasConfig,
           _on_comport_background),
             procedure(_: TBytes)
             begin
             end);
+        NewWorkLogEntry(loglevInfo, 'Газовый блок 6006: ' + IntToStr(code));
 
     except
         on e: EHardwareError do
@@ -303,7 +338,6 @@ begin
         end;
     end;
 
-    NewWorkLogEntry(loglevInfo, 'Газовый блок 6006: ' + IntToStr(code));
 end;
 
 function _message_box(AMsg: string): boolean;
@@ -341,6 +375,67 @@ begin
     end
 end;
 
+procedure TermochamberStart;
+begin
+    try
+        termo.TermochamberStart(_comportTermoWorker);
+        NewWorkLogEntry(loglevDebug, 'термокамера: СТАРТ');
+    except
+        on e: EHardwareError do
+        begin
+            e.Message := 'не удалось выполнить команду СТАРТ: ' + e.Message;
+            raise;
+        end;
+    end;
+end;
+
+procedure TermochamberStop;
+begin
+    try
+        termo.TermochamberStop(_comportTermoWorker);
+        NewWorkLogEntry(loglevDebug, 'термокамера: СТОП');
+    except
+        on e: EHardwareError do
+        begin
+            e.Message := 'не удалось выполнить команду СТОП: ' + e.Message;
+            raise;
+        end;
+    end;
+
+end;
+
+procedure TermochamberSetSetpoint(setpoint: double);
+begin
+    try
+        termo.TermochamberSetSetpoint(_comportTermoWorker, setpoint);
+        NewWorkLogEntry(loglevDebug, 'термокамера: УСТАВКА ' +
+          FloatToStr(setpoint));
+
+    except
+        on e: EHardwareError do
+        begin
+            e.Message := 'термокамера: не удалось задать уставку ' +
+              FloatToStr(setpoint) + ': ' + e.Message;
+            raise;
+        end;
+    end;
+end;
+
+function TermochamberReadTemperature: double;
+begin
+    try
+        result := termo.TermochamberReadTemperature(_comportTermoWorker);
+        NewWorkLogEntry(loglevDebug, 'термокамера: текущая температура=' +
+          FloatToStr(result));
+    except
+        on e: EHardwareError do
+        begin
+            e.Message := 'не удалось считать текущую температуру: ' + e.Message;
+            raise;
+        end;
+    end;
+end;
+
 initialization
 
 _thread := nil;
@@ -370,12 +465,23 @@ comport.SetcomportLogHook(
 
                 s := comport + ' : ' + BytesToHex(r.Request);
                 if length(r.Response) > 0 then
-                    s := s + ' --> ' + BytesToHex(r.Request);
+                    s := s + ' --> ' + BytesToHex(r.Response);
 
                 s := s + ' ' + IntToStr(r.millis) + ' мс';
 
                 if r.attempt > 1 then
                     s := s + ' (' + IntToStr(r.attempt) + ')';
+
+                if r.HComport = _hComportTermo then
+                begin
+                    if length(r.Response) > 0 then
+                        s := format('%s "%s" -> "%s"',
+                          [s, TEncoding.ASCII.GetString(r.Request),
+                          TEncoding.ASCII.GetString(r.Response)])
+                    else
+                        s := format('%s "%s"',
+                          [s, TEncoding.ASCII.GetString(r.Request)]);
+                end;
 
                 NewWorkLogEntry(loglevDebug, s);
             end);

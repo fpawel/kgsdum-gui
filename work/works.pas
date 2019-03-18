@@ -15,18 +15,32 @@ implementation
 uses sysutils, comport, UnitFormProperties, kgs, UnitFormLastParty,
     classes, windows, run_work, hardware_errors;
 
-function ReadProductConc(p: TProduct; w: TComportWorker): double;
+function ReadProductVar(p: TProduct; AVar: byte; w: TComportWorker): double;
 var
     v: double;
 begin
-    v := KgsReadVar(p.FAddr, 72, w);
-    NewWorkLogEntry(loglevInfo, Format('%s: конц.=%s',
-      [p.FormatID, floattostr(v)]));
+    v := KgsReadVar(p.FAddr, AVar, w);
+    NewWorkLogEntry(loglevInfo, Format('%s: Var%d=%s', [p.FormatID, AVar,
+      floattostr(v)]));
+    p.FConnection := Format('Var%d=%s', [AVar, floattostr(v)]);
+
+    case AVar of
+        72:
+            p.FValueConc := floattostr(v);
+        60:
+            p.FValueVar0 := floattostr(v);
+        61:
+            p.FValueVar1 := floattostr(v);
+        63:
+            p.FValueTemp := floattostr(v);
+
+    end;
+
+    p.FConnectionFailed := false;
     Synchronize(
         procedure
         begin
-            FormLastParty.SetProductConc(p.FPlace, v);
-
+            FormLastParty.SetProduct(p);
         end);
 end;
 
@@ -72,7 +86,10 @@ begin
                 DoEachProduct(
                     procedure(p: TProduct)
                     begin
-                        ReadProductConc(p, ComportProductsWorker);
+                        ReadProductVar(p, 72, ComportProductsWorker);
+                        ReadProductVar(p, 60, ComportProductsWorker);
+                        ReadProductVar(p, 61, ComportProductsWorker);
+                        ReadProductVar(p, 63, ComportProductsWorker);
                     end);
             end;
         end);

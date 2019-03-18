@@ -75,8 +75,7 @@ type
         procedure reload_data;
 
         procedure SetProductInterrogate(place: Integer);
-        procedure SetProductConc(place: Integer; Value: double);
-        procedure SetProductConnectionError(place: Integer; error: string);
+        procedure SetProduct(product:TProduct);
     end;
 
 var
@@ -537,21 +536,11 @@ begin
     // end;
 end;
 
-procedure TFormLastParty.SetProductConc(place: Integer; Value: double);
+procedure TFormLastParty.SetProduct(product:TProduct);
 begin
-    FProducts[place].FConnection := 'C=' + FloatToStr(Value);
-    FProducts[place].FConnectionFailed := false;
+    FProducts[product.FPlace] := product;
     reset_products;
 end;
-
-procedure TFormLastParty.SetProductConnectionError(place: Integer;
-  error: string);
-begin
-    FProducts[place].FConnection := error;
-    FProducts[place].FConnectionFailed := true;
-    reset_products;
-end;
-
 
 function TFormLastParty.FindProductWithAddr(addr:byte; f:TProductProcedure):boolean;
 var p : TProduct;
