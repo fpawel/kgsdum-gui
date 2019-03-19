@@ -11,8 +11,6 @@ uses
 
 type
 
-
-
     TFormLastParty = class(TForm)
         StringGrid1: TStringGrid;
         ImageList1: TImageList;
@@ -68,14 +66,15 @@ type
         function ProductionProducts: TArray<TProduct>;
         function Products: TArray<TProduct>;
 
-        function FindProductWithAddr(addr:byte; f:TProductProcedure):boolean;
+        function FindProductWithAddr(addr: byte; f: TProductProcedure): Boolean;
 
         procedure SetProductionAll(production: Boolean);
 
         procedure reload_data;
 
         procedure SetProductInterrogate(place: Integer);
-        procedure SetProduct(product:TProduct);
+        procedure SetProductValue(APlace: Integer; AVar: byte; AValue: double);
+        procedure SetProductConnectionFailed(APlace: Integer; AError: string);
     end;
 
 var
@@ -336,9 +335,11 @@ begin
     cnv.Font.Assign(grd.Font);
     cnv.Brush.Color := clWhite;
 
+    if (ARow = 0) or (ACol = 0) then
+        cnv.Brush.Color := cl3DLight;
+
     if ARow = 0 then
     begin
-        cnv.Brush.Color := cl3DLight;
         DrawCellText(StringGrid1, ACol, ARow, Rect, taCenter,
           StringGrid1.Cells[ACol, ARow]);
         StringGrid_DrawCellBounds(StringGrid1.Canvas, ACol, 0, Rect);
@@ -346,8 +347,12 @@ begin
     end;
 
     p := FProducts[ARow - 1];
-    if not p.FProduction then
+
+    if (ACol > 0 ) and p.FConnectionFailed then
+    begin
+        cnv.Font.Color := clRed;
         cnv.Brush.Color := $F6F7F7;
+    end;
 
     if ARow = FInterrogatePlace + 1 then
         cnv.Brush.Color := clSkyBlue;
@@ -362,9 +367,7 @@ begin
 
                 if not p.FProduction then
                     cnv.Font.Color := clGray;
-
             end;
-
     end;
 
     if ACol = 0 then
@@ -536,14 +539,34 @@ begin
     // end;
 end;
 
-procedure TFormLastParty.SetProduct(product:TProduct);
+procedure TFormLastParty.SetProductValue(APlace: Integer; AVar: byte;
+  AValue: double);
 begin
-    FProducts[product.FPlace] := product;
+    with FProducts[APlace] do
+    begin
+        FVarValue[AVar] := floattostr(AValue);
+        FConnection := 'ок';
+        FConnectionFailed := false;
+    end;
+
     reset_products;
 end;
 
-function TFormLastParty.FindProductWithAddr(addr:byte; f:TProductProcedure):boolean;
-var p : TProduct;
+procedure TFormLastParty.SetProductConnectionFailed(APlace: Integer;
+  AError: string);
+begin
+    with FProducts[APlace] do
+    begin
+        FConnection := AError;
+        FConnectionFailed := true;
+    end;
+    reset_products;
+end;
+
+function TFormLastParty.FindProductWithAddr(addr: byte;
+  f: TProductProcedure): Boolean;
+var
+    p: TProduct;
 begin
     for p in FProducts do
         if p.FAddr = addr then
@@ -556,7 +579,7 @@ end;
 
 function TFormLastParty.Products: TArray<TProduct>;
 begin
-    result :=  FProducts;
+    result := FProducts;
 end;
 
 function TFormLastParty.ProductionProducts: TArray<TProduct>;

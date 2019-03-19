@@ -125,12 +125,6 @@
         <DCCReference Include="work\run_work.pas"/>
         <DCCReference Include="hardware\hardware_errors.pas"/>
         <DCCReference Include="work\works.pas"/>
-        <DCCReference Include="settings\PropertyValueEditors.pas"/>
-        <DCCReference Include="settings\UnitFormProperties.pas">
-            <Form>FormProperties</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="settings\config_value.pas"/>
         <DCCReference Include="utils\stringutils.pas"/>
         <DCCReference Include="hardware\modbus.pas"/>
         <DCCReference Include="UnitFormConsole.pas">
@@ -146,6 +140,10 @@
         <DCCReference Include="hardware\termo.pas"/>
         <DCCReference Include="UnitFormPopup.pas">
             <Form>FormPopup</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="UnitFormAppConfig.pas">
+            <Form>FormAppConfig</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Release">

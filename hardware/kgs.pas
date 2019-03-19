@@ -287,7 +287,9 @@ begin
     Writeln(bytes_arrays_equal(r.Bytes, b));
     Writeln(BytesToHex(r.Bytes), ' -- ', BytesToHex(b));
     Writeln(floattostr(r.ParseResponse(r.Bytes)));
-
 end;
+
+
+
 
 end.

@@ -16,9 +16,6 @@ uses
   run_work in 'work\run_work.pas',
   hardware_errors in 'hardware\hardware_errors.pas',
   works in 'work\works.pas',
-  PropertyValueEditors in 'settings\PropertyValueEditors.pas',
-  UnitFormProperties in 'settings\UnitFormProperties.pas' {FormProperties},
-  config_value in 'settings\config_value.pas',
   stringutils in 'utils\stringutils.pas',
   modbus in 'hardware\modbus.pas',
   UnitFormConsole in 'UnitFormConsole.pas' {FormConsole},
@@ -26,7 +23,8 @@ uses
   UnitFormJournal in 'UnitFormJournal.pas' {FormJournal},
   bcd in 'hardware\bcd.pas',
   termo in 'hardware\termo.pas',
-  UnitFormPopup in 'UnitFormPopup.pas' {FormPopup};
+  UnitFormPopup in 'UnitFormPopup.pas' {FormPopup},
+  UnitFormAppConfig in 'UnitFormAppConfig.pas' {FormAppConfig};
 
 {$R *.res}
 
@@ -37,9 +35,9 @@ begin
   Application.CreateForm(TKgsdumData, KgsdumData);
   Application.CreateForm(TFormLastParty, FormLastParty);
   Application.CreateForm(TFormSelectWorksDialog, FormSelectWorksDialog);
-  Application.CreateForm(TFormProperties, FormProperties);
   Application.CreateForm(TFormConsole, FormConsole);
   Application.CreateForm(TFormJournal, FormJournal);
   Application.CreateForm(TFormPopup, FormPopup);
+  Application.CreateForm(TFormAppConfig, FormAppConfig);
   Application.Run;
 end.

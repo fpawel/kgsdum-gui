@@ -42,6 +42,10 @@ procedure TermochamberStop;
 procedure TermochamberSetSetpoint(setpoint: double);
 function TermochamberReadTemperature: double;
 
+// ------------------------------------------------------------------------------
+procedure RunKgsSetAddr(addr: byte);
+
+// ------------------------------------------------------------------------------
 var
     ComportProductsConfig, ComportGasConfig, ComportTermoConfig
       : TConfigGetResponse;
@@ -49,8 +53,9 @@ var
 implementation
 
 uses UnitKgsdumMainForm, windows, hardware_errors,
-    FireDAC.Comp.Client, UnitFormProperties, UnitFormLastParty, UnitKgsdumData,
-    stringutils, UnitFormJournal, modbus, UnitFormConsole, termo;
+    FireDAC.Comp.Client, UnitFormLastParty, UnitKgsdumData,
+    stringutils, UnitFormJournal, modbus, UnitFormConsole, termo,
+  UnitFormAppConfig;
 
 type
     TWorkThread = class(TThread)
@@ -101,7 +106,7 @@ begin
     Synchronize(
         procedure
         begin
-            comportName := FormProperties.ComportProducts.Value;
+            comportName := FormAppConfig.ComboBoxComportProducts.Text;
         end);
 
     try
@@ -130,7 +135,7 @@ begin
     Synchronize(
         procedure
         begin
-            comportName := FormProperties.ComportTermo.Value;
+            comportName := FormAppConfig.ComboBoxComportTemp.Text;
         end);
 
     try
@@ -264,7 +269,7 @@ procedure _do_each_product1(func: TProductProcedure);
 var
     v: double;
     p: TProduct;
-    i : integer;
+    i: integer;
     Products: TArray<TProduct>;
 begin
     Synchronize(
@@ -276,7 +281,7 @@ begin
     if length(Products) = 0 then
         raise EConfigError.Create('не отмечено ни одного прибора в таблице');
 
-    for i :=0 to length(Products)-1 do
+    for i := 0 to length(Products) - 1 do
     begin
         p := Products[i];
         Synchronize(
@@ -297,7 +302,7 @@ begin
                 Synchronize(
                     procedure
                     begin
-                        FormLastParty.SetProduct(p);
+                        FormLastParty.SetProductConnectionFailed(p.FPlace, e.Message);
                     end);
 
             end;
@@ -436,6 +441,16 @@ begin
     end;
 end;
 
+procedure RunKgsSetAddr(addr: byte);
+begin
+    RunWork('установка адреса',
+        procedure
+        begin
+            comport.WriteComport(_comportProducts, [0, $AA, $55, addr]);
+            NewWorkLogEntry(loglevDebug, BytesToHex([0, $AA, $55, addr]));
+        end);
+end;
+
 initialization
 
 _thread := nil;
@@ -458,9 +473,9 @@ comport.SetcomportLogHook(
             begin
                 comport := 'COM?';
                 if r.HComport = _hComportProducts then
-                    comport := FormProperties.ComportProducts.Value + '-стенд'
+                    comport := FormAppConfig.ComboBoxComportProducts.Text + '-стенд'
                 else if r.HComport = _hComportTermo then
-                    comport := FormProperties.ComportTermo.Value +
+                    comport := FormAppConfig.ComboBoxComportTemp.Text +
                       '-термокамера';
 
                 s := comport + ' : ' + BytesToHex(r.Request);

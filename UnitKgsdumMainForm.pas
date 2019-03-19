@@ -73,8 +73,8 @@ implementation
 
 uses FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils, UnitFormLastParty,
     UnitFormSelectWorksDialog,
-    UnitFormProperties, works, run_work, UnitFormConsole, UnitFormJournal,
-    hardware_errors;
+    works, run_work, UnitFormConsole, UnitFormJournal,
+    hardware_errors, UnitFormAppConfig;
 
 procedure TKgsdumMainForm.FormCreate(Sender: TObject);
 begin
@@ -129,7 +129,16 @@ end;
 
 procedure TKgsdumMainForm.ToolButton4Click(Sender: TObject);
 begin
-    FormProperties.Show;
+    with ToolButton4 do
+        with ClientToScreen(Point(0, Height)) do
+        begin
+            with FormAppconfig do
+            begin
+                Left := X - 5 - Width;
+                Top := Y + 5;
+                Show;
+            end;
+        end;
 end;
 
 procedure TKgsdumMainForm.ToolButtonRunClick(Sender: TObject);

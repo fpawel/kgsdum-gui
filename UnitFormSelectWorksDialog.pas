@@ -52,6 +52,7 @@ type
     procedure Button12Click(Sender: TObject);
     procedure Button13Click(Sender: TObject);
     procedure Button14Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -116,14 +117,19 @@ begin
         if CheckBoxEachAddr.Checked then
             RunReadVars(StrToInt(EditVar.Text))
         else
-            RunReadVar(StrToInt(EditVar.Text), StrToInt(EditVar.Text));
+            RunReadVar(StrToInt(EditAddr.Text), StrToInt(EditVar.Text));
     end else
     begin
         if CheckBoxEachAddr.Checked then
             RunReadCoefficients(StrToInt(EditVar.Text))
         else
-            RunReadCoefficient(StrToInt(EditVar.Text), StrToInt(EditVar.Text));
+            RunReadCoefficient(StrToInt(EditAddr.Text), StrToInt(EditVar.Text));
     end
+end;
+
+procedure TFormSelectWorksDialog.Button4Click(Sender: TObject);
+begin
+    RunKgsSetAddr(StrToInt(EditAddr.Text));
 end;
 
 procedure TFormSelectWorksDialog.Button6Click(Sender: TObject);

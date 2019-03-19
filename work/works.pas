@@ -12,7 +12,7 @@ procedure RunReadCoefficients(ACoefficient: byte);
 
 implementation
 
-uses sysutils, comport, UnitFormProperties, kgs, UnitFormLastParty,
+uses sysutils, comport, kgs, UnitFormLastParty,
     classes, windows, run_work, hardware_errors;
 
 function ReadProductVar(p: TProduct; AVar: byte; w: TComportWorker): double;
@@ -23,24 +23,11 @@ begin
     NewWorkLogEntry(loglevInfo, Format('%s: Var%d=%s', [p.FormatID, AVar,
       floattostr(v)]));
     p.FConnection := Format('Var%d=%s', [AVar, floattostr(v)]);
-
-    case AVar of
-        72:
-            p.FValueConc := floattostr(v);
-        60:
-            p.FValueVar0 := floattostr(v);
-        61:
-            p.FValueVar1 := floattostr(v);
-        63:
-            p.FValueTemp := floattostr(v);
-
-    end;
-
     p.FConnectionFailed := false;
     Synchronize(
         procedure
         begin
-            FormLastParty.SetProduct(p);
+            FormLastParty.SetProductValue(p.FPlace, AVar, v);
         end);
 end;
 
