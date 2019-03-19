@@ -5,22 +5,24 @@ interface
 uses
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
     System.Classes, Vcl.Graphics, System.Generics.collections,
-    Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls;
+    Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, ComponentBaloonHintU;
 
 type
     TFormAppConfig = class(TForm)
+        Panel19: TPanel;
+        Panel20: TPanel;
         Panel1: TPanel;
+        Shape1: TShape;
         Panel2: TPanel;
         ComboBoxComportProducts: TComboBox;
-        Shape1: TShape;
         Panel3: TPanel;
         Shape2: TShape;
         Panel4: TPanel;
+        EditPgs1: TEdit;
         Panel5: TPanel;
         Shape3: TShape;
         Panel6: TPanel;
         ComboBoxComportTemp: TComboBox;
-        EditPgs1: TEdit;
         Panel7: TPanel;
         Shape4: TShape;
         Panel8: TPanel;
@@ -45,7 +47,6 @@ type
         Shape9: TShape;
         Panel18: TPanel;
         EditTempMinus: TEdit;
-        Panel19: TPanel;
         procedure ComboBoxComportProductsDropDown(Sender: TObject);
         procedure FormCreate(Sender: TObject);
         procedure FormDeactivate(Sender: TObject);
@@ -53,12 +54,23 @@ type
         procedure ComboBoxComportTempChange(Sender: TObject);
         procedure FormShow(Sender: TObject);
         procedure EditPgs1Change(Sender: TObject);
+        procedure EditTempNormChange(Sender: TObject);
     private
         { Private declarations }
         FUpdate: boolean;
-        FKey: TDictionary<TWinControl, string>;
+        FKey: TDictionary<TObject, string>;
+        FhWndTip: THandle;
+
+        procedure WMWindowPosChanged(var AMessage: TMessage);
+          message WM_WINDOWPOSCHANGED;
+        procedure WMEnterSizeMove(var Msg: TMessage); message WM_ENTERSIZEMOVE;
+
+        procedure WMActivateApp(var AMessage: TMessage); message WM_ACTIVATEAPP;
 
         procedure _reload;
+
+        procedure ShowBalloonTip(c: TWinControl; Icon: TIconKind;
+          Title, Text: string);
     public
         { Public declarations }
     end;
@@ -70,11 +82,12 @@ implementation
 
 {$R *.dfm}
 
-uses crud, data_model, FireDAC.Comp.Client, comport, UnitKgsdumData, stringutils;
+uses crud, data_model, FireDAC.Comp.Client, comport, UnitKgsdumData,
+    stringutils;
 
 procedure TFormAppConfig.FormCreate(Sender: TObject);
 begin
-    FKey := TDictionary<TWinControl, string>.create;
+    FKey := TDictionary<TObject, string>.create;
     FKey.Add(ComboBoxComportProducts, 'comport_products');
     FKey.Add(ComboBoxComportTemp, 'comport_temp');
 
@@ -152,7 +165,25 @@ procedure TFormAppConfig.EditPgs1Change(Sender: TObject);
 begin
     try
         if not FUpdate then
-            KgsdumData.SetPartyValue(FKey[Sender as TWinControl],
+            KgsdumData.SetPartyValue(FKey[Sender],
+              str_to_float((Sender as TEdit).Text));
+        CloseWindow(FhWndTip);
+    except on e : Exception do
+        begin
+            ShowBalloonTip( sender as TWinControl, TIconKind.Error,
+          e.ClassName, e.Message);
+        end;
+    end;
+
+    if Visible then
+        (Sender as TWinControl).SetFocus;
+end;
+
+procedure TFormAppConfig.EditTempNormChange(Sender: TObject);
+begin
+    try
+        if not FUpdate then
+            KgsdumData.SetAppConfig(FKey[Sender],
               str_to_float((Sender as TEdit).Text));
     except
 
@@ -163,6 +194,31 @@ end;
 procedure TFormAppConfig.FormDeactivate(Sender: TObject);
 begin
     hide;
+end;
+
+procedure TFormAppConfig.WMEnterSizeMove(var Msg: TMessage);
+begin
+    CloseWindow(FhWndTip);
+    inherited;
+end;
+
+procedure TFormAppConfig.WMWindowPosChanged(var AMessage: TMessage);
+begin
+    CloseWindow(FhWndTip);
+    inherited;
+end;
+
+procedure TFormAppConfig.WMActivateApp(var AMessage: TMessage);
+begin
+    CloseWindow(FhWndTip);
+    inherited;
+end;
+
+procedure TFormAppConfig.ShowBalloonTip(c: TWinControl; Icon: TIconKind;
+  Title, Text: string);
+begin
+    CloseWindow(FhWndTip);
+    FhWndTip := ComponentBaloonHintU.ShowBalloonTip(c, Icon, Title, Text);
 end;
 
 end.

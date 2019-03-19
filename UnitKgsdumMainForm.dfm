@@ -70,7 +70,7 @@ object KgsdumMainForm: TKgsdumMainForm
       end
     end
     object ToolBar3: TToolBar
-      Left = 958
+      Left = 993
       Top = 0
       Width = 63
       Height = 31
@@ -82,6 +82,7 @@ object KgsdumMainForm: TKgsdumMainForm
       EdgeOuter = esNone
       Images = ImageList4
       TabOrder = 1
+      ExplicitLeft = 958
       object ToolButton1: TToolButton
         Left = 0
         Top = 0
@@ -90,6 +91,7 @@ object KgsdumMainForm: TKgsdumMainForm
         ImageIndex = 2
         ParentShowHint = False
         ShowHint = True
+        OnClick = ToolButton1Click
       end
       object ToolButton4: TToolButton
         Left = 30
@@ -102,7 +104,7 @@ object KgsdumMainForm: TKgsdumMainForm
     object PanelDelay: TPanel
       Left = 174
       Top = 0
-      Width = 784
+      Width = 819
       Height = 31
       Align = alClient
       Alignment = taLeftJustify
@@ -117,6 +119,7 @@ object KgsdumMainForm: TKgsdumMainForm
       ParentFont = False
       TabOrder = 2
       Visible = False
+      ExplicitWidth = 784
       object LabelDelayElepsedTime: TLabel
         AlignWithMargins = True
         Left = 5
@@ -138,7 +141,7 @@ object KgsdumMainForm: TKgsdumMainForm
       end
       object LabelProgress: TLabel
         AlignWithMargins = True
-        Left = 712
+        Left = 747
         Top = 3
         Width = 31
         Height = 25
@@ -153,6 +156,7 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
+        ExplicitLeft = 712
         ExplicitHeight = 18
       end
       object LabelWhat: TLabel
@@ -175,7 +179,7 @@ object KgsdumMainForm: TKgsdumMainForm
         ExplicitHeight = 18
       end
       object ToolBar6: TToolBar
-        Left = 748
+        Left = 783
         Top = 0
         Width = 36
         Height = 31
@@ -187,6 +191,7 @@ object KgsdumMainForm: TKgsdumMainForm
         EdgeOuter = esNone
         Images = ImageList4
         TabOrder = 0
+        ExplicitLeft = 748
         object ToolButtonStop: TToolButton
           Left = 0
           Top = 0
@@ -202,7 +207,7 @@ object KgsdumMainForm: TKgsdumMainForm
       object Panel2: TPanel
         Left = 101
         Top = 0
-        Width = 606
+        Width = 641
         Height = 31
         Align = alClient
         Alignment = taLeftJustify
@@ -216,16 +221,18 @@ object KgsdumMainForm: TKgsdumMainForm
         ParentBackground = False
         ParentFont = False
         TabOrder = 1
+        ExplicitWidth = 606
         DesignSize = (
-          606
+          641
           31)
         object ProgressBar1: TProgressBar
           Left = 3
           Top = 8
-          Width = 600
+          Width = 635
           Height = 15
           Anchors = [akLeft, akTop, akRight, akBottom]
           TabOrder = 0
+          ExplicitWidth = 600
         end
       end
     end
@@ -252,30 +259,6 @@ object KgsdumMainForm: TKgsdumMainForm
         ParentShowHint = False
         ShowHint = True
         OnClick = ToolButton2Click
-      end
-    end
-    object ToolBar4: TToolBar
-      Left = 1021
-      Top = 0
-      Width = 35
-      Height = 31
-      Align = alRight
-      ButtonHeight = 30
-      ButtonWidth = 30
-      Caption = 'ToolBarStop'
-      EdgeInner = esNone
-      EdgeOuter = esNone
-      Images = ImageList4
-      TabOrder = 4
-      Visible = False
-      object ToolButton5: TToolButton
-        Left = 0
-        Top = 0
-        Hint = #1047#1072#1082#1088#1099#1090#1100' '#1087#1072#1085#1077#1083#1100' '#1087#1088#1086#1096#1080#1074#1082#1080
-        Caption = 'ToolButtonStop'
-        ImageIndex = 5
-        ParentShowHint = False
-        ShowHint = True
       end
     end
   end
@@ -580,7 +563,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010B002403300514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010B002403340514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1208,5 +1191,13 @@ object KgsdumMainForm: TKgsdumMainForm
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       00000000000000000000000000000000000000000000}
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 984
+    Top = 104
+    object N1: TMenuItem
+      Caption = #1050#1072#1090#1072#1083#1086#1075' '#1089' '#1076#1072#1085#1085#1099#1084#1080
+      OnClick = N1Click
+    end
   end
 end

@@ -9,7 +9,6 @@ uses
   data_model in 'data_model.pas',
   crud in 'crud.pas',
   stringgridutils in 'utils\stringgridutils.pas',
-  ComponentBaloonHintU in 'utils\ComponentBaloonHintU.pas',
   comport in 'hardware\comport.pas',
   kgs in 'hardware\kgs.pas',
   UnitFormSelectWorksDialog in 'UnitFormSelectWorksDialog.pas' {FormSelectWorksDialog},
@@ -24,7 +23,8 @@ uses
   bcd in 'hardware\bcd.pas',
   termo in 'hardware\termo.pas',
   UnitFormPopup in 'UnitFormPopup.pas' {FormPopup},
-  UnitFormAppConfig in 'UnitFormAppConfig.pas' {FormAppConfig};
+  UnitFormAppConfig in 'UnitFormAppConfig.pas' {FormAppConfig},
+  ComponentBaloonHintU in 'utils\ComponentBaloonHintU.pas';
 
 {$R *.res}
 

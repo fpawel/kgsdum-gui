@@ -18,20 +18,28 @@ type
           const Title, Text: string): THandle;
     end;
 
+function ShowBalloonTip(control: TWinControl; Icon: TIconKind;
+  const Title, Text: string): THandle;
+
 implementation
 
 uses
     Windows;
 
+function ShowBalloonTip(control: TWinControl; Icon: TIconKind;
+  const Title, Text: string): THandle;
+begin
+    result := control.ShowBalloonTip(Icon, Title, Text);
+end;
+
 { TComponentBaloonhint }
 
 function TComponentBaloonhint.ShowBalloonTip(Icon: TIconKind;
-  const Title, Text: string ): THandle;
+  const Title, Text: string): THandle;
 var
     hWndTip: THandle;
     ToolInfo: TToolInfo;
     BodyText: pWideChar;
-    rect : TRect;
 begin
     hWndTip := CreateWindow(TOOLTIPS_CLASS, nil, WS_POPUP or TTS_CLOSE or
       TTS_NOPREFIX or TTS_BALLOON or TTS_ALWAYSTIP, 0, 0, 0, 0, Handle, 0,
@@ -50,6 +58,7 @@ begin
         SetWindowPos(hWndTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE or
           SWP_NOMOVE or SWP_NOSIZE);
         ToolInfo.Rect := GetClientRect;
+
         SendMessage(hWndTip, TTM_ADDTOOL, 1, integer(@ToolInfo));
         SendMessage(hWndTip, TTM_SETTITLE, integer(Icon),
           integer(PChar(Title)));

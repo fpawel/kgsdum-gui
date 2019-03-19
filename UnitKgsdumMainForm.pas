@@ -7,7 +7,8 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ToolWin,
     Vcl.StdCtrls,
-    Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, inifiles, Vcl.Imaging.pngimage;
+    Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, inifiles, Vcl.Imaging.pngimage,
+    Vcl.Menus;
 
 type
     TKgsdumMainForm = class(TForm)
@@ -29,8 +30,6 @@ type
         ProgressBar1: TProgressBar;
         ToolBarStop: TToolBar;
         ToolButton2: TToolButton;
-        ToolBar4: TToolBar;
-        ToolButton5: TToolButton;
         PanelMessageBox: TPanel;
         ImageError: TImage;
         ImageInfo: TImage;
@@ -38,6 +37,8 @@ type
         ToolBar2: TToolBar;
         ToolButton3: TToolButton;
         RichEditlMessageBoxText: TRichEdit;
+        PopupMenu1: TPopupMenu;
+        N1: TMenuItem;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
@@ -45,6 +46,8 @@ type
         procedure FormCreate(Sender: TObject);
         procedure FormResize(Sender: TObject);
         procedure ToolButton3Click(Sender: TObject);
+        procedure ToolButton1Click(Sender: TObject);
+        procedure N1Click(Sender: TObject);
     private
         { Private declarations }
         procedure DoAppException(Sender: TObject; E: Exception);
@@ -71,7 +74,8 @@ implementation
 
 {$R *.dfm}
 
-uses FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils, UnitFormLastParty,
+uses ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils,
+    UnitFormLastParty,
     UnitFormSelectWorksDialog,
     works, run_work, UnitFormConsole, UnitFormJournal,
     hardware_errors, UnitFormAppConfig;
@@ -115,6 +119,13 @@ begin
     end;
 
     PanelTop.Top := 0;
+end;
+
+procedure TKgsdumMainForm.ToolButton1Click(Sender: TObject);
+begin
+    with ToolButton1 do
+        with ClientToScreen(Point(0, Height)) do
+            PopupMenu1.Popup(X, Y);
 end;
 
 procedure TKgsdumMainForm.ToolButton2Click(Sender: TObject);
@@ -166,9 +177,9 @@ var
     ErrorLogFileName: string;
 begin
 
-    if e is EConfigError then
+    if E is EConfigError then
     begin
-        MessageDlg(e.Message, mtError, [mbAbort], 0);
+        MessageDlg(E.Message, mtError, [mbAbort], 0);
         exit;
     end;
 
@@ -201,7 +212,7 @@ begin
     CloseFile(FErrorLog);
 
     FormJournal.NewExceptionEntry('Произошла ошибка',
-        E.ClassName + ': ' + E.Message + #13 + stacktrace);
+      E.ClassName + ': ' + E.Message + #13 + stacktrace);
 
     if not ErrorMessageBox(E.Message +
       #10#13#10#13'Ignore - продолжить работу'#10#13#10#13'Abort - выйти из приложения')
@@ -251,6 +262,14 @@ begin
     LabelStatusTop.Caption := LabelStatusTop.Caption + ': выполнено';
 end;
 
+procedure TKgsdumMainForm.N1Click(Sender: TObject);
+var
+    s: string;
+begin
+    s := GetEnvironmentVariable('APPDATA') + '\kgsdum\';
+    ShellExecute(0, nil, 'Explorer.exe', PChar(s), nil, SW_NORMAL);
+end;
+
 procedure TKgsdumMainForm.NewWork(work: string);
 begin
 
@@ -281,7 +300,6 @@ begin
     PanelMessageBox.BringToFront;
     FormResize(self);
 end;
-
 
 Function GetTextSize(const Text: String; Font: TFont): TSize;
 var
