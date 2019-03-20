@@ -51,7 +51,7 @@ implementation
 uses UnitKgsdumMainForm, windows, hardware_errors,
     FireDAC.Comp.Client,
     stringutils, UnitFormJournal, modbus, UnitFormConsole, termo,
-    do_each_product, UnitFormLastParty, kgs, dateutils, UnitAppIni;
+    do_each_product, kgs, dateutils, UnitAppIni;
 
 type
     ESkipDelay = class(Exception);

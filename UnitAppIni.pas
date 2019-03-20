@@ -57,7 +57,7 @@ end;
 
 procedure TAppIni.SetComportTempName(value: string);
 begin
-    AppIni.Ini.WriteString('work', 'comport_temp', value)
+    AppIni.Ini.WriteString('work', 'comport_temp', value);
 end;
 
 end.
