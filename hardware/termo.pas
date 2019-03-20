@@ -9,6 +9,9 @@ procedure TermochamberStop(w: TComportWorker);
 procedure TermochamberSetSetpoint(w: TComportWorker; setpoint: double);
 function TermochamberReadTemperature(w: TComportWorker): double;
 
+const
+    validResponseOnWrite = #2'01WRD,OK'#13#10;
+
 implementation
 
 uses math, types, StrUtils, RegularExpressions, hardware_errors, sysutils,
@@ -39,8 +42,7 @@ function getResponse(w: TComportWorker; strRequest: string): double;
 var
     response: TBytes;
     strResponse: string;
-const
-    validResponseOnWrite = #2'01WRD,OK'#13#10;
+
 begin
 
     try

@@ -9,59 +9,22 @@ procedure RunReadVar(addr: byte; AVar: byte);
 procedure RunReadVars(AVar: byte);
 procedure RunReadCoefficient(addr: byte; ACoefficient: byte);
 procedure RunReadCoefficients(ACoefficient: byte);
+procedure RunSwitchGasBlock(code: byte);
 
 implementation
 
 uses sysutils, comport, kgs, UnitFormLastParty,
-    classes, windows, run_work, hardware_errors;
+    classes, windows, run_work, hardware_errors, UnitAppIni, modbus, crud;
 
-function ReadProductVar(p: TProduct; AVar: byte; w: TComportWorker): double;
-var
-    v: double;
-begin
-    v := KgsReadVar(p.FAddr, AVar, w);
-    NewWorkLogEntry(loglevInfo, Format('%s: Var%d=%s', [p.FormatID, AVar,
-      floattostr(v)]));
-    p.FConnection := Format('Var%d=%s', [AVar, floattostr(v)]);
-    p.FConnectionFailed := false;
-    Synchronize(
-        procedure
-        begin
-            FormLastParty.SetProductValue(p.FPlace, AVar, v);
-        end);
-end;
+const
+    _one_minute_ms = 1000 * 60 * 60;
+    _one_hour_ms = _one_minute_ms * 60;
 
-function ReadAddrVar(addr: byte; AVar: byte): double;
 var
-    v: double;
-begin
-    v := KgsReadVar(addr, AVar, ComportProductsWorker);
-    if FormLastParty.FindProductWithAddr(addr,
-        procedure(p: TProduct)
-        begin
-            NewWorkLogEntry(loglevInfo, Format('%s: var%d=%s',
-              [p.FormatID, AVar, floattostr(v)]));
-        end) then
-        exit;
-    NewWorkLogEntry(loglevInfo, Format('адр.%d: var%d=%s',
-      [addr, AVar, floattostr(v)]));
-end;
+    _works: TWorks;
 
-function ReadAddrCoefficient(addr: byte; ACoefficient: byte): double;
-var
-    v: double;
-begin
-    v := KgsReadCoefficient(addr, ACoefficient, ComportProductsWorker);
-    if FormLastParty.FindProductWithAddr(addr,
-        procedure(p: TProduct)
-        begin
-            NewWorkLogEntry(loglevInfo, Format('%s: коэф.%d=%s',
-              [p.FormatID, ACoefficient, floattostr(v)]));
-        end) then
-        exit;
-    NewWorkLogEntry(loglevInfo, Format('адр.%d: коэф.%d=%s',
-      [addr, ACoefficient, floattostr(v)]));
-end;
+
+
 
 procedure RunInterrogate;
 begin
@@ -72,11 +35,10 @@ begin
             begin
                 DoEachProduct(
                     procedure(p: TProduct)
+                    var AVar:byte;
                     begin
-                        ReadProductVar(p, 72, ComportProductsWorker);
-                        ReadProductVar(p, 60, ComportProductsWorker);
-                        ReadProductVar(p, 61, ComportProductsWorker);
-                        ReadProductVar(p, 63, ComportProductsWorker);
+                        for AVar in KgsVars  do
+                            KgsReadVar(p.FAddr, AVar);
                     end);
             end;
         end);
@@ -90,7 +52,7 @@ begin
             DoEachProduct(
                 procedure(p: TProduct)
                 begin
-                    ReadAddrVar(p.FAddr, AVar);
+                    KgsReadVar(p.FAddr, AVar);
                 end);
 
         end);
@@ -101,7 +63,7 @@ begin
     RunWork(Format('считать var%d адр.%d', [AVar, addr]),
         procedure
         begin
-            ReadAddrVar(addr, AVar);
+            KgsReadVar(addr, AVar);
         end);
 end;
 
@@ -113,7 +75,7 @@ begin
             DoEachProduct(
                 procedure(p: TProduct)
                 begin
-                    ReadAddrCoefficient(p.FAddr, ACoefficient);
+                    KgsReadCoefficient(p.FAddr, ACoefficient);
                 end);
 
         end);
@@ -124,8 +86,108 @@ begin
     RunWork(Format('считать коэф.%d адр.%d', [ACoefficient, addr]),
         procedure
         begin
-            ReadAddrVar(addr, ACoefficient);
+            KgsReadCoefficient(addr, ACoefficient);
         end);
 end;
+
+procedure TermochamberSetupTemperature(temperature: double);
+begin
+    TermochamberSetSetpoint(temperature);
+    while abs(TermochamberReadTemperature - temperature) < 1 do
+        DoEachProduct(
+            procedure(p: TProduct)
+            var
+                AVar: byte;
+            begin
+                for AVar in KgsVars do
+                    KgsReadVar(p.FAddr, AVar);
+
+            end);
+    Delay('выдержка термокамеры при ' + floattostr(temperature) + '\"C',
+      _one_hour_ms * 3);
+end;
+
+procedure SwitchGasBlock6006(code: byte);
+begin
+    try
+        modbus.GetResponse($20, $10, [0, $10, 0, 1, 2, 0, code],
+          ComportProductsWorker,
+            procedure(_: TBytes)
+            begin
+            end);
+        NewWorkLogEntry(loglevInfo, 'Газовый блок 6006: ' + IntToStr(code));
+
+    except
+        on e: EHardwareError do
+        begin
+            e.Message := 'газовый блок: ' + e.Message;
+            raise;
+        end;
+    end;
+end;
+
+procedure RunSwitchGasBlock(code: byte);
+begin
+    RunWork('Газовый блок: ' + IntToStr(code),
+        procedure
+        begin
+            SwitchGasBlock6006(code);
+        end);
+end;
+
+procedure BlowGas(code: byte);
+begin
+    SwitchGasBlock6006(code);
+    Delay('продувка газа: ' + IntToStr(code), _one_minute_ms * 5);
+end;
+
+
+
+initialization
+
+_works := [TWork.Create('термоциклирование',
+    procedure
+    var
+        i: integer;
+    begin
+        for i := 1 to 3 do
+        begin
+            TermochamberSetupTemperature(-60);
+            TermochamberSetupTemperature(80);
+        end;
+        TermochamberSetupTemperature(20);
+    end),
+
+  TWork.Create('калибровка',
+    procedure
+    var
+        party: TParty;
+    begin
+
+        Synchronize(
+            procedure
+            begin
+                party := GetLastParty;
+            end);
+
+        BlowGas(1);
+        DoEachProduct(
+            procedure(p: TProduct)
+            begin
+                KgsReadVar(p.FAddr, 100);
+            end);
+
+        BlowGas(3);
+        DoEachProduct(
+            procedure(p: TProduct)
+            begin
+                KgsWriteCoefficient(p.FAddr, 44, 1);
+                KgsWriteCoefficient(p.FAddr, 48, party.Pgs[scaleConc3]);
+                KgsReadVar(p.FAddr, 102);
+            end);
+
+    end)
+
+  ];
 
 end.

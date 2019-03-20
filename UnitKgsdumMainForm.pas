@@ -23,7 +23,7 @@ type
         PanelDelay: TPanel;
         LabelDelayElepsedTime: TLabel;
         LabelProgress: TLabel;
-        LabelWhat: TLabel;
+        LabelWhatDelay: TLabel;
         ToolBar6: TToolBar;
         ToolButtonStop: TToolButton;
         Panel2: TPanel;
@@ -39,6 +39,7 @@ type
         RichEditlMessageBoxText: TRichEdit;
         PopupMenu1: TPopupMenu;
         N1: TMenuItem;
+        TimerDelay: TTimer;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
@@ -48,6 +49,8 @@ type
         procedure ToolButton3Click(Sender: TObject);
         procedure ToolButton1Click(Sender: TObject);
         procedure N1Click(Sender: TObject);
+        procedure TimerDelayTimer(Sender: TObject);
+    procedure ToolButtonStopClick(Sender: TObject);
     private
         { Private declarations }
         procedure DoAppException(Sender: TObject; E: Exception);
@@ -75,7 +78,7 @@ implementation
 {$R *.dfm}
 
 uses ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils,
-    UnitFormLastParty,
+    UnitFormLastParty, dateutils, math,
     UnitFormSelectWorksDialog,
     works, run_work, UnitFormConsole, UnitFormJournal,
     hardware_errors, UnitFormAppConfig;
@@ -119,6 +122,23 @@ begin
     end;
 
     PanelTop.Top := 0;
+end;
+
+procedure TKgsdumMainForm.TimerDelayTimer(Sender: TObject);
+var
+    s: string;
+    v: TDateTime;
+begin
+    s := LabelDelayElepsedTime.Caption;
+    if TryStrToTime(s, v) then
+        LabelDelayElepsedTime.Caption := FormatDateTime('HH:mm:ss',
+          IncSecond(v));
+    ProgressBar1.Position := ProgressBar1.Position +
+      Integer(TimerDelay.Interval);
+
+    LabelProgress.Caption :=
+      inttostr(ceil(ProgressBar1.Position * 100 / ProgressBar1.Max)) + '%';
+
 end;
 
 procedure TKgsdumMainForm.ToolButton1Click(Sender: TObject);
@@ -165,6 +185,11 @@ begin
                 Show;
             end;
         end;
+end;
+
+procedure TKgsdumMainForm.ToolButtonStopClick(Sender: TObject);
+begin
+    SkipDelay;
 end;
 
 procedure TKgsdumMainForm.DoAppException(Sender: TObject; E: Exception);

@@ -9,7 +9,7 @@ uses
     FireDAC.Phys.PGDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
     FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
     FireDAC.Comp.DataSet, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLiteDef,
-    FireDAC.Phys.SQLite;
+    FireDAC.Phys.SQLite, data_model;
 
 type
     TQueryProcedure = reference to procedure(_: TFDQuery);
@@ -24,11 +24,10 @@ type
 
     private
         { Private declarations }
+
+
     public
         { Public declarations }
-        function GetAppConfig(propertyName: string;
-          ADefaultValue: Variant): Variant;
-        procedure SetAppConfig(propertyName: string; AValue: Variant);
 
         procedure SetPartyValue(propertyName: string; AValue: Variant);
 
@@ -54,41 +53,9 @@ begin
     forcedirectories(dir);
     FDQuery1.ExecSQL;
     FDQuery2.ExecSQL;
-end;
-
-procedure TKgsdumData.SetAppConfig(propertyName: string; AValue: Variant);
-begin
-    with TFDQuery.Create(nil) do
-    begin
-        Connection := KgsdumData.Conn;
-        SQL.Text :=
-          'INSERT OR REPLACE INTO app_config (property, value) VALUES (:property, :value);';
-        ParamByName('property').Value := propertyName;
-        ParamByName('value').Value := AValue;
-        ExecSQL;
-        Free;
-    end;
 
 end;
 
-function TKgsdumData.GetAppConfig(propertyName: string;
-  ADefaultValue: Variant): Variant;
-begin
-    with TFDQuery.Create(nil) do
-    begin
-        Connection := KgsdumData.Conn;
-        SQL.Text :=
-          'SELECT value FROM app_config WHERE property =:property_name';
-        ParamByName('property_name').Value := propertyName;
-        Open;
-        First;
-        if not Eof then
-            result := FieldValues['value']
-        else
-            result := ADefaultValue;
-        Free;
-    end;
-end;
 
 procedure TKgsdumData.SetPartyValue(propertyName: string; AValue: Variant);
 begin
@@ -102,5 +69,6 @@ begin
         Free;
     end;
 end;
+
 
 end.

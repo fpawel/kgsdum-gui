@@ -10,7 +10,7 @@ uses
   crud in 'crud.pas',
   stringgridutils in 'utils\stringgridutils.pas',
   comport in 'hardware\comport.pas',
-  kgs in 'hardware\kgs.pas',
+  kgs in 'work\kgs.pas',
   UnitFormSelectWorksDialog in 'UnitFormSelectWorksDialog.pas' {FormSelectWorksDialog},
   run_work in 'work\run_work.pas',
   hardware_errors in 'hardware\hardware_errors.pas',
@@ -24,15 +24,19 @@ uses
   termo in 'hardware\termo.pas',
   UnitFormPopup in 'UnitFormPopup.pas' {FormPopup},
   UnitFormAppConfig in 'UnitFormAppConfig.pas' {FormAppConfig},
-  ComponentBaloonHintU in 'utils\ComponentBaloonHintU.pas';
+  ComponentBaloonHintU in 'utils\ComponentBaloonHintU.pas',
+  do_each_product in 'work\do_each_product.pas',
+  UnitAppIni in 'UnitAppIni.pas' {AppIni: TDataModule};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TKgsdumMainForm, KgsdumMainForm);
+
+  Application.CreateForm(TAppIni, AppIni);
   Application.CreateForm(TKgsdumData, KgsdumData);
+  Application.CreateForm(TKgsdumMainForm, KgsdumMainForm);
   Application.CreateForm(TFormLastParty, FormLastParty);
   Application.CreateForm(TFormSelectWorksDialog, FormSelectWorksDialog);
   Application.CreateForm(TFormConsole, FormConsole);

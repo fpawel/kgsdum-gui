@@ -5,6 +5,7 @@ interface
 uses sysutils;
 
 type
+    EConfigError = class(Exception);
     EHardwareError = class(Exception);
     EConnectionError = class(EHardwareError);
     EBadResponse = class(EConnectionError);

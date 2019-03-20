@@ -44,10 +44,10 @@ type
 
         function FormatID: string;
 
-        function GetConc(sc:TScaleConc; st:TScaleTemp):TConcValue;
-        function GetConc1(f:TProductField):TConcValue;
-        property Conc[ sc:TScaleConc; st:TScaleTemp]: TConcValue read GetConc;
-        property Conc1[ f:TProductField]: TConcValue read GetConc1;
+        function GetConc(sc: TScaleConc; st: TScaleTemp): TConcValue;
+        function GetConc1(f: TProductField): TConcValue;
+        property Conc[sc: TScaleConc; st: TScaleTemp]: TConcValue read GetConc;
+        property Conc1[f: TProductField]: TConcValue read GetConc1;
     end;
 
     TProductProcedure = reference to procedure(_: TProduct);
@@ -93,6 +93,7 @@ const
     Var0 = 60;
     Var1 = 61;
     VarTemp = 63;
+    KgsVars: array [0 .. 3] of byte = (VarConc, Var0, Var1, VarTemp);
 
     product_column_name: array [TProductField] of string = ('π', '¿‰ÂÒÒ',
       '«‡‚.π', ' ÓÌˆ.', 'Var0', 'Var1', 'T,"C', 'œ√—1', 'œ√—2', 'œ√—3', 'œ√—4',
@@ -192,8 +193,7 @@ begin
       (integer(fieldToTemp(field)) <> -1);
 end;
 
-
-function TProduct.GetConc(sc:TScaleConc; st:TScaleTemp): TConcValue;
+function TProduct.GetConc(sc: TScaleConc; st: TScaleTemp): TConcValue;
 begin
     result := FConc[sc, st];
 end;
@@ -225,8 +225,6 @@ begin
     end;
 end;
 
-
-
 function FormatProductFieldValue(product: TProduct; field: TProductField;
   err_det: TErrorDetail): string;
 begin
@@ -254,7 +252,7 @@ begin
             if fieldIsConc(field) then
                 exit(FormatProductConcValue(product, field, err_det));
 
-            assert(false, 'uncmown case: ' + IntToStr(integer(field)));
+            Assert(false, 'uncmown case: ' + IntToStr(integer(field)));
         end;
 
 end;

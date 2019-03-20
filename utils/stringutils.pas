@@ -66,9 +66,6 @@ begin
     exit(s);
 end;
 
-
-
-
 function BytesToHex(BA: TArray<byte>; Sep: string;
     index_from : integer;
     index_to : integer

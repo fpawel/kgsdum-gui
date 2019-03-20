@@ -5,7 +5,8 @@ interface
 uses
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
     System.Classes, Vcl.Graphics, System.Generics.collections,
-    Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, ComponentBaloonHintU;
+    Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls,
+    ComponentBaloonHintU;
 
 type
     TFormAppConfig = class(TForm)
@@ -83,7 +84,7 @@ implementation
 {$R *.dfm}
 
 uses crud, data_model, FireDAC.Comp.Client, comport, UnitKgsdumData,
-    stringutils;
+    stringutils, UnitAppIni;
 
 procedure TFormAppConfig.FormCreate(Sender: TObject);
 begin
@@ -119,28 +120,28 @@ begin
     EnumComports(ComboBoxComportTemp.Items);
 
     with ComboBoxComportProducts do
-        ItemIndex := Items.IndexOf
-          (KgsdumData.GetAppConfig('comport_products', 'COM1'));
+        ItemIndex := Items.IndexOf(AppIni.ComportProductsName);
 
     with ComboBoxComportTemp do
-        ItemIndex := Items.IndexOf
-          (KgsdumData.GetAppConfig('comport_temp', 'COM1'));
+        ItemIndex := Items.IndexOf(AppIni.ComportTempName);
 
     EditPgs1.Text := FloatToStr(party.Pgs[scaleConc1]);
     EditPgs2.Text := FloatToStr(party.Pgs[scaleConc2]);
     EditPgs3.Text := FloatToStr(party.Pgs[scaleConc3]);
     EditPgs4.Text := FloatToStr(party.Pgs[scaleConc4]);
 
-    EditTempNorm.Text := FloatToStr(KgsdumData.GetAppConfig('temp_norm', 20.0));
-    EditTempPlus.Text := FloatToStr(KgsdumData.GetAppConfig('temp_plus', 50.0));
-    EditTempMinus.Text :=
-      FloatToStr(KgsdumData.GetAppConfig('temp_minus', 5.0));
+    EditTempNorm.Text := FloatToStr(AppIni.Ini.ReadFloat('work',
+      'temp_norm', 20.0));
+    EditTempPlus.Text := FloatToStr(AppIni.Ini.ReadFloat('work',
+      'temp_plus', 50.0));
+    EditTempMinus.Text := FloatToStr(AppIni.Ini.ReadFloat('work',
+      'temp_minus', 5.0));
     FUpdate := false;
 end;
 
 procedure TFormAppConfig.ComboBoxComportProductsChange(Sender: TObject);
 begin
-    KgsdumData.SetAppConfig('comport_products', ComboBoxComportProducts.Text);
+    AppIni.ComportProductsName := ComboBoxComportProducts.Text;
 
 end;
 
@@ -158,37 +159,49 @@ end;
 
 procedure TFormAppConfig.ComboBoxComportTempChange(Sender: TObject);
 begin
-    KgsdumData.SetAppConfig('comport_temp', ComboBoxComportTemp.Text);
+    AppIni.ComportTempName := ComboBoxComportTemp.Text;
+
 end;
 
 procedure TFormAppConfig.EditPgs1Change(Sender: TObject);
 begin
+    if FUpdate then
+        exit;
     try
-        if not FUpdate then
-            KgsdumData.SetPartyValue(FKey[Sender],
-              str_to_float((Sender as TEdit).Text));
+        KgsdumData.SetPartyValue(FKey[Sender],
+          str_to_float((Sender as TEdit).Text));
         CloseWindow(FhWndTip);
-    except on e : Exception do
+    except
+        on e: Exception do
         begin
-            ShowBalloonTip( sender as TWinControl, TIconKind.Error,
-          e.ClassName, e.Message);
+            ShowBalloonTip(Sender as TWinControl, TIconKind.Error, e.ClassName,
+              e.Message);
         end;
     end;
-
     if Visible then
         (Sender as TWinControl).SetFocus;
+
 end;
 
 procedure TFormAppConfig.EditTempNormChange(Sender: TObject);
 begin
+    if FUpdate then
+        exit;
     try
-        if not FUpdate then
-            KgsdumData.SetAppConfig(FKey[Sender],
-              str_to_float((Sender as TEdit).Text));
+        AppIni.Ini.WriteFloat('work', FKey[Sender],
+          str_to_float((Sender as TEdit).Text));
+        CloseWindow(FhWndTip);
     except
+        on e: Exception do
+        begin
+            ShowBalloonTip(Sender as TWinControl, TIconKind.Error, e.ClassName,
+              e.Message);
+
+        end;
 
     end;
-
+    if Visible then
+        (Sender as TWinControl).SetFocus;
 end;
 
 procedure TFormAppConfig.FormDeactivate(Sender: TObject);

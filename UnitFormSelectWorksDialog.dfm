@@ -3,7 +3,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
   Top = 0
   BorderStyle = bsNone
   Caption = 'FormSelectWorksDialog'
-  ClientHeight = 260
+  ClientHeight = 283
   ClientWidth = 518
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -21,20 +21,22 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     Left = 0
     Top = 0
     Width = 513
-    Height = 249
-    ActivePage = TabSheet2
+    Height = 273
+    ActivePage = TabSheet1
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = #1057#1094#1077#1085#1072#1088#1080#1081
+      ExplicitHeight = 220
       object CheckListBox1: TCheckListBox
         Left = 8
         Top = 8
         Width = 195
-        Height = 209
+        Height = 225
         BorderStyle = bsNone
         Color = clWhite
         ItemHeight = 25
         Items.Strings = (
+          #1058#1077#1088#1084#1086#1094#1080#1082#1083#1080#1088#1086#1074#1072#1085#1080#1077
           #1050#1072#1083#1080#1073#1088#1086#1074#1082#1072
           #1051#1080#1085#1077#1072#1088#1080#1079#1072#1094#1080#1103
           #1058#1077#1088#1084#1086#1082#1086#1084#1087#1077#1085#1089#1094#1080#1103' '#1053#1050#1059
@@ -63,10 +65,20 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         TabOrder = 2
         OnClick = Button16Click
       end
+      object Button17: TButton
+        Left = 382
+        Top = 168
+        Width = 105
+        Height = 35
+        Caption = '____'
+        TabOrder = 3
+        OnClick = Button17Click
+      end
     end
     object TabSheet2: TTabSheet
       Caption = #1059#1087#1088#1072#1074#1083#1077#1085#1080#1077
       ImageIndex = 1
+      ExplicitHeight = 216
       object FlowPanel1: TFlowPanel
         Left = 3
         Top = 14
@@ -199,6 +211,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     object TabSheet3: TTabSheet
       Caption = #1055#1085#1077#1074#1084#1086#1073#1083#1086#1082
       ImageIndex = 2
+      ExplicitHeight = 216
       object Button5: TButton
         Left = 386
         Top = 167
@@ -272,6 +285,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     object TabSheet4: TTabSheet
       Caption = #1058#1077#1088#1084#1086#1082#1072#1084#1077#1088#1072
       ImageIndex = 3
+      ExplicitHeight = 216
       object Label1: TLabel
         AlignWithMargins = True
         Left = 170

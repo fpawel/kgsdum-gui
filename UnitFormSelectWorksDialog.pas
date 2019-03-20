@@ -43,6 +43,7 @@ type
     Button15: TButton;
     Button1: TButton;
     Button16: TButton;
+    Button17: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDeactivate(Sender: TObject);
     procedure Button16Click(Sender: TObject);
@@ -53,6 +54,7 @@ type
     procedure Button13Click(Sender: TObject);
     procedure Button14Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button17Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -110,6 +112,17 @@ begin
     RunInterrogate;
 end;
 
+procedure TFormSelectWorksDialog.Button17Click(Sender: TObject);
+begin
+    RunWork('задержка',
+        procedure
+        begin
+            Delay('продувка ПГС1', 1000 * 60 );
+            Delay('продувка ПГС2', 1000 * 60 );
+            Delay('продувка ПГС3', 1000 * 60 );
+        end);
+end;
+
 procedure TFormSelectWorksDialog.Button3Click(Sender: TObject);
 begin
     if RadioButton1.Checked then
@@ -134,11 +147,7 @@ end;
 
 procedure TFormSelectWorksDialog.Button6Click(Sender: TObject);
 begin
-    RunWork('Газовый блок: '+IntTostr((Sender as TComponent ).Tag),
-        procedure
-        begin
-            SwitchGasBlock6006((Sender as TComponent ).Tag);
-        end);
+    RunSwitchGasBlock((Sender as TComponent ).Tag);
 end;
 
 procedure TFormSelectWorksDialog.FormCreate(Sender: TObject);

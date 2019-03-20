@@ -3,8 +3,8 @@ object FormAppConfig: TFormAppConfig
   Top = 0
   BorderStyle = bsToolWindow
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
-  ClientHeight = 384
-  ClientWidth = 403
+  ClientHeight = 411
+  ClientWidth = 380
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,47 +15,40 @@ object FormAppConfig: TFormAppConfig
   OnCreate = FormCreate
   OnDeactivate = FormDeactivate
   OnShow = FormShow
-  DesignSize = (
-    403
-    384)
   PixelsPerInch = 96
   TextHeight = 19
   object Panel19: TPanel
     Left = 0
     Top = 0
-    Width = 403
+    Width = 380
     Height = 17
     Align = alTop
     BevelOuter = bvNone
     BorderWidth = 1
     TabOrder = 0
-    ExplicitWidth = 390
   end
   object Panel20: TPanel
-    Left = 16
+    Left = 0
     Top = 17
-    Width = 369
-    Height = 352
-    Anchors = [akLeft, akTop, akRight]
+    Width = 380
+    Height = 368
+    Align = alTop
     BevelOuter = bvNone
     BorderWidth = 1
     TabOrder = 1
     object Panel1: TPanel
       Left = 1
       Top = 1
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 0
-      ExplicitLeft = 0
-      ExplicitTop = 17
-      ExplicitWidth = 390
       object Shape1: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -72,7 +65,7 @@ object FormAppConfig: TFormAppConfig
         Alignment = taRightJustify
         BevelOuter = bvNone
         Caption = #1057#1054#1052' '#1087#1086#1088#1090' '#1073#1083#1086#1082#1086#1074' '#1086#1087#1090#1080#1095#1077#1089#1082#1080#1093
-        TabOrder = 0
+        TabOrder = 1
       end
       object ComboBoxComportProducts: TComboBox
         Left = 263
@@ -88,7 +81,7 @@ object FormAppConfig: TFormAppConfig
         ItemHeight = 20
         ItemIndex = 0
         ParentFont = False
-        TabOrder = 1
+        TabOrder = 0
         Text = 'COM1'
         OnChange = ComboBoxComportProductsChange
         OnDropDown = ComboBoxComportProductsDropDown
@@ -99,19 +92,16 @@ object FormAppConfig: TFormAppConfig
     object Panel3: TPanel
       Left = 1
       Top = 77
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
-      TabOrder = 1
-      ExplicitLeft = 0
-      ExplicitTop = 93
-      ExplicitWidth = 390
+      TabOrder = 2
       object Shape2: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -149,18 +139,16 @@ object FormAppConfig: TFormAppConfig
     object Panel5: TPanel
       Left = 1
       Top = 39
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
-      TabOrder = 2
-      ExplicitLeft = 2
-      ExplicitTop = 21
+      TabOrder = 1
       object Shape3: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -178,7 +166,6 @@ object FormAppConfig: TFormAppConfig
         BevelOuter = bvNone
         Caption = #1057#1054#1052' '#1087#1086#1088#1090' '#1090#1077#1088#1084#1086#1082#1072#1084#1077#1088#1099
         TabOrder = 0
-        ExplicitTop = -5
       end
       object ComboBoxComportTemp: TComboBox
         Left = 263
@@ -205,19 +192,16 @@ object FormAppConfig: TFormAppConfig
     object Panel7: TPanel
       Left = 1
       Top = 191
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
-      TabOrder = 3
-      ExplicitLeft = 0
-      ExplicitTop = 207
-      ExplicitWidth = 390
+      TabOrder = 5
       object Shape4: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -255,18 +239,16 @@ object FormAppConfig: TFormAppConfig
     object Panel9: TPanel
       Left = 1
       Top = 153
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 4
-      ExplicitLeft = 2
-      ExplicitTop = 135
       object Shape5: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -304,18 +286,16 @@ object FormAppConfig: TFormAppConfig
     object Panel11: TPanel
       Left = 1
       Top = 115
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
-      TabOrder = 5
-      ExplicitLeft = 2
-      ExplicitTop = 83
+      TabOrder = 3
       object Shape6: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -353,19 +333,16 @@ object FormAppConfig: TFormAppConfig
     object Panel13: TPanel
       Left = 1
       Top = 229
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 6
-      ExplicitLeft = 0
-      ExplicitTop = 245
-      ExplicitWidth = 390
       object Shape7: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -403,19 +380,16 @@ object FormAppConfig: TFormAppConfig
     object Panel15: TPanel
       Left = 1
       Top = 267
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 7
-      ExplicitLeft = 0
-      ExplicitTop = 283
-      ExplicitWidth = 390
       object Shape8: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -453,19 +427,16 @@ object FormAppConfig: TFormAppConfig
     object Panel17: TPanel
       Left = 1
       Top = 305
-      Width = 367
+      Width = 378
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 8
-      ExplicitLeft = 0
-      ExplicitTop = 321
-      ExplicitWidth = 390
       object Shape9: TShape
         Left = 1
         Top = 36
-        Width = 365
+        Width = 376
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight

@@ -73,8 +73,8 @@ type
         procedure reload_data;
 
         procedure SetProductInterrogate(place: Integer);
-        procedure SetProductValue(APlace: Integer; AVar: byte; AValue: double);
-        procedure SetProductConnectionFailed(APlace: Integer; AError: string);
+        procedure SetAddrValue(AAddr: byte; AVar: byte; AValue: double);
+        procedure SetAddrConnection(AAddr: byte; AConnection: string; failed:boolean);
     end;
 
 var
@@ -348,7 +348,7 @@ begin
 
     p := FProducts[ARow - 1];
 
-    if (ACol > 0 ) and p.FConnectionFailed then
+    if (ACol > 0) and p.FConnectionFailed then
     begin
         cnv.Font.Color := clRed;
         cnv.Brush.Color := $F6F7F7;
@@ -539,28 +539,34 @@ begin
     // end;
 end;
 
-procedure TFormLastParty.SetProductValue(APlace: Integer; AVar: byte;
-  AValue: double);
+procedure TFormLastParty.SetAddrValue(AAddr: byte; AVar: byte; AValue: double);
+var
+    i: Integer;
 begin
-    with FProducts[APlace] do
-    begin
-        FVarValue[AVar] := floattostr(AValue);
-        FConnection := 'ок';
-        FConnectionFailed := false;
-    end;
+    for i := 0 to Length(FProducts) - 1 do
+        if FProducts[i].FAddr = AAddr then
+        begin
+            FProducts[i].FVarValue[AVar] := floattostr(AValue);
+            FProducts[i].FConnection := 'ок';
+            FProducts[i].FConnectionFailed := false;
+            reset_products;
+            exit;
+        end;
 
-    reset_products;
 end;
 
-procedure TFormLastParty.SetProductConnectionFailed(APlace: Integer;
-  AError: string);
+procedure TFormLastParty.SetAddrConnection(AAddr: byte; AConnection: string; failed:boolean);
+var
+    i: Integer;
 begin
-    with FProducts[APlace] do
-    begin
-        FConnection := AError;
-        FConnectionFailed := true;
-    end;
-    reset_products;
+    for i := 0 to Length(FProducts) - 1 do
+        if FProducts[i].FAddr = AAddr then
+        begin
+            FProducts[i].FConnection := AConnection;
+            FProducts[i].FConnectionFailed := failed;
+            reset_products;
+            exit;
+        end;
 end;
 
 function TFormLastParty.FindProductWithAddr(addr: byte;

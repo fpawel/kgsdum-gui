@@ -82,7 +82,6 @@ object KgsdumMainForm: TKgsdumMainForm
       EdgeOuter = esNone
       Images = ImageList4
       TabOrder = 1
-      ExplicitLeft = 958
       object ToolButton1: TToolButton
         Left = 0
         Top = 0
@@ -119,10 +118,9 @@ object KgsdumMainForm: TKgsdumMainForm
       ParentFont = False
       TabOrder = 2
       Visible = False
-      ExplicitWidth = 784
       object LabelDelayElepsedTime: TLabel
         AlignWithMargins = True
-        Left = 5
+        Left = 38
         Top = 3
         Width = 58
         Height = 25
@@ -137,6 +135,7 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
+        ExplicitLeft = 5
         ExplicitHeight = 18
       end
       object LabelProgress: TLabel
@@ -156,12 +155,11 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
-        ExplicitLeft = 712
         ExplicitHeight = 18
       end
-      object LabelWhat: TLabel
+      object LabelWhatDelay: TLabel
         AlignWithMargins = True
-        Left = 73
+        Left = 5
         Top = 3
         Width = 23
         Height = 25
@@ -176,7 +174,7 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
-        ExplicitHeight = 18
+        ExplicitTop = 2
       end
       object ToolBar6: TToolBar
         Left = 783
@@ -191,7 +189,6 @@ object KgsdumMainForm: TKgsdumMainForm
         EdgeOuter = esNone
         Images = ImageList4
         TabOrder = 0
-        ExplicitLeft = 748
         object ToolButtonStop: TToolButton
           Left = 0
           Top = 0
@@ -202,6 +199,7 @@ object KgsdumMainForm: TKgsdumMainForm
           ImageIndex = 4
           ParentShowHint = False
           ShowHint = True
+          OnClick = ToolButtonStopClick
         end
       end
       object Panel2: TPanel
@@ -221,7 +219,8 @@ object KgsdumMainForm: TKgsdumMainForm
         ParentBackground = False
         ParentFont = False
         TabOrder = 1
-        ExplicitWidth = 606
+        ExplicitLeft = 104
+        ExplicitTop = -1
         DesignSize = (
           641
           31)
@@ -232,7 +231,6 @@ object KgsdumMainForm: TKgsdumMainForm
           Height = 15
           Anchors = [akLeft, akTop, akRight, akBottom]
           TabOrder = 0
-          ExplicitWidth = 600
         end
       end
     end
@@ -563,7 +561,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010B002403340514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010B002403380514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1199,5 +1197,11 @@ object KgsdumMainForm: TKgsdumMainForm
       Caption = #1050#1072#1090#1072#1083#1086#1075' '#1089' '#1076#1072#1085#1085#1099#1084#1080
       OnClick = N1Click
     end
+  end
+  object TimerDelay: TTimer
+    Enabled = False
+    OnTimer = TimerDelayTimer
+    Left = 216
+    Top = 56
   end
 end

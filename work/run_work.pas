@@ -5,7 +5,6 @@ interface
 uses comport, Classes, data_model, sysutils;
 
 type
-    EConfigError = class(Exception);
 
     TWorkProcedure = reference to procedure;
 
@@ -17,31 +16,28 @@ type
 
     TWorks = TArray<TWork>;
 
+    // ------------------------------------------------------------------------------
+procedure RunWorks(withJourna: boolean; works: TWorks);
+procedure RunWork(AName: string; AWork: TWorkProcedure);
 function IsWorkRunning: boolean;
-procedure RunWorks(works: TWorks);
-
-function ComportProductsWorker: TComportWorker;
-
 procedure CancelExecution;
-
+procedure SkipDelay;
+procedure Delay(what: string; DurationMS: cardinal);
+// ------------------------------------------------------------------------------
+procedure NewWorkLogEntry(ALevel: TLogLevel; AText: string);
+// ------------------------------------------------------------------------------
+function ComportProductsWorker: TComportworker;
+// ------------------------------------------------------------------------------
 procedure Synchronize(p: TThreadProcedure); overload;
 procedure Synchronize(m: TThreadMethod); overload;
 procedure DoEachProduct(func: TProductProcedure);
-
-procedure SwitchGasBlock6006(code: byte);
-
+// ------------------------------------------------------------------------------
 procedure TryWithErrorMessage(Proc: TWorkProcedure);
-
-procedure RunWork(AName: string; AWork: TWorkProcedure);
-procedure NewWorkLogEntry(ALevel: TLogLevel; AText: string);
-
-function CurrentWorksCount: integer;
-
+// ------------------------------------------------------------------------------
 procedure TermochamberStart;
 procedure TermochamberStop;
 procedure TermochamberSetSetpoint(setpoint: double);
 function TermochamberReadTemperature: double;
-
 // ------------------------------------------------------------------------------
 procedure RunKgsSetAddr(addr: byte);
 
@@ -53,11 +49,13 @@ var
 implementation
 
 uses UnitKgsdumMainForm, windows, hardware_errors,
-    FireDAC.Comp.Client, UnitFormLastParty, UnitKgsdumData,
+    FireDAC.Comp.Client,
     stringutils, UnitFormJournal, modbus, UnitFormConsole, termo,
-  UnitFormAppConfig;
+    do_each_product, UnitFormLastParty, kgs, dateutils, UnitAppIni;
 
 type
+    ESkipDelay = class(Exception);
+
     TWorkThread = class(TThread)
         FWorks: TWorks;
         FWork: TWork;
@@ -65,9 +63,15 @@ type
     end;
 
 var
-    _flag_running, _flag_canceled: longint;
+    _with_journal: boolean;
+    _flag_running, _flag_canceled, _flag_skip_delay: longint;
     _hComportProducts, _hComportTermo: THandle;
     _thread: TWorkThread;
+
+procedure DoEachProduct(func: TProductProcedure);
+begin
+    do_each_product.DoEachProduct(Synchronize, NewWorkLogEntry, func);
+end;
 
 constructor TWork.Create(AName: string; AProc: TWorkProcedure);
 begin
@@ -90,27 +94,28 @@ begin
     AtomicExchange(_flag_canceled, 1);
 end;
 
+procedure SkipDelay;
+begin
+    NewWorkLogEntry(logLevWarn, 'пропустить задержку');
+    AtomicExchange(_flag_skip_delay, 1);
+end;
+
 procedure _on_comport_background;
 begin
     if AtomicIncrement(_flag_canceled, 0) = 1 then
         raise EAbort.Create('выполнение прервано');
+
+    if AtomicIncrement(_flag_skip_delay, 0) = 1 then
+        raise ESkipDelay.Create('отмена задержки');
 end;
 
 function _comportProducts: THandle;
-var
-    comportName: string;
 begin
     if _hComportProducts <> INVALID_HANDLE_VALUE then
         exit(_hComportProducts);
 
-    Synchronize(
-        procedure
-        begin
-            comportName := FormAppConfig.ComboBoxComportProducts.Text;
-        end);
-
     try
-        _hComportProducts := comport.OpenComport(comportName, 9600);
+        _hComportProducts := comport.OpenComport(AppIni.ComportProductsName, 9600);
         exit(_hComportProducts);
 
     except
@@ -119,9 +124,9 @@ begin
     end
 end;
 
-function ComportProductsWorker: TComportWorker;
+function ComportProductsWorker: TComportworker;
 begin
-    result := TComportWorker.Create(_comportProducts, ComportProductsConfig,
+    result := TComportworker.Create(_comportProducts, ComportProductsConfig,
       _on_comport_background);
 end;
 
@@ -132,14 +137,8 @@ begin
     if _hComportTermo <> INVALID_HANDLE_VALUE then
         exit(_hComportTermo);
 
-    Synchronize(
-        procedure
-        begin
-            comportName := FormAppConfig.ComboBoxComportTemp.Text;
-        end);
-
     try
-        _hComportTermo := comport.OpenComport(comportName, 9600);
+        _hComportTermo := comport.OpenComport(AppIni.ComportTempName, 9600);
         exit(_hComportTermo);
 
     except
@@ -148,9 +147,9 @@ begin
     end
 end;
 
-function _comportTermoWorker: TComportWorker;
+function _comportTermoWorker: TComportworker;
 begin
-    result := TComportWorker.Create(_comportTermo, ComportTermoConfig,
+    result := TComportworker.Create(_comportTermo, ComportTermoConfig,
       _on_comport_background);
 end;
 
@@ -161,13 +160,14 @@ end;
 
 procedure RunWork(AName: string; AWork: TWorkProcedure);
 begin
-    RunWorks([TWork.Create(AName, AWork)]);
+    RunWorks(false, [TWork.Create(AName, AWork)]);
 end;
 
-procedure RunWorks(works: TWorks);
+procedure RunWorks(withJourna: boolean; works: TWorks);
 begin
     if IsWorkRunning then
         raise EConfigError.Create('already running');
+    _with_journal := withJourna;
     _thread := TWorkThread.Create(true);
     _thread.FreeOnTerminate := true;
     _thread.FWorks := works;
@@ -175,7 +175,7 @@ begin
 
 end;
 
-procedure CloseComport(var hPort: THandle);
+procedure _closeComport(var hPort: THandle);
 begin
     if hPort <> INVALID_HANDLE_VALUE then
     begin
@@ -184,18 +184,12 @@ begin
     end;
 end;
 
-function CurrentWorksCount: integer;
-begin
-    result := length(_thread.FWorks);
-
-end;
-
 procedure NewWorkLogEntry(ALevel: TLogLevel; AText: string);
 begin
     _thread.Synchronize(
         procedure
         begin
-            if CurrentWorksCount > 1 then
+            if _with_journal then
             begin
                 FormJournal.NewEntry(ALevel, AText);
                 FormConsole.NewLine(now, ALevel, _thread.FWork.Name, AText)
@@ -206,15 +200,16 @@ begin
                 Row := RowCount - 1;
 
         end);
-
 end;
 
 procedure TWorkThread.Execute;
 var
     AWork: TWork;
+    work_checked: boolean;
 begin
     AtomicExchange(_flag_running, 1);
     AtomicExchange(_flag_canceled, 0);
+    AtomicExchange(_flag_skip_delay, 0);
     Synchronize(KgsdumMainForm.OnStartWork);
     try
         for AWork in FWorks do
@@ -226,7 +221,7 @@ begin
                 procedure
                 begin
                     KgsdumMainForm.NewWork(FWork.Name);
-                    if length(FWorks) > 1 then
+                    if Length(FWorks) > 1 then
                         FormJournal.NewWork(FWork.Name);
                 end);
             FWork.Proc();
@@ -234,7 +229,7 @@ begin
     except
 
         on e: EAbort do
-            NewWorkLogEntry(loglevWarn, 'выполнение перрвано');
+            NewWorkLogEntry(logLevWarn, 'выполнение прервано');
 
         on e: EHardwareError do
         begin
@@ -259,90 +254,10 @@ begin
 
     Synchronize(KgsdumMainForm.OnStopWork);
 
-    CloseComport(_hComportProducts);
-    CloseComport(_hComportTermo);
+    _closeComport(_hComportProducts);
+    _closeComport(_hComportTermo);
     AtomicExchange(_flag_running, 0);
     _thread := nil;
-end;
-
-procedure _do_each_product1(func: TProductProcedure);
-var
-    v: double;
-    p: TProduct;
-    i: integer;
-    Products: TArray<TProduct>;
-begin
-    Synchronize(
-        procedure
-        begin
-            Products := FormLastParty.ProductionProducts;
-        end);
-
-    if length(Products) = 0 then
-        raise EConfigError.Create('не отмечено ни одного прибора в таблице');
-
-    for i := 0 to length(Products) - 1 do
-    begin
-        p := Products[i];
-        Synchronize(
-            procedure
-            begin
-                FormLastParty.SetProductInterrogate(p.FPlace);
-            end);
-
-        try
-            func(p);
-        except
-            on e: EConnectionError do
-            begin
-                NewWorkLogEntry(loglevError,
-                  format('%s: %s, %s', [p.FormatID, e.ClassName, e.Message]));
-                p.FConnection := e.Message;
-                p.FConnectionFailed := true;
-                Synchronize(
-                    procedure
-                    begin
-                        FormLastParty.SetProductConnectionFailed(p.FPlace, e.Message);
-                    end);
-
-            end;
-        end;
-    end;
-
-end;
-
-procedure DoEachProduct(func: TProductProcedure);
-begin
-    try
-        _do_each_product1(func);
-    finally
-        Synchronize(
-            procedure
-            begin
-                FormLastParty.SetProductInterrogate(-1);
-            end);
-    end;
-end;
-
-procedure SwitchGasBlock6006(code: byte);
-begin
-    try
-        modbus.GetResponse($20, $10, [0, $10, 0, 1, 2, 0, code],
-          TComportWorker.Create(_comportProducts, ComportGasConfig,
-          _on_comport_background),
-            procedure(_: TBytes)
-            begin
-            end);
-        NewWorkLogEntry(loglevInfo, 'Газовый блок 6006: ' + IntToStr(code));
-
-    except
-        on e: EHardwareError do
-        begin
-            e.Message := 'газовый блок: ' + e.Message;
-            raise;
-        end;
-    end;
-
 end;
 
 function _message_box(AMsg: string): boolean;
@@ -451,8 +366,145 @@ begin
         end);
 end;
 
+type
+    TDelay = record
+        FStartTimeMS, FDurationMS: cardinal;
+
+        constructor Create(DurationMS: cardinal);
+        function ExitCondition: boolean;
+        procedure _read(p: TProduct; AVar: byte);
+        procedure DoDelay;
+    end;
+
+constructor TDelay.Create(DurationMS: cardinal);
+begin
+    FStartTimeMS := GetTickCount;
+    FDurationMS := DurationMS;
+end;
+
+function TDelay.ExitCondition: boolean;
+begin
+    result := ((GetTickCount - FStartTimeMS) >= FDurationMS);
+end;
+
+procedure TDelay._read(p: TProduct; AVar: byte);
+begin
+    if ExitCondition then
+        exit;
+    KgsReadVar(p.FAddr, AVar);
+end;
+
+procedure TDelay.DoDelay;
+var
+    _self: TDelay;
+begin
+    _self := self;
+    while not ExitCondition do
+        DoEachProduct(
+            procedure(p: TProduct)
+            var
+                v: double;
+                AVar: byte;
+            begin
+                for AVar in KgsVars do
+                    _self._read(p, AVar);
+            end);
+end;
+
+procedure Delay(what: string; DurationMS: cardinal);
+    procedure _do_end;
+    begin
+        AtomicExchange(_flag_skip_delay, 0);
+        Synchronize(
+            procedure
+            begin
+                with KgsdumMainForm do
+                begin
+                    TimerDelay.Enabled := false;
+                    PanelDelay.Hide;
+                end;
+            end);
+    end;
+
+begin
+
+    NewWorkLogEntry(loglevInfo, what + ': ' + TimeToStr(IncMilliSecond(0,
+      DurationMS)));
+    AtomicExchange(_flag_skip_delay, 0);
+    Synchronize(
+        procedure
+        begin
+            with KgsdumMainForm do
+            begin
+                LabelWhatDelay.Caption := what;
+                LabelDelayElepsedTime.Caption := '00:00:00';
+                LabelProgress.Caption := '';
+                ProgressBar1.Position := 0;
+                ProgressBar1.Max := DurationMS;
+                TimerDelay.Enabled := true;
+                PanelDelay.Show;
+            end;
+        end);
+    try
+        TDelay.Create(DurationMS).DoDelay;
+        NewWorkLogEntry(logLevWarn, what + ': ' + TimeToStr(IncMilliSecond(0,
+          DurationMS)) + ': задержка выполнена');
+    except
+        on e: ESkipDelay do
+        begin
+            _do_end;
+            NewWorkLogEntry(logLevWarn,
+              what + ': ' + TimeToStr(IncMilliSecond(0, DurationMS)) +
+              ': пропуск задержки');
+            exit;
+        end;
+        on e: Exception do
+        begin
+            _do_end;
+            raise;
+        end;
+    end;
+    _do_end;
+end;
+
+procedure _onComport(r: TComportLogEntry);
+var
+    comport: string;
+    s: string;
+begin
+    comport := 'COM?';
+    if r.HComport = _hComportProducts then
+        comport := AppIni.ComportProductsName
+          + '-стенд'
+    else if r.HComport = _hComportTermo then
+        comport := AppIni.ComportTempName +
+          '-термокамера';
+
+    s := comport + ' : ' + BytesToHex(r.Request);
+    if Length(r.Response) > 0 then
+        s := s + ' --> ' + BytesToHex(r.Response);
+
+    s := s + ' ' + IntToStr(r.millis) + ' мс';
+
+    if r.attempt > 1 then
+        s := s + ' (' + IntToStr(r.attempt) + ')';
+
+    if r.HComport = _hComportTermo then
+    begin
+        if Length(r.Response) > 0 then
+            s := format('%s "%s" -> "%s"',
+              [s, TEncoding.ASCII.GetString(r.Request),
+              TEncoding.ASCII.GetString(r.Response)])
+        else
+            s := format('%s "%s"', [s, TEncoding.ASCII.GetString(r.Request)]);
+    end;
+
+    NewWorkLogEntry(loglevDebug, s);
+end;
+
 initialization
 
+_with_journal := false;
 _thread := nil;
 _flag_running := 0;
 _hComportProducts := INVALID_HANDLE_VALUE;
@@ -467,38 +519,8 @@ comport.SetcomportLogHook(
     begin
         Synchronize(
             procedure
-            var
-                comport: string;
-                s: string;
             begin
-                comport := 'COM?';
-                if r.HComport = _hComportProducts then
-                    comport := FormAppConfig.ComboBoxComportProducts.Text + '-стенд'
-                else if r.HComport = _hComportTermo then
-                    comport := FormAppConfig.ComboBoxComportTemp.Text +
-                      '-термокамера';
-
-                s := comport + ' : ' + BytesToHex(r.Request);
-                if length(r.Response) > 0 then
-                    s := s + ' --> ' + BytesToHex(r.Response);
-
-                s := s + ' ' + IntToStr(r.millis) + ' мс';
-
-                if r.attempt > 1 then
-                    s := s + ' (' + IntToStr(r.attempt) + ')';
-
-                if r.HComport = _hComportTermo then
-                begin
-                    if length(r.Response) > 0 then
-                        s := format('%s "%s" -> "%s"',
-                          [s, TEncoding.ASCII.GetString(r.Request),
-                          TEncoding.ASCII.GetString(r.Response)])
-                    else
-                        s := format('%s "%s"',
-                          [s, TEncoding.ASCII.GetString(r.Request)]);
-                end;
-
-                NewWorkLogEntry(loglevDebug, s);
+                _onComport(r);
             end);
     end);
 
