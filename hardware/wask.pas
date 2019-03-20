@@ -1,47 +1,48 @@
-unit kgs;
+unit wask;
 
 interface
 
 uses comport;
 
 type
-    KgsDeviceAddr = type byte;
-    KgsValueAddr = type byte;
-    KgsIODir = type byte;
-    KgsCoefficient = type byte;
     TBytes = TArray<byte>;
 
-function bytes_arrays_equal(a, b: TBytes): boolean;
-
-function KgsReadCoefficient(DeviceAddr: KgsDeviceAddr;
-  coefficient: KgsCoefficient; w: TComportWorker): double;
-
-procedure KgsWriteCoefficient(DeviceAddr: KgsDeviceAddr;
-  coefficient: KgsCoefficient; Value: double; w: TComportWorker);
-
-procedure KgsWriteVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
-  Value: double; w: TComportWorker);
-
-function KgsReadVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
-  w: TComportWorker): double;
-
-implementation
-
-uses bcd, math, sysutils, stringutils, hardware_errors;
-
-type
-    KgsRequest = record
-        DeviceAddr: KgsDeviceAddr;
-        ValueAddr: KgsValueAddr;
-        Direction: KgsIODir;
+    TKgsRequest = record
+        DeviceAddr: byte;
+        ValueAddr: byte;
+        Direction: byte;
         Value: double;
         function Bytes: TBytes;
         function ParseResponse(response: TBytes): double;
+
+        function ToString: string;
+
+        constructor FromBytes(b: TBytes);
+
+        function GetResponse(ComportWorker: TComportWorker): double;
+
     end;
 
 const
-    KgsWrite: KgsIODir = $A0;
-    KgsRead: KgsIODir = $B0;
+    KgsWrite = $A0;
+    KgsRead = $B0;
+
+implementation
+
+uses bcd, hardware_errors, sysutils, stringutils;
+
+function TKgsRequest.ToString: string;
+begin
+    result := 'адр.' + IntToStr(DeviceAddr) + ' ';
+    if Direction = KgsWrite then
+        result := result + 'WRITE '
+    else
+        result := result + 'READ ';
+    result := result + 'var.' + IntToStr(ValueAddr);
+    if Direction = KgsWrite then
+        result := result + '=' + floattostr(Value);
+
+end;
 
 function CRC16(const BS: TBytes; index_from: integer; index_to: integer): word;
 var
@@ -132,7 +133,7 @@ begin
     end;
 end;
 
-function KgsRequest.Bytes: TBytes;
+function TKgsRequest.Bytes: TBytes;
 var
     crc: word;
 begin
@@ -148,7 +149,7 @@ begin
 
 end;
 
-function KgsRequest.ParseResponse(response: TBytes): double;
+function TKgsRequest.ParseResponse(response: TBytes): double;
 var
     crc: word;
 begin
@@ -190,105 +191,39 @@ begin
         raise EBadResponse.Create
           (Format('записано не правильное значение, запрос %v, ответ %v',
           [Value, result]));
-
 end;
 
-function bytes_arrays_equal(a, b: TBytes): boolean;
-var
-    i: integer;
-begin
-    if Length(a) <> Length(b) then
-        exit(false);
-    for i := 0 to Length(a) - 1 do
-        if a[i] <> b[i] then
-            exit(false);
-    exit(true);
-
-end;
-
-function KgsGetResponse(r: KgsRequest; w: TComportWorker): double;
+function TKgsRequest.GetResponse(ComportWorker: TComportWorker): double;
 var
     _result: double;
+    _self:TKgsRequest;
 begin
-    comport.GetResponse(r.Bytes, w,
+    _self := self;
+    comport.GetResponse(Bytes, ComportWorker,
         procedure(response: TBytes)
         begin
-            _result := r.ParseResponse(response);
+            _result := _self.ParseResponse(response);
         end);
     result := _result;
 end;
 
-function KgsReadVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
-w: TComportWorker): double;
+constructor TKgsRequest.FromBytes(b: TBytes );
 var
-    r: KgsRequest;
+    crc: word;
+    a: TBytes;
+    i:integer;
 begin
-    r.DeviceAddr := DeviceAddr;
-    r.ValueAddr := ValueAddr;
-    r.Direction := KgsRead;
-    result := KgsGetResponse(r, w);
+    if Length(b) <> 9 then
+        exit;
+    SetLength(a,9);
+    for i:= 0 to 8 do
+        a[i] := b[i];
+    unpack(a);
+
+    DeviceAddr := a[0];
+    ValueAddr := a[2];
+    Direction := a[1];
+    ParseBCD6(a, 3, Value);
 end;
-
-procedure KgsWriteVar(DeviceAddr: KgsDeviceAddr; ValueAddr: KgsValueAddr;
-Value: double; w: TComportWorker);
-var
-    r: KgsRequest;
-begin
-    r.DeviceAddr := DeviceAddr;
-    r.ValueAddr := 97;
-    r.Direction := KgsWrite;
-    r.Value := Value;
-    KgsGetResponse(r, w);
-end;
-
-function KgsReadCoefficient(DeviceAddr: KgsDeviceAddr;
-coefficient: KgsCoefficient; w: TComportWorker): double;
-var
-    r: KgsRequest;
-begin
-    r.DeviceAddr := DeviceAddr;
-    r.ValueAddr := 97;
-    r.Direction := KgsRead;
-    r.Value := (coefficient div 60) * 60.;
-    KgsGetResponse(r, w);
-    result := KgsReadVar(DeviceAddr, ceil(1. * coefficient - r.Value), w);
-end;
-
-procedure KgsWriteCoefficient(DeviceAddr: KgsDeviceAddr;
-coefficient: KgsCoefficient; Value: double; w: TComportWorker);
-var
-    r: KgsRequest;
-begin
-    r.DeviceAddr := DeviceAddr;
-    r.ValueAddr := 97;
-    r.Direction := KgsRead;
-    r.Value := (coefficient div 60) * 60.;
-    KgsGetResponse(r, w);
-
-    r.ValueAddr := ceil(1. * coefficient - r.Value);
-    r.Value := Value;
-    r.Direction := KgsWrite;
-    KgsGetResponse(r, w);
-
-end;
-
-procedure TestRequestBytes;
-var
-    r: KgsRequest;
-    b: TArray<byte>;
-    s: string;
-begin
-    b := [$64, $A9, $64, $03, $15, $65, $09, $90, $56];
-    r.DeviceAddr := 100;
-    r.ValueAddr := 100;
-    r.Direction := KgsWrite;
-    r.Value := -156.589;
-    Writeln(bytes_arrays_equal(r.Bytes, b));
-    Writeln(BytesToHex(r.Bytes), ' -- ', BytesToHex(b));
-    Writeln(floattostr(r.ParseResponse(r.Bytes)));
-end;
-
-
-
 
 end.

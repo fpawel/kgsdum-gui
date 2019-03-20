@@ -105,7 +105,7 @@ uses SysUtils, math;
 
 function TProduct.FormatID: string;
 begin
-    result := Format('БО № %d адр.%d %d-%s', [FPlace + 1, FAddr, FProductID,
+    result := Format('БО №%d ID%d сер.%s', [FPlace + 1, FProductID,
       FSerial]);
 end;
 

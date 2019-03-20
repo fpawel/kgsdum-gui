@@ -135,7 +135,6 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
-        ExplicitLeft = 5
         ExplicitHeight = 18
       end
       object LabelProgress: TLabel
@@ -174,7 +173,7 @@ object KgsdumMainForm: TKgsdumMainForm
         Font.Style = []
         ParentFont = False
         Layout = tlCenter
-        ExplicitTop = 2
+        ExplicitHeight = 18
       end
       object ToolBar6: TToolBar
         Left = 783
@@ -219,8 +218,6 @@ object KgsdumMainForm: TKgsdumMainForm
         ParentBackground = False
         ParentFont = False
         TabOrder = 1
-        ExplicitLeft = 104
-        ExplicitTop = -1
         DesignSize = (
           641
           31)
@@ -561,7 +558,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010B002403380514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010B0024033C0514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

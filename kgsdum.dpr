@@ -21,12 +21,14 @@ uses
   richeditutils in 'utils\richeditutils.pas',
   UnitFormJournal in 'UnitFormJournal.pas' {FormJournal},
   bcd in 'hardware\bcd.pas',
-  termo in 'hardware\termo.pas',
+  termo in 'work\termo.pas',
   UnitFormPopup in 'UnitFormPopup.pas' {FormPopup},
   UnitFormAppConfig in 'UnitFormAppConfig.pas' {FormAppConfig},
   ComponentBaloonHintU in 'utils\ComponentBaloonHintU.pas',
   do_each_product in 'work\do_each_product.pas',
-  UnitAppIni in 'UnitAppIni.pas' {AppIni: TDataModule};
+  UnitAppIni in 'UnitAppIni.pas' {AppIni: TDataModule},
+  termochamber in 'hardware\termochamber.pas',
+  wask in 'hardware\wask.pas';
 
 {$R *.res}
 

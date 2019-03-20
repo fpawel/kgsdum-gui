@@ -14,7 +14,15 @@ type
         constructor Create(AName: string; AProc: TWorkProcedure);
     end;
 
+    ESkipDelay = class(Exception);
+
     TWorks = TArray<TWork>;
+
+    TWorkThread = class(TThread)
+        FWorks: TWorks;
+        FWork: TWork;
+        procedure Execute; override;
+    end;
 
     // ------------------------------------------------------------------------------
 procedure RunWorks(withJourna: boolean; works: TWorks);
@@ -27,6 +35,7 @@ procedure Delay(what: string; DurationMS: cardinal);
 procedure NewWorkLogEntry(ALevel: TLogLevel; AText: string);
 // ------------------------------------------------------------------------------
 function ComportProductsWorker: TComportworker;
+function ComportTermoWorker: TComportworker;
 // ------------------------------------------------------------------------------
 procedure Synchronize(p: TThreadProcedure); overload;
 procedure Synchronize(m: TThreadMethod); overload;
@@ -34,14 +43,7 @@ procedure DoEachProduct(func: TProductProcedure);
 // ------------------------------------------------------------------------------
 procedure TryWithErrorMessage(Proc: TWorkProcedure);
 // ------------------------------------------------------------------------------
-procedure TermochamberStart;
-procedure TermochamberStop;
-procedure TermochamberSetSetpoint(setpoint: double);
-function TermochamberReadTemperature: double;
-// ------------------------------------------------------------------------------
-procedure RunKgsSetAddr(addr: byte);
 
-// ------------------------------------------------------------------------------
 var
     ComportProductsConfig, ComportGasConfig, ComportTermoConfig
       : TConfigGetResponse;
@@ -50,17 +52,8 @@ implementation
 
 uses UnitKgsdumMainForm, windows, hardware_errors,
     FireDAC.Comp.Client,
-    stringutils, UnitFormJournal, modbus, UnitFormConsole, termo,
-    do_each_product, kgs, dateutils, UnitAppIni;
-
-type
-    ESkipDelay = class(Exception);
-
-    TWorkThread = class(TThread)
-        FWorks: TWorks;
-        FWork: TWork;
-        procedure Execute; override;
-    end;
+    stringutils, UnitFormJournal, modbus, UnitFormConsole,
+    do_each_product, kgs, dateutils, UnitAppIni, strutils, termochamber, wask;
 
 var
     _with_journal: boolean;
@@ -115,7 +108,8 @@ begin
         exit(_hComportProducts);
 
     try
-        _hComportProducts := comport.OpenComport(AppIni.ComportProductsName, 9600);
+        _hComportProducts := comport.OpenComport
+          (AppIni.ComportProductsName, 9600);
         exit(_hComportProducts);
 
     except
@@ -147,7 +141,7 @@ begin
     end
 end;
 
-function _comportTermoWorker: TComportworker;
+function ComportTermoWorker: TComportworker;
 begin
     result := TComportworker.Create(_comportTermo, ComportTermoConfig,
       _on_comport_background);
@@ -172,7 +166,6 @@ begin
     _thread.FreeOnTerminate := true;
     _thread.FWorks := works;
     _thread.Start;
-
 end;
 
 procedure _closeComport(var hPort: THandle);
@@ -273,99 +266,6 @@ begin
 
 end;
 
-procedure TryWithErrorMessage(Proc: TWorkProcedure);
-var
-    _continue: boolean;
-begin
-    try
-        Proc();
-    except
-        on e: EHardwareError do
-        begin
-            Synchronize(
-                procedure
-                begin
-                    _continue := KgsdumMainForm.ErrorMessageBox
-                      (format('Нет связи с оборудованием: %s, %s'#10#13#10#13 +
-                      'Ignore - продолжить выполнение настройки'#10#13#10#13 +
-                      'Abort - прекратить настройку', [e.ClassName,
-                      e.Message]));
-                end);
-        end;
-    end
-end;
-
-procedure TermochamberStart;
-begin
-    try
-        termo.TermochamberStart(_comportTermoWorker);
-        NewWorkLogEntry(loglevDebug, 'термокамера: СТАРТ');
-    except
-        on e: EHardwareError do
-        begin
-            e.Message := 'не удалось выполнить команду СТАРТ: ' + e.Message;
-            raise;
-        end;
-    end;
-end;
-
-procedure TermochamberStop;
-begin
-    try
-        termo.TermochamberStop(_comportTermoWorker);
-        NewWorkLogEntry(loglevDebug, 'термокамера: СТОП');
-    except
-        on e: EHardwareError do
-        begin
-            e.Message := 'не удалось выполнить команду СТОП: ' + e.Message;
-            raise;
-        end;
-    end;
-
-end;
-
-procedure TermochamberSetSetpoint(setpoint: double);
-begin
-    try
-        termo.TermochamberSetSetpoint(_comportTermoWorker, setpoint);
-        NewWorkLogEntry(loglevDebug, 'термокамера: УСТАВКА ' +
-          FloatToStr(setpoint));
-
-    except
-        on e: EHardwareError do
-        begin
-            e.Message := 'термокамера: не удалось задать уставку ' +
-              FloatToStr(setpoint) + ': ' + e.Message;
-            raise;
-        end;
-    end;
-end;
-
-function TermochamberReadTemperature: double;
-begin
-    try
-        result := termo.TermochamberReadTemperature(_comportTermoWorker);
-        NewWorkLogEntry(loglevDebug, 'термокамера: текущая температура=' +
-          FloatToStr(result));
-    except
-        on e: EHardwareError do
-        begin
-            e.Message := 'не удалось считать текущую температуру: ' + e.Message;
-            raise;
-        end;
-    end;
-end;
-
-procedure RunKgsSetAddr(addr: byte);
-begin
-    RunWork('установка адреса',
-        procedure
-        begin
-            comport.WriteComport(_comportProducts, [0, $AA, $55, addr]);
-            NewWorkLogEntry(loglevDebug, BytesToHex([0, $AA, $55, addr]));
-        end);
-end;
-
 type
     TDelay = record
         FStartTimeMS, FDurationMS: cardinal;
@@ -406,8 +306,17 @@ begin
                 v: double;
                 AVar: byte;
             begin
-                for AVar in KgsVars do
-                    _self._read(p, AVar);
+                try
+                    for AVar in KgsVars do
+                        _self._read(p, AVar);
+                except
+                    on e: EConnectionError do
+                    begin
+                        NewWorkLogEntry(loglevError, p.FormatID + ': '+e.Message)
+
+                    end;
+                end;
+
             end);
 end;
 
@@ -470,15 +379,13 @@ end;
 procedure _onComport(r: TComportLogEntry);
 var
     comport: string;
-    s: string;
+    s, strRequest, strResponse: string;
 begin
     comport := 'COM?';
     if r.HComport = _hComportProducts then
-        comport := AppIni.ComportProductsName
-          + '-стенд'
+        comport := AppIni.ComportProductsName + '-стенд'
     else if r.HComport = _hComportTermo then
-        comport := AppIni.ComportTempName +
-          '-термокамера';
+        comport := AppIni.ComportTempName + '-термокамера';
 
     s := comport + ' : ' + BytesToHex(r.Request);
     if Length(r.Response) > 0 then
@@ -491,15 +398,60 @@ begin
 
     if r.HComport = _hComportTermo then
     begin
+        strRequest := TEncoding.ASCII.GetString(r.Request);
+        strResponse := TEncoding.ASCII.GetString(r.Response);
         if Length(r.Response) > 0 then
-            s := format('%s "%s" -> "%s"',
-              [s, TEncoding.ASCII.GetString(r.Request),
-              TEncoding.ASCII.GetString(r.Response)])
+            strResponse := 'нет ответа';
+        if Length(r.Response) > 0 then
+            s := format('%s "%s" : "%s" %s : %s',
+              [TermochamberFormatRequest(strRequest), strRequest, strResponse,
+              TermochamberFormatResponse(strResponse),
+
+              s])
         else
-            s := format('%s "%s"', [s, TEncoding.ASCII.GetString(r.Request)]);
+            s := format('%s "%s" : нет ответа : %s',
+              [TermochamberFormatRequest(strRequest), strRequest, s]);
+    end
+    else if (r.HComport = _hComportProducts) then
+    begin
+        if r.Request[0] = $20 then
+        begin
+            s := 'газовый блок: ' + IntToStr(r.Request[8]) + ': ' + s
+        end
+        else
+        begin
+            strRequest := TKgsRequest.fromBytes(r.Request).ToString;
+            strResponse := TKgsRequest.fromBytes(r.Response).ToString;
+            if Length(r.Response) > 0 then
+                strResponse := 'нет ответа';
+            s := 'БО: ' + strRequest + ' : ' + strResponse + ' : ' + s;
+        end;
+
     end;
 
     NewWorkLogEntry(loglevDebug, s);
+end;
+
+procedure TryWithErrorMessage(Proc: TWorkProcedure);
+var
+    _continue: boolean;
+begin
+    try
+        Proc();
+    except
+        on e: EHardwareError do
+        begin
+            Synchronize(
+                procedure
+                begin
+                    _continue := KgsdumMainForm.ErrorMessageBox
+                      (format('Нет связи с оборудованием: %s, %s'#10#13#10#13 +
+                      'Ignore - продолжить выполнение настройки'#10#13#10#13 +
+                      'Abort - прекратить настройку', [e.ClassName,
+                      e.Message]));
+                end);
+        end;
+    end
 end;
 
 initialization

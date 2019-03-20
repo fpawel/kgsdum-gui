@@ -68,7 +68,7 @@ implementation
 
 {$R *.dfm}
 
-uses works, run_work, data_model;
+uses works, run_work, data_model, termo;
 
 procedure TFormSelectWorksDialog.Button11Click(Sender: TObject);
 begin

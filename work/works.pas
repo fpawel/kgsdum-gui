@@ -11,10 +11,13 @@ procedure RunReadCoefficient(addr: byte; ACoefficient: byte);
 procedure RunReadCoefficients(ACoefficient: byte);
 procedure RunSwitchGasBlock(code: byte);
 
+procedure RunKgsSetAddr(addr: byte);
+
 implementation
 
-uses sysutils, comport, kgs, UnitFormLastParty,
-    classes, windows, run_work, hardware_errors, UnitAppIni, modbus, crud;
+uses sysutils, comport, kgs, UnitFormLastParty, stringutils,
+    classes, windows, run_work, termo, hardware_errors, UnitAppIni, modbus, crud,
+  UnitKgsdumMainForm;
 
 const
     _one_minute_ms = 1000 * 60 * 60;
@@ -25,6 +28,16 @@ var
 
 
 
+
+procedure RunKgsSetAddr(addr: byte);
+begin
+    RunWork('установка адреса',
+        procedure
+        begin
+            comport.WriteComport(comportProductsWorker.HComport, [0, $AA, $55, addr]);
+            NewWorkLogEntry(loglevDebug, BytesToHex([0, $AA, $55, addr]));
+        end);
+end;
 
 procedure RunInterrogate;
 begin
