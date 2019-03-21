@@ -94,6 +94,13 @@ type
 
     TSeriesPointEntries = TArray<TSeriesPointEntry>;
 
+    TSeriesBucket = record
+        BucketID : longint;
+        UpdatedAt, CreatedAt: TDateTime;
+        Name : string;
+    end;
+
+
 function ProductColumnWidth(column: TProductField; canvas: TCanvas;
   prods: TArray<TProduct>; err_det: TErrorDetail): integer;
 

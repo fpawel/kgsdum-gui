@@ -7,7 +7,7 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ToolWin,
     Vcl.StdCtrls,
-    Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, inifiles, Vcl.Imaging.pngimage,
+    Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, Vcl.Imaging.pngimage,
     Vcl.Menus;
 
 type
@@ -40,10 +40,10 @@ type
         PopupMenu1: TPopupMenu;
         N1: TMenuItem;
         TimerDelay: TTimer;
-    PageControlMain: TPageControl;
-    TabSheetChart: TTabSheet;
-    TabSheetParties: TTabSheet;
-    TabSheetJournal: TTabSheet;
+        PageControlMain: TPageControl;
+        TabSheetChart: TTabSheet;
+        TabSheetParties: TTabSheet;
+        TabSheetJournal: TTabSheet;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
@@ -54,23 +54,23 @@ type
         procedure ToolButton1Click(Sender: TObject);
         procedure N1Click(Sender: TObject);
         procedure TimerDelayTimer(Sender: TObject);
-    procedure ToolButtonStopClick(Sender: TObject);
-    procedure PageControlMainChange(Sender: TObject);
-    procedure PageControlMainDrawTab(Control: TCustomTabControl;
-      TabIndex: Integer; const Rect: TRect; Active: Boolean);
+        procedure ToolButtonStopClick(Sender: TObject);
+        procedure PageControlMainChange(Sender: TObject);
+        procedure PageControlMainDrawTab(Control: TCustomTabControl;
+          TabIndex: Integer; const Rect: TRect; Active: Boolean);
     private
         { Private declarations }
         procedure DoAppException(Sender: TObject; E: Exception);
 
     public
         { Public declarations }
-        Ini: TIniFile;
+
         procedure AppException(Sender: TObject; E: Exception);
         procedure OnStartWork;
         procedure OnStopWork;
         procedure NewWork(work: string);
 
-        function ErrorMessageBox(AMsg: string): boolean;
+        function ErrorMessageBox(AMsg: string): Boolean;
         procedure ShowNonModalErrorMessage(title, error: string);
 
     end;
@@ -332,7 +332,7 @@ begin
     LabelStatusTop.Caption := work;
 end;
 
-function TKgsdumMainForm.ErrorMessageBox(AMsg: string): boolean;
+function TKgsdumMainForm.ErrorMessageBox(AMsg: string): Boolean;
 begin
     result := MessageDlg(AMsg, mtError, [mbAbort, mbIgnore], 0) = mrIgnore;
 end;

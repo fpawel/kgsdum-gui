@@ -152,7 +152,6 @@ object KgsdumData: TKgsdumData
       'Database=$(APPDATA)\kgsdum\kgsdum_charts.sqlite'
       'JournalMode=WAL'
       'LockingMode=Normal'
-      'DateTimeFormat=Binary'
       'DriverID=SQLite')
     LoginPrompt = False
     Left = 88
@@ -166,11 +165,10 @@ object KgsdumData: TKgsdumData
       ''
       'CREATE TABLE IF NOT EXISTS bucket'
       '('
-      '  bucket_id  INTEGER   NOT NULL PRIMARY KEY,'
-      
-        '  created_at TIMESTAMP NOT NULL UNIQUE DEFAULT (datetime('#39'now'#39'))' +
-        ','
-      '  updated_at TIMESTAMP NOT NULL DEFAULT (datetime('#39'now'#39'))'
+      '  bucket_id  INTEGER NOT NULL PRIMARY KEY,'
+      '  created_at REAL    NOT NULL UNIQUE DEFAULT (julianday('#39'now'#39')),'
+      '  updated_at REAL    NOT NULL        DEFAULT (julianday('#39'now'#39')),'
+      '  name       TEXT    NOT NULL'
       ');'
       ''
       'CREATE TABLE IF NOT EXISTS series'
@@ -190,10 +188,9 @@ object KgsdumData: TKgsdumData
       '  FOR EACH ROW'
       '  BEGIN'
       '    UPDATE bucket'
-      '    SET updated_at = datetime('#39'now'#39')'
+      '    SET updated_at = julianday('#39'now'#39')'
       '    WHERE bucket.bucket_id = new.bucket_id;'
       '  END;'
-      ''
       '')
     Left = 312
     Top = 200

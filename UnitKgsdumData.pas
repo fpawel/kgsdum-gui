@@ -33,7 +33,9 @@ type
 
         procedure SetPartyValue(propertyName: string; AValue: Variant);
         procedure AddSeriesPoint(TheAddr, TheVar: byte; TheValue: double);
-        procedure NewChartSeries(name: string);
+        procedure NewChartSeries(AName: string);
+
+        function GetLastSeriesBucket: TSeriesBucket;
 
     end;
 
@@ -51,6 +53,9 @@ uses variants, dateutils, stringutils;
 procedure TKgsdumData.DataModuleCreate(Sender: TObject);
 var
     dir: String;
+    dtStr, dtStr2: string;
+    dt: TDateTime;
+    fs: TFormatSettings;
 
 begin
     dir := GetEnvironmentVariable('APPDATA') + '\kgsdum\';
@@ -63,6 +68,38 @@ begin
     FDQuery1.ExecSQL;
     FDQuery2.ExecSQL;
     FDQuery3.ExecSQL;
+
+    fs := TFormatSettings.Create;
+    fs.DateSeparator := '-';
+    fs.ShortDateFormat := 'yyyy-MM-dd';
+    fs.TimeSeparator := ':';
+    fs.ShortTimeFormat := 'hh:mm:ss.zzz';
+    fs.LongTimeFormat := 'hh:mm:ss.zzz';
+    fs.DecimalSeparator := '.';
+end;
+
+function TKgsdumData.GetLastSeriesBucket: TSeriesBucket;
+begin
+    with TFDQuery.Create(nil) do
+    begin
+        Connection := KgsdumData.ConnCharts;
+        SQL.Text := 'SELECT * FROM bucket ORDER BY created_at DESC LIMIT 1';
+        Open;
+        First;
+        with result do
+            if eof then
+            begin
+                BucketID := 0;
+            end
+            else
+            begin
+                BucketID := FieldValues['bucket_id'];
+                UpdatedAt := FieldValues['updated_at'];
+                CreatedAt := FieldValues['created_at'];
+                Name := FieldValues['name'];
+            end;
+        Free;
+    end;
 
 end;
 
@@ -79,13 +116,15 @@ begin
     end;
 end;
 
-procedure TKgsdumData.NewChartSeries(name: string);
+procedure TKgsdumData.NewChartSeries(AName: string);
 begin
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnCharts;
-        SQL.Text := 'INSERT INTO bucket (name) VALUES (:name)';
-        ParamByName('name').Value := name;
+        SQL.Text := 'INSERT INTO bucket (created_at, name) VALUES (:created_at, :name )';
+        ParamByName('name').Value := AName;
+        ParamByName('created_at').Value := now;
+
         ExecSQL;
         Free;
     end;
@@ -96,7 +135,7 @@ procedure TKgsdumData.AddSeriesPoint(TheAddr, TheVar: byte; TheValue: double);
 var
     i: integer;
     s: string;
-    bucket_created_at, bucket_updated_at: TDateTime;
+    last_bucket: TSeriesBucket;
 begin
     SetLength(FSeriesPointEntries, Length(FSeriesPointEntries) + 1);
     with FSeriesPointEntries[Length(FSeriesPointEntries) - 1] do
@@ -109,39 +148,26 @@ begin
     if SecondsBetween(now, FSeriesPointEntries[0].StoredAt) < 10 then
         exit;
 
+    last_bucket := GetLastSeriesBucket;
+    if (last_bucket.BucketID = 0) or
+      (last_bucket.CreatedAt <> last_bucket.CreatedAt) and
+      (SecondsBetween(now, last_bucket.UpdatedAt) > 60) then
+    begin
+        NewChartSeries('опрос');
+        last_bucket := GetLastSeriesBucket;
+    end;
+
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnCharts;
-        SQL.Text := 'SELECT * FROM bucket ORDER BY created_at DESC LIMIT 1';
-        Open;
-        First;
-        if eof then
-        begin
-            NewChartSeries('опрос');
-            bucket_updated_at := now;
-            bucket_created_at := bucket_updated_at;
-        end
-        else
-        begin
-            bucket_updated_at := FieldValues['updated_at'];
-            bucket_created_at := FieldValues['created_at'];
-        end;
-
-        if (bucket_updated_at <> bucket_created_at) and
-          (SecondsBetween(now, bucket_updated_at) > 60) then
-        begin
-            NewChartSeries('опрос');
-            bucket_updated_at := now;
-        end;
 
         SQL.Text :=
-          'WITH q AS (SELECT bucket_id FROM bucket ORDER BY created_at DESC LIMIT 1)'
-          + 'INSERT INTO series(bucket_id, addr, var, value, stored_at)  VALUES ';
+          'INSERT INTO series(bucket_id, addr, var, value, stored_at)  VALUES ';
         for i := 0 to Length(FSeriesPointEntries) - 1 do
             with FSeriesPointEntries[i] do
             begin
-                SQL.Text := SQL.Text + ' ( (SELECT bucket_id FROM q), ' +
-                  IntToStr(Addr) + ', ' + IntToStr(AVar) + ', ' +
+                SQL.Text := SQL.Text + ' ( ' + IntToStr(last_bucket.BucketID) +
+                  ', ' + IntToStr(Addr) + ', ' + IntToStr(AVar) + ', ' +
                   float_to_str(Value) + ', ' + 'julianday(''' +
                   FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', now) + ''') )';
                 if i < Length(FSeriesPointEntries) - 1 then
@@ -149,7 +175,7 @@ begin
 
             end;
         s := SQL.Text;
-        Open;
+        ExecSQL;
         Free;
     end;
 

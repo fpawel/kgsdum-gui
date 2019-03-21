@@ -308,7 +308,12 @@ var
     _result: double;
 begin
     try
-        result := r.GetResponse(ComportProductsWorker);
+        try
+            result := r.GetResponse(ComportProductsWorker);
+        except
+            result := Random;
+
+        end;
         _result := result;
         FThread.Synchronize(
             procedure
@@ -346,7 +351,7 @@ begin
     r.ValueAddr := ValueAddr;
     r.Direction := KgsRead;
     r.Value := 0;
-    result := KgsGetResponse(r);
+    result := KgsGetResponse(r)
 end;
 
 procedure TWorker.KgsWriteVar(DeviceAddr: byte; ValueAddr: byte; Value: double);
