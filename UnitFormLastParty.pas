@@ -83,7 +83,7 @@ var
 implementation
 
 uses FireDAC.Comp.Client, stringgridutils, stringutils, dateutils, crud,
-    UnitKgsdumData, vclutils, ComponentBaloonHintU;
+    UnitKgsdumData, vclutils, ComponentBaloonHintU, UnitFormChartSeries;
 
 {$R *.dfm}
 
@@ -550,6 +550,11 @@ begin
             FProducts[i].FConnection := 'ок';
             FProducts[i].FConnectionFailed := false;
             reset_products;
+            FormChartSeries.AddValue(AAddr, AVar, AValue, now);
+
+
+            KgsdumData.AddSeriesPoint(AAddr, AVar, AValue);
+
             exit;
         end;
 

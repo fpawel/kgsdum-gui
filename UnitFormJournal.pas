@@ -29,16 +29,12 @@ type
     private
         { Private declarations }
         FWorks: TArray<TWorkEntryInfo>;
-//        FCurrentWork: string;
-//        FCurrentWorkID: longint;
-
         procedure _DoNewWork(work: string);
     public
         { Public declarations }
         procedure fetch_days;
         procedure NewWork(work: string);
         procedure NewEntry(ALevel: data_model.TLogLevel; AText: string);
-
         procedure NewExceptionEntry(What, AText: string);
     end;
 

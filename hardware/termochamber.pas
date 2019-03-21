@@ -29,15 +29,15 @@ var
 
 begin
     try
+
         response := comport.getResponse(TEncoding.ANSI.GetBytes(strRequest),
           ComportWorker,
             procedure(_: TBytes)
             begin
             end);
-
         strResponse := TEncoding.ASCII.GetString(response);
 
-        if AnsiStartsStr('01WRD,', strRequest) then
+        if AnsiStartsStr(#2'01WRD,', strRequest) then
         begin
             if strResponse <> TermochamberValidResponseOnWrite then
                 raise EBadResponse.Create

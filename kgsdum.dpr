@@ -10,9 +10,7 @@ uses
   crud in 'crud.pas',
   stringgridutils in 'utils\stringgridutils.pas',
   comport in 'hardware\comport.pas',
-  kgs in 'work\kgs.pas',
   UnitFormSelectWorksDialog in 'UnitFormSelectWorksDialog.pas' {FormSelectWorksDialog},
-  run_work in 'work\run_work.pas',
   hardware_errors in 'hardware\hardware_errors.pas',
   works in 'work\works.pas',
   stringutils in 'utils\stringutils.pas',
@@ -21,14 +19,14 @@ uses
   richeditutils in 'utils\richeditutils.pas',
   UnitFormJournal in 'UnitFormJournal.pas' {FormJournal},
   bcd in 'hardware\bcd.pas',
-  termo in 'work\termo.pas',
   UnitFormPopup in 'UnitFormPopup.pas' {FormPopup},
   UnitFormAppConfig in 'UnitFormAppConfig.pas' {FormAppConfig},
   ComponentBaloonHintU in 'utils\ComponentBaloonHintU.pas',
-  do_each_product in 'work\do_each_product.pas',
   UnitAppIni in 'UnitAppIni.pas' {AppIni: TDataModule},
   termochamber in 'hardware\termochamber.pas',
-  wask in 'hardware\wask.pas';
+  wask in 'hardware\wask.pas',
+  UnitWorker in 'work\UnitWorker.pas' {Worker: TDataModule},
+  UnitFormChartSeries in 'UnitFormChartSeries.pas' {FormChartSeries};
 
 {$R *.res}
 
@@ -45,5 +43,7 @@ begin
   Application.CreateForm(TFormJournal, FormJournal);
   Application.CreateForm(TFormPopup, FormPopup);
   Application.CreateForm(TFormAppConfig, FormAppConfig);
+  Application.CreateForm(TWorker, Worker);
+  Application.CreateForm(TFormChartSeries, FormChartSeries);
   Application.Run;
 end.

@@ -258,8 +258,8 @@ object KgsdumMainForm: TKgsdumMainForm
     end
   end
   object PanelMessageBox: TPanel
-    Left = 235
-    Top = 263
+    Left = 603
+    Top = 79
     Width = 581
     Height = 177
     BevelKind = bkFlat
@@ -548,6 +548,42 @@ object KgsdumMainForm: TKgsdumMainForm
       Zoom = 100
     end
   end
+  object PageControlMain: TPageControl
+    Left = 0
+    Top = 31
+    Width = 1056
+    Height = 659
+    ActivePage = TabSheetJournal
+    Align = alClient
+    MultiLine = True
+    OwnerDraw = True
+    TabHeight = 100
+    TabOrder = 2
+    TabPosition = tpLeft
+    TabWidth = 40
+    OnChange = PageControlMainChange
+    OnDrawTab = PageControlMainDrawTab
+    object TabSheetJournal: TTabSheet
+      Caption = #1046#1091#1088#1085#1072#1083
+      ImageIndex = 3
+    end
+    object TabSheetChart: TTabSheet
+      Caption = #1043#1088#1072#1092#1080#1082
+      ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+    end
+    object TabSheetParties: TTabSheet
+      Caption = #1040#1088#1093#1080#1074
+      ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+    end
+  end
   object ImageList4: TImageList
     ColorDepth = cd32Bit
     BlendColor = clWindow
@@ -558,7 +594,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010B0024033C0514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010B002403480514001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

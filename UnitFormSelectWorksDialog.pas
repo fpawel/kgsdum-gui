@@ -54,7 +54,7 @@ type
     procedure Button13Click(Sender: TObject);
     procedure Button14Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
-    procedure Button17Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -68,41 +68,41 @@ implementation
 
 {$R *.dfm}
 
-uses works, run_work, data_model, termo;
+uses works,  data_model, UnitWorker;
 
 procedure TFormSelectWorksDialog.Button11Click(Sender: TObject);
 begin
-     RunWork('термокамера: старт',
+     Worker.RunWork('термокамера: старт',
         procedure
         begin
-            TermochamberStart;
+            Worker.TermochamberStart;
         end);
 end;
 
 procedure TFormSelectWorksDialog.Button12Click(Sender: TObject);
 begin
-    RunWork('термокамера: стоп',
+    Worker.RunWork('термокамера: стоп',
         procedure
         begin
-            TermochamberStop;
+            Worker.TermochamberStop;
         end);
 end;
 
 procedure TFormSelectWorksDialog.Button13Click(Sender: TObject);
 begin
-    RunWork('термокамера: уставка ' + Edit2.Text,
+    Worker.RunWork('термокамера: уставка ' + Edit2.Text,
         procedure
         begin
-            TermochamberSetSetpoint(StrToFloat(Edit2.Text));
+            Worker.TermochamberSetSetpoint(StrToFloat(Edit2.Text));
         end);
 end;
 
 procedure TFormSelectWorksDialog.Button14Click(Sender: TObject);
 begin
-    RunWork('термокамера: температура',
+    Worker.RunWork('термокамера: температура',
         procedure
         begin
-            TermochamberReadTemperature;
+            Worker.TermochamberReadTemperature;
         end);
 
 end;
@@ -112,15 +112,19 @@ begin
     RunInterrogate;
 end;
 
-procedure TFormSelectWorksDialog.Button17Click(Sender: TObject);
+procedure TFormSelectWorksDialog.Button1Click(Sender: TObject);
+var i: integer;
+    xs:TWorks;
 begin
-    RunWork('задержка',
-        procedure
+    for I := 0 to  length(works.MainWorks)-1 do
+    begin
+        if CheckListBox1.Checked[i] then 
         begin
-            Delay('продувка ПГС1', 1000 * 60 );
-            Delay('продувка ПГС2', 1000 * 60 );
-            Delay('продувка ПГС3', 1000 * 60 );
-        end);
+            SetLength(xs, Length(xs)+1);
+            xs[Length(xs)-1] := MainWorks[i];
+        end;
+    end;
+    Worker.RunWorks(true, xs);
 end;
 
 procedure TFormSelectWorksDialog.Button3Click(Sender: TObject);
@@ -142,7 +146,7 @@ end;
 
 procedure TFormSelectWorksDialog.Button4Click(Sender: TObject);
 begin
-    RunKgsSetAddr(StrToInt(EditAddr.Text));
+    Worker.RunKgsSetAddr(StrToInt(EditAddr.Text));
 end;
 
 procedure TFormSelectWorksDialog.Button6Click(Sender: TObject);
@@ -151,10 +155,17 @@ begin
 end;
 
 procedure TFormSelectWorksDialog.FormCreate(Sender: TObject);
+var i: integer;
 begin
     SetWindowLong(Button1.Handle, GWL_STYLE, GetWindowLong(Button1.Handle,
     	GWL_STYLE) or BS_MULTILINE);
+    //CheckListBox1.CheckAll(cbChecked);
+    CheckListBox1.Clear;
+    for I := 0 to  length(works.MainWorks)-1 do
+        CheckListBox1.Items.Add(MainWorks[i].Name);
     CheckListBox1.CheckAll(cbChecked);
+
+
 end;
 
 procedure TFormSelectWorksDialog.FormDeactivate(Sender: TObject);

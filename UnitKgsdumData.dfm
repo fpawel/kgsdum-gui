@@ -107,14 +107,7 @@ object KgsdumData: TKgsdumData
       'SELECT *'
       'FROM product'
       'WHERE party_id IN (SELECT * FROM last_party_id)'
-      'ORDER BY created_at;'
-      ''
-      ''
-      'CREATE TABLE IF NOT EXISTS app_config'
-      '('
-      '  property TEXT PRIMARY KEY NOT NULL,'
-      '  value                     NOT NULL'
-      ');')
+      'ORDER BY created_at;')
     Left = 200
     Top = 120
   end
@@ -153,5 +146,56 @@ object KgsdumData: TKgsdumData
       'LIMIT 1;')
     Left = 288
     Top = 120
+  end
+  object ConnCharts: TFDConnection
+    Params.Strings = (
+      'Database=$(APPDATA)\kgsdum\kgsdum_charts.sqlite'
+      'JournalMode=WAL'
+      'LockingMode=Normal'
+      'DateTimeFormat=Binary'
+      'DriverID=SQLite')
+    LoginPrompt = False
+    Left = 88
+    Top = 184
+  end
+  object FDQuery3: TFDQuery
+    Connection = ConnCharts
+    SQL.Strings = (
+      'PRAGMA foreign_keys = ON;'
+      'PRAGMA encoding = '#39'UTF-8'#39';'
+      ''
+      'CREATE TABLE IF NOT EXISTS bucket'
+      '('
+      '  bucket_id  INTEGER   NOT NULL PRIMARY KEY,'
+      
+        '  created_at TIMESTAMP NOT NULL UNIQUE DEFAULT (datetime('#39'now'#39'))' +
+        ','
+      '  updated_at TIMESTAMP NOT NULL DEFAULT (datetime('#39'now'#39'))'
+      ');'
+      ''
+      'CREATE TABLE IF NOT EXISTS series'
+      '('
+      '  bucket_id INTEGER NOT NULL,'
+      '  addr      INTEGER NOT NULL CHECK (addr > 0),'
+      '  var       INTEGER NOT NULL CHECK (var >= 0),'
+      '  stored_at REAL    NOT NULL,'
+      '  value     REAL    NOT NULL,'
+      '  FOREIGN KEY (bucket_id) REFERENCES bucket (bucket_id)'
+      '    ON DELETE CASCADE'
+      ');'
+      ''
+      'CREATE TRIGGER IF NOT EXISTS trigger_bucket_updated_at'
+      '  AFTER INSERT'
+      '  ON series'
+      '  FOR EACH ROW'
+      '  BEGIN'
+      '    UPDATE bucket'
+      '    SET updated_at = datetime('#39'now'#39')'
+      '    WHERE bucket.bucket_id = new.bucket_id;'
+      '  END;'
+      ''
+      '')
+    Left = 312
+    Top = 200
   end
 end

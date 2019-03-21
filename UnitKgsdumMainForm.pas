@@ -40,6 +40,10 @@ type
         PopupMenu1: TPopupMenu;
         N1: TMenuItem;
         TimerDelay: TTimer;
+    PageControlMain: TPageControl;
+    TabSheetChart: TTabSheet;
+    TabSheetParties: TTabSheet;
+    TabSheetJournal: TTabSheet;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
@@ -51,6 +55,9 @@ type
         procedure N1Click(Sender: TObject);
         procedure TimerDelayTimer(Sender: TObject);
     procedure ToolButtonStopClick(Sender: TObject);
+    procedure PageControlMainChange(Sender: TObject);
+    procedure PageControlMainDrawTab(Control: TCustomTabControl;
+      TabIndex: Integer; const Rect: TRect; Active: Boolean);
     private
         { Private declarations }
         procedure DoAppException(Sender: TObject; E: Exception);
@@ -80,8 +87,8 @@ implementation
 uses ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils,
     UnitFormLastParty, dateutils, math,
     UnitFormSelectWorksDialog,
-    works, run_work, UnitFormConsole, UnitFormJournal,
-    hardware_errors, UnitFormAppConfig;
+    works, UnitFormConsole, UnitFormJournal,
+    hardware_errors, UnitFormAppConfig, UnitWorker, UnitFormChartSeries;
 
 procedure TKgsdumMainForm.FormCreate(Sender: TObject);
 begin
@@ -102,7 +109,7 @@ end;
 
 procedure TKgsdumMainForm.FormShow(Sender: TObject);
 begin
-    KgsdumData.Conn.Connected := true;
+
     with FormLastParty do
     begin
         Font.Assign(self.Font);
@@ -115,7 +122,16 @@ begin
     with FormJournal do
     begin
         Font.Assign(self.Font);
-        Parent := self;
+        Parent := TabSheetJournal;
+        BorderStyle := bsNone;
+        Align := alClient;
+        Show;
+    end;
+
+    with FormChartSeries do
+    begin
+        Font.Assign(self.Font);
+        Parent := TabSheetChart;
         BorderStyle := bsNone;
         Align := alClient;
         Show;
@@ -150,7 +166,7 @@ end;
 
 procedure TKgsdumMainForm.ToolButton2Click(Sender: TObject);
 begin
-    CancelExecution;
+    Worker.CancelExecution;
 end;
 
 procedure TKgsdumMainForm.ToolButton3Click(Sender: TObject);
@@ -189,7 +205,7 @@ end;
 
 procedure TKgsdumMainForm.ToolButtonStopClick(Sender: TObject);
 begin
-    SkipDelay;
+    Worker.SkipDelay;
 end;
 
 procedure TKgsdumMainForm.DoAppException(Sender: TObject; E: Exception);
@@ -285,6 +301,21 @@ begin
     end;
     ToolBarStop.Visible := false;
     LabelStatusTop.Caption := LabelStatusTop.Caption + ': выполнено';
+end;
+
+procedure TKgsdumMainForm.PageControlMainChange(Sender: TObject);
+var
+    PageControl: TPageControl;
+begin
+    PageControl := Sender as TPageControl;
+    PageControl.Repaint;
+    PanelMessageBox.Hide;
+end;
+
+procedure TKgsdumMainForm.PageControlMainDrawTab(Control: TCustomTabControl;
+  TabIndex: Integer; const Rect: TRect; Active: Boolean);
+begin
+    PageControl_DrawVerticalTab(Control, TabIndex, Rect, Active);
 end;
 
 procedure TKgsdumMainForm.N1Click(Sender: TObject);

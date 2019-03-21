@@ -22,7 +22,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     Top = 0
     Width = 513
     Height = 273
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = #1057#1094#1077#1085#1072#1088#1080#1081
@@ -54,6 +54,7 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         Height = 35
         Caption = #1042#1099#1087#1086#1083#1085#1080#1090#1100
         TabOrder = 1
+        OnClick = Button1Click
       end
       object Button16: TButton
         Left = 382
@@ -71,7 +72,6 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
         Height = 35
         Caption = '____'
         TabOrder = 3
-        OnClick = Button17Click
       end
     end
     object TabSheet2: TTabSheet

@@ -76,6 +76,24 @@ type
         ErrorOccurred: boolean;
     end;
 
+    TWorkProcedure = reference to procedure;
+
+    TWork = record
+        Name: string;
+        Proc: TWorkProcedure;
+        constructor Create(AName: string; AProc: TWorkProcedure);
+    end;
+
+    TWorks = TArray<TWork>;
+
+    TSeriesPointEntry = record
+        StoredAt: TDateTime;
+        AVar, Addr: byte;
+        Value: double;
+    end;
+
+    TSeriesPointEntries = TArray<TSeriesPointEntry>;
+
 function ProductColumnWidth(column: TProductField; canvas: TCanvas;
   prods: TArray<TProduct>; err_det: TErrorDetail): integer;
 
@@ -105,8 +123,7 @@ uses SysUtils, math;
 
 function TProduct.FormatID: string;
 begin
-    result := Format('БО №%d ID%d сер.%s', [FPlace + 1, FProductID,
-      FSerial]);
+    result := Format('БО №%d ID%d сер.%s', [FPlace + 1, FProductID, FSerial]);
 end;
 
 function TConcValue.Check: TCheckValueResult;
@@ -314,6 +331,12 @@ begin
         if result < w + 30 then
             result := w + 30;
     end;
+end;
+
+constructor TWork.Create(AName: string; AProc: TWorkProcedure);
+begin
+    Name := AName;
+    Proc := AProc;
 end;
 
 end.

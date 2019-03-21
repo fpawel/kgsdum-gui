@@ -15,11 +15,12 @@ type
         function Bytes: TBytes;
         function ParseResponse(response: TBytes): double;
 
-        function ToString: string;
+        function FormatResponse(response: TBytes): string;
 
         constructor FromBytes(b: TBytes);
 
         function GetResponse(ComportWorker: TComportWorker): double;
+        function toString: string;
 
     end;
 
@@ -31,7 +32,9 @@ implementation
 
 uses bcd, hardware_errors, sysutils, stringutils;
 
-function TKgsRequest.ToString: string;
+function TKgsRequest.toString: string;
+var
+    r: TKgsRequest;
 begin
     result := 'адр.' + IntToStr(DeviceAddr) + ' ';
     if Direction = KgsWrite then
@@ -41,7 +44,26 @@ begin
     result := result + 'var.' + IntToStr(ValueAddr);
     if Direction = KgsWrite then
         result := result + '=' + floattostr(Value);
+end;
 
+function TKgsRequest.FormatResponse(response: TBytes): string;
+var
+    r: TKgsRequest;
+begin
+    result := toString;
+
+    if length(response) = 0 then
+    begin
+        result := result + ' : нет ответа';
+        exit;
+    end;
+
+    if Direction = KgsRead then
+        try
+            result := result + ' : ' + floattostr(ParseResponse(response));
+        except
+            result := result + ' : ?';
+        end;
 end;
 
 function CRC16(const BS: TBytes; index_from: integer; index_to: integer): word;
@@ -52,7 +74,7 @@ var
 begin
     result := 0;
     if index_to < 0 then
-        index_to := Length(BS) - 1;
+        index_to := length(BS) - 1;
 
     for index_a := index_from to index_to do
     begin
@@ -153,12 +175,12 @@ function TKgsRequest.ParseResponse(response: TBytes): double;
 var
     crc: word;
 begin
-    if Length(response) = 0 then
+    if length(response) = 0 then
         raise EDeadlineExceeded.Create('нет ответа');
 
-    if Length(response) < 9 then
+    if length(response) < 9 then
         raise EBadResponse.Create(Format('длина ответа %d менее 9',
-          [Length(response)]));
+          [length(response)]));
 
     crc := CRC16(response, 1, 6);
 
@@ -196,7 +218,7 @@ end;
 function TKgsRequest.GetResponse(ComportWorker: TComportWorker): double;
 var
     _result: double;
-    _self:TKgsRequest;
+    _self: TKgsRequest;
 begin
     _self := self;
     comport.GetResponse(Bytes, ComportWorker,
@@ -207,22 +229,23 @@ begin
     result := _result;
 end;
 
-constructor TKgsRequest.FromBytes(b: TBytes );
+constructor TKgsRequest.FromBytes(b: TBytes);
 var
     crc: word;
     a: TBytes;
-    i:integer;
+    i: integer;
 begin
-    if Length(b) <> 9 then
+    if length(b) <> 9 then
         exit;
-    SetLength(a,9);
-    for i:= 0 to 8 do
+    setlength(a, 9);
+    for i := 0 to 8 do
         a[i] := b[i];
     unpack(a);
 
     DeviceAddr := a[0];
     ValueAddr := a[2];
     Direction := a[1];
+    Value := 0;
     ParseBCD6(a, 3, Value);
 end;
 

@@ -7,6 +7,7 @@ function str_validate_decimal_separator(s: string): string;
 function str_to_float(s: string): Double;
 function str_replace_unicode_chars(s: string): string;
 function inttostr2(n: integer): string;
+function float_to_str(v: double): string;
 
 function month_name(month_number:integer):string;
 function try_str_to_float(s:string; var v:double):boolean;
@@ -64,6 +65,17 @@ begin
         if (s[i] = '.') or (s[i] = ',') then
             s[i] := FormatSettings.DecimalSeparator;
     exit(s);
+end;
+
+
+function float_to_str(v: double): string;
+var
+    i: integer;
+begin
+    result := FloatToStr(v);
+    for i := 1 to length(Result) do
+        if result[i] = ',' then
+           result[i] := '.';
 end;
 
 function BytesToHex(BA: TArray<byte>; Sep: string;
