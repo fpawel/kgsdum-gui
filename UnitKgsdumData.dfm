@@ -166,17 +166,21 @@ object KgsdumData: TKgsdumData
       'CREATE TABLE IF NOT EXISTS bucket'
       '('
       '  bucket_id  INTEGER NOT NULL PRIMARY KEY,'
-      '  created_at REAL    NOT NULL UNIQUE DEFAULT (julianday('#39'now'#39')),'
-      '  updated_at REAL    NOT NULL        DEFAULT (julianday('#39'now'#39')),'
+      
+        '  created_at TIMESTAMP    NOT NULL UNIQUE DEFAULT (DATETIME('#39'now' +
+        #39','#39'+3 hours'#39')),'
+      
+        '  updated_at TIMESTAMP    NOT NULL DEFAULT (DATETIME('#39'now'#39','#39'+3 h' +
+        'ours'#39')),'
       '  name       TEXT    NOT NULL'
       ');'
       ''
       'CREATE TABLE IF NOT EXISTS series'
       '('
       '  bucket_id INTEGER NOT NULL,'
-      '  addr      INTEGER NOT NULL CHECK (addr > 0),'
-      '  var       INTEGER NOT NULL CHECK (var >= 0),'
-      '  stored_at REAL    NOT NULL,'
+      '  address   INTEGER NOT NULL CHECK (address > 0),'
+      '  variable  INTEGER NOT NULL CHECK (variable >= 0),'
+      '  stored_at REAL    NOT NULL UNIQUE,'
       '  value     REAL    NOT NULL,'
       '  FOREIGN KEY (bucket_id) REFERENCES bucket (bucket_id)'
       '    ON DELETE CASCADE'
@@ -188,10 +192,9 @@ object KgsdumData: TKgsdumData
       '  FOR EACH ROW'
       '  BEGIN'
       '    UPDATE bucket'
-      '    SET updated_at = julianday('#39'now'#39')'
+      '    SET updated_at = DATETIME('#39'now'#39','#39'+3 hours'#39')'
       '    WHERE bucket.bucket_id = new.bucket_id;'
-      '  END;'
-      '')
+      '  END;')
     Left = 312
     Top = 200
   end

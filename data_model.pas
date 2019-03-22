@@ -57,7 +57,10 @@ type
     TParty = record
         FPartyID: int64;
         FCreatedAt: TDateTime;
-        Pgs: array [TScaleConc] of double;
+
+
+        Pgs1, Pgs2, Pgs3, Pgs4: double;
+        function Pgs(sc:TScaleConc):double;
     end;
 
     TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError,
@@ -127,6 +130,18 @@ const
 implementation
 
 uses SysUtils, math;
+
+function TParty.Pgs(sc:TScaleConc):double;
+begin
+    case sc of
+        scaleConc1: exit(Pgs1);
+        scaleConc2: exit(Pgs2);
+        scaleConc3: exit(Pgs3);
+        scaleConc4: exit(Pgs4);
+        else
+        assert(false, 'wrong scale point');
+    end;
+end;
 
 function TProduct.FormatID: string;
 begin

@@ -37,10 +37,10 @@ begin
             FCreatedAt := FieldValues['created_at'];
             s := DateTimeToStr(FCreatedAt);
             FPartyID := FieldValues['party_id'];
-            Pgs[scaleConc1] := FieldValues['pgs1'];
-            Pgs[scaleConc2] := FieldValues['pgs2'];
-            Pgs[scaleConc3] := FieldValues['pgs3'];
-            Pgs[scaleConc4] := FieldValues['pgs4'];
+            Pgs1 := FieldValues['pgs1'];
+            Pgs2 := FieldValues['pgs2'];
+            Pgs3 := FieldValues['pgs3'];
+            Pgs3 := FieldValues['pgs4'];
         end;
 
         Close;
@@ -106,8 +106,8 @@ begin
                                 FConc := 0;
                                 FValid := false;
                             end;
-                            err_limit := 0.1 + 0.12 * party.Pgs[_sc];
-                            abs_err := FConc - party.Pgs[_sc];
+                            err_limit := 0.1 + 0.12 * party.Pgs(_sc);
+                            abs_err := FConc - party.Pgs(_sc);
 
                             FAbsErrLimit := err_limit;
                             FAbsErr := abs_err;

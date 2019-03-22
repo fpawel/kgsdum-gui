@@ -12,6 +12,7 @@ object KgsdumMainForm: TKgsdumMainForm
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnMouseWheel = FormMouseWheel
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
@@ -553,7 +554,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Top = 31
     Width = 1056
     Height = 659
-    ActivePage = TabSheetJournal
+    ActivePage = TabSheetParty
     Align = alClient
     MultiLine = True
     OwnerDraw = True
@@ -563,25 +564,21 @@ object KgsdumMainForm: TKgsdumMainForm
     TabWidth = 40
     OnChange = PageControlMainChange
     OnDrawTab = PageControlMainDrawTab
+    object TabSheetParty: TTabSheet
+      Caption = #1055#1072#1088#1090#1080#1103
+      ImageIndex = 4
+      ExplicitLeft = 105
+      ExplicitTop = 3
+    end
     object TabSheetJournal: TTabSheet
       Caption = #1046#1091#1088#1085#1072#1083
       ImageIndex = 3
     end
-    object TabSheetChart: TTabSheet
-      Caption = #1043#1088#1072#1092#1080#1082
-      ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-    end
-    object TabSheetParties: TTabSheet
-      Caption = #1040#1088#1093#1080#1074
+    object TabSheetCharts: TTabSheet
+      Caption = #1043#1088#1072#1092#1080#1082#1080
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitLeft = 105
+      ExplicitTop = 6
     end
   end
   object ImageList4: TImageList

@@ -130,16 +130,7 @@ begin
     exit(-1);
 end;
 
-// procedure Chart_DrawCrossHair(Chart: TChart; ax, ay: integer; color: TColor);
-// begin
-// Chart.Canvas.Brush.color := Chart.BackColor;
-// Chart.Canvas.Pen.Style := psSolid;
-// Chart.Canvas.Pen.Width := 1;
-// Chart.Canvas.Pen.color := color;
-// Chart.Canvas.MoveTo(Chart.ChartRect.Left + Chart.Width3D, ay);
-// Chart.Canvas.LineTo(ax, ay);
-// Chart.Canvas.LineTo(ax, Chart.ChartRect.Bottom - Chart.Height3D);
-// end;
+
 
 function CompareStrInt(List: TStringList; Index1, Index2: integer): integer;
 var
@@ -169,26 +160,16 @@ end;
 
 procedure AddStrIntListBox(AListbox: TListBox; new_item: integer);
 var
-    n, i: integer;
-    selected_items: TDictionary<string, integer>;
+    n: integer;
+
 begin
     if AListbox.Items.IndexOf(inttostr(new_item)) > -1 then
         exit;
     n := AListbox.Items.Add(inttostr(new_item));
-    if n = 0 then
-        AListbox.Selected[n] := true;
+    AListbox.Selected[n] := true;
+    if Assigned( AListbox.OnClick ) then
+        AListbox.OnClick(AListbox);
 
-    selected_items := TDictionary<string, integer>.create;
-
-    for i := 0 to AListbox.Items.Count - 1 do
-        if AListbox.Selected[i] then
-            selected_items.AddOrSetValue(AListbox.Items[i], 0);
-
-    sortListBox(AListbox);
-    for i := 0 to AListbox.Items.Count - 1 do
-        AListbox.Selected[i] := selected_items.ContainsKey(AListbox.Items[i]);
-
-    selected_items.Free;
 end;
 
 procedure TFormChartSeries.FormCreate(Sender: TObject);
@@ -484,24 +465,31 @@ end;
 
 procedure TFormChartSeries.ShowCurrentScaleValues;
 var
-    s: string;
+    s, s1, s2, s3: string;
     v: double;
 begin
+
     with Chart1.Axes.Bottom do
     begin
         v := Maximum - Minimum;
+
+        s1 := TimetoStr(Minimum);
+        s2 := TimetoStr(Maximum);
+        s3 := TimetoStr(v);
+
+
         if v = 0 then
             s := 'нет значений'
         else if v < IncSecond(0, 1) then
-            s := inttostr(MilliSecondsBetween(Minimum, Maximum)) + 'мс'
+            s := inttostr(MilliSecondsBetween(Maximum, Minimum )) + 'мс'
         else if v < IncMinute(0, 1) then
-            s := inttostr(SecondsBetween(Minimum, Maximum)) + ' c'
+            s := inttostr(SecondsBetween(Maximum, Minimum)) + ' c'
         else if v < Inchour(0, 1) then
-            s := inttostr(minutesBetween(Minimum, Maximum)) + ' минут'
+            s := inttostr(minutesBetween(Maximum, Minimum)) + ' минут'
         else if v < Incday(0, 1) then
-            s := inttostr(hoursBetween(Minimum, Maximum)) + ' часов'
+            s := inttostr(hoursBetween(Maximum, Minimum)) + ' часов'
         else
-            s := inttostr(daysBetween(Minimum, Maximum)) + ' дней';
+            s := inttostr(daysBetween(Maximum, Minimum)) + ' дней';
 
     end;
     Memo1.Text := Format('X: %s', [s]);

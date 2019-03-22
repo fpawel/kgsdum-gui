@@ -8,7 +8,7 @@ uses
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ToolWin,
     Vcl.StdCtrls,
     Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, Vcl.Imaging.pngimage,
-    Vcl.Menus;
+    Vcl.Menus, UnitFormCharts;
 
 type
     TKgsdumMainForm = class(TForm)
@@ -41,8 +41,8 @@ type
         N1: TMenuItem;
         TimerDelay: TTimer;
         PageControlMain: TPageControl;
-        TabSheetChart: TTabSheet;
-        TabSheetParties: TTabSheet;
+    TabSheetParty: TTabSheet;
+    TabSheetCharts: TTabSheet;
         TabSheetJournal: TTabSheet;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
@@ -58,6 +58,8 @@ type
         procedure PageControlMainChange(Sender: TObject);
         procedure PageControlMainDrawTab(Control: TCustomTabControl;
           TabIndex: Integer; const Rect: TRect; Active: Boolean);
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     private
         { Private declarations }
         procedure DoAppException(Sender: TObject; E: Exception);
@@ -84,7 +86,7 @@ implementation
 
 {$R *.dfm}
 
-uses ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils,
+uses uitypes, types, ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils,
     UnitFormLastParty, dateutils, math,
     UnitFormSelectWorksDialog,
     works, UnitFormConsole, UnitFormJournal,
@@ -95,6 +97,15 @@ begin
     LabelStatusTop.Caption := '';
     PanelMessageBox.Width := 700;
     PanelMessageBox.Height := 350;
+end;
+
+procedure TKgsdumMainForm.FormMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+    FormChartSeries.ChangeAxisOrder(GetVCLControlAtPos(self, MousePos),
+      WheelDelta);
+    FormCharts.FFormChartSeries.ChangeAxisOrder(GetVCLControlAtPos(self, MousePos),
+      WheelDelta);
 end;
 
 procedure TKgsdumMainForm.FormResize(Sender: TObject);
@@ -113,9 +124,18 @@ begin
     with FormLastParty do
     begin
         Font.Assign(self.Font);
-        Parent := self;
+        Parent := TabSheetParty;
         BorderStyle := bsNone;
         Align := alTop;
+        Show;
+    end;
+
+    with FormChartSeries do
+    begin
+        Font.Assign(self.Font);
+        Parent := TabSheetParty;
+        BorderStyle := bsNone;
+        Align := alClient;
         Show;
     end;
 
@@ -128,14 +148,26 @@ begin
         Show;
     end;
 
-    with FormChartSeries do
+    with FormConsole do
     begin
         Font.Assign(self.Font);
-        Parent := TabSheetChart;
+        Parent := FormJournal;
+        BorderStyle := bsNone;
+        Align := alClient;
+        Show;
+        Repaint;
+    end;
+
+    with FormCharts do
+    begin
+        Font.Assign(self.Font);
+        Parent := TabSheetCharts;
         BorderStyle := bsNone;
         Align := alClient;
         Show;
     end;
+
+
 
     PanelTop.Top := 0;
 end;
@@ -310,6 +342,10 @@ begin
     PageControl := Sender as TPageControl;
     PageControl.Repaint;
     PanelMessageBox.Hide;
+    if PageControl.ActivePage = TabSheetCharts then
+        FormCharts.FetchDays;
+
+
 end;
 
 procedure TKgsdumMainForm.PageControlMainDrawTab(Control: TCustomTabControl;

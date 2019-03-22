@@ -36,18 +36,6 @@ type
         Shape6: TShape;
         Panel12: TPanel;
         EditPgs2: TEdit;
-        Panel13: TPanel;
-        Shape7: TShape;
-        Panel14: TPanel;
-        EditTempNorm: TEdit;
-        Panel15: TPanel;
-        Shape8: TShape;
-        Panel16: TPanel;
-        EditTempPlus: TEdit;
-        Panel17: TPanel;
-        Shape9: TShape;
-        Panel18: TPanel;
-        EditTempMinus: TEdit;
         procedure ComboBoxComportProductsDropDown(Sender: TObject);
         procedure FormCreate(Sender: TObject);
         procedure FormDeactivate(Sender: TObject);
@@ -92,10 +80,6 @@ begin
     FKey.Add(ComboBoxComportProducts, 'comport_products');
     FKey.Add(ComboBoxComportTemp, 'comport_temp');
 
-    FKey.Add(EditTempNorm, 'temp_norm');
-    FKey.Add(EditTempPlus, 'temp_plus');
-    FKey.Add(EditTempMinus, 'temp_minus');
-
     FKey.Add(EditPgs1, 'pgs1');
     FKey.Add(EditPgs2, 'pgs2');
     FKey.Add(EditPgs3, 'pgs3');
@@ -125,17 +109,11 @@ begin
     with ComboBoxComportTemp do
         ItemIndex := Items.IndexOf(AppIni.ComportTempName);
 
-    EditPgs1.Text := FloatToStr(party.Pgs[scaleConc1]);
-    EditPgs2.Text := FloatToStr(party.Pgs[scaleConc2]);
-    EditPgs3.Text := FloatToStr(party.Pgs[scaleConc3]);
-    EditPgs4.Text := FloatToStr(party.Pgs[scaleConc4]);
+    EditPgs1.Text := FloatToStr(party.Pgs1);
+    EditPgs2.Text := FloatToStr(party.Pgs2);
+    EditPgs3.Text := FloatToStr(party.Pgs3);
+    EditPgs4.Text := FloatToStr(party.Pgs4);
 
-    EditTempNorm.Text := FloatToStr(AppIni.Ini.ReadFloat('work',
-      'temp_norm', 20.0));
-    EditTempPlus.Text := FloatToStr(AppIni.Ini.ReadFloat('work',
-      'temp_plus', 50.0));
-    EditTempMinus.Text := FloatToStr(AppIni.Ini.ReadFloat('work',
-      'temp_minus', 5.0));
     FUpdate := false;
 end;
 

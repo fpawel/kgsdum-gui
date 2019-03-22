@@ -4,7 +4,6 @@ uses
   Vcl.Forms,
   UnitKgsdumMainForm in 'UnitKgsdumMainForm.pas' {KgsdumMainForm},
   UnitKgsdumData in 'UnitKgsdumData.pas' {KgsdumData: TDataModule},
-  vclutils in 'utils\vclutils.pas',
   UnitFormLastParty in 'UnitFormLastParty.pas' {FormLastParty},
   data_model in 'data_model.pas',
   crud in 'crud.pas',
@@ -26,7 +25,9 @@ uses
   termochamber in 'hardware\termochamber.pas',
   wask in 'hardware\wask.pas',
   UnitWorker in 'work\UnitWorker.pas' {Worker: TDataModule},
-  UnitFormChartSeries in 'UnitFormChartSeries.pas' {FormChartSeries};
+  UnitFormChartSeries in 'UnitFormChartSeries.pas' {FormChartSeries},
+  UnitFormCharts in 'UnitFormCharts.pas' {FormCharts},
+  vclutils in 'utils\vclutils.pas';
 
 {$R *.res}
 
@@ -45,5 +46,6 @@ begin
   Application.CreateForm(TFormAppConfig, FormAppConfig);
   Application.CreateForm(TWorker, Worker);
   Application.CreateForm(TFormChartSeries, FormChartSeries);
+  Application.CreateForm(TFormCharts, FormCharts);
   Application.Run;
 end.

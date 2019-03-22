@@ -42,21 +42,39 @@ type
 var
     KgsdumData: TKgsdumData;
 
+function DateTimeFromDBString(dt: string): TDateTime;
+
 implementation
 
 { %CLASSGROUP 'Vcl.Controls.TControl' }
 
 {$R *.dfm}
 
-uses variants, dateutils, stringutils;
+uses variants, dateutils, stringutils, UnitFormConsole;
+
+function DateTimeToDBString(dt: TDateTime): string;
+begin
+    result := 'julianday(''' + FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz',
+      dt) + ''')';
+end;
+
+function DateTimeFromDBString(dt: string): TDateTime;
+var
+    fs: TFormatSettings;
+begin
+    fs := TFormatSettings.Create;
+    fs.DateSeparator := '-';
+    fs.ShortDateFormat := 'yyyy-MM-dd';
+    fs.TimeSeparator := ':';
+    fs.ShortTimeFormat := 'hh:mm:ss.zzz';
+    fs.LongTimeFormat := 'hh:mm:ss.zzz';
+    fs.DecimalSeparator := '.';
+    result := StrToDateTime(dt, fs);
+end;
 
 procedure TKgsdumData.DataModuleCreate(Sender: TObject);
 var
     dir: String;
-    dtStr, dtStr2: string;
-    dt: TDateTime;
-    fs: TFormatSettings;
-
 begin
     dir := GetEnvironmentVariable('APPDATA') + '\kgsdum\';
     forcedirectories(dir);
@@ -68,14 +86,6 @@ begin
     FDQuery1.ExecSQL;
     FDQuery2.ExecSQL;
     FDQuery3.ExecSQL;
-
-    fs := TFormatSettings.Create;
-    fs.DateSeparator := '-';
-    fs.ShortDateFormat := 'yyyy-MM-dd';
-    fs.TimeSeparator := ':';
-    fs.ShortTimeFormat := 'hh:mm:ss.zzz';
-    fs.LongTimeFormat := 'hh:mm:ss.zzz';
-    fs.DecimalSeparator := '.';
 end;
 
 function TKgsdumData.GetLastSeriesBucket: TSeriesBucket;
@@ -121,14 +131,11 @@ begin
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnCharts;
-        SQL.Text := 'INSERT INTO bucket (created_at, name) VALUES (:created_at, :name )';
+        SQL.Text := 'INSERT INTO bucket (name) VALUES (:name)';
         ParamByName('name').Value := AName;
-        ParamByName('created_at').Value := now;
-
         ExecSQL;
         Free;
     end;
-
 end;
 
 procedure TKgsdumData.AddSeriesPoint(TheAddr, TheVar: byte; TheValue: double);
@@ -136,6 +143,8 @@ var
     i: integer;
     s: string;
     last_bucket: TSeriesBucket;
+    seconds_elapsed: Int64;
+
 begin
     SetLength(FSeriesPointEntries, Length(FSeriesPointEntries) + 1);
     with FSeriesPointEntries[Length(FSeriesPointEntries) - 1] do
@@ -145,13 +154,19 @@ begin
         Addr := TheAddr;
         Value := TheValue;
     end;
-    if SecondsBetween(now, FSeriesPointEntries[0].StoredAt) < 10 then
+
+    seconds_elapsed := SecondsBetween(now, FSeriesPointEntries[0].StoredAt);
+
+    if seconds_elapsed < 120 then
         exit;
 
     last_bucket := GetLastSeriesBucket;
+
+    seconds_elapsed := SecondsBetween(now, last_bucket.UpdatedAt);
+
     if (last_bucket.BucketID = 0) or
-      (last_bucket.CreatedAt <> last_bucket.CreatedAt) and
-      (SecondsBetween(now, last_bucket.UpdatedAt) > 60) then
+      (last_bucket.CreatedAt <> last_bucket.UpdatedAt) and
+      (seconds_elapsed > 120) then
     begin
         NewChartSeries('опрос');
         last_bucket := GetLastSeriesBucket;
@@ -162,22 +177,24 @@ begin
         Connection := KgsdumData.ConnCharts;
 
         SQL.Text :=
-          'INSERT INTO series(bucket_id, addr, var, value, stored_at)  VALUES ';
+          'INSERT INTO series(bucket_id, address, variable, value, stored_at)  VALUES ';
         for i := 0 to Length(FSeriesPointEntries) - 1 do
             with FSeriesPointEntries[i] do
             begin
-                SQL.Text := SQL.Text + ' ( ' + IntToStr(last_bucket.BucketID) +
-                  ', ' + IntToStr(Addr) + ', ' + IntToStr(AVar) + ', ' +
-                  float_to_str(Value) + ', ' + 'julianday(''' +
-                  FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', now) + ''') )';
+                SQL.Text := SQL.Text + Format(' (%d, %d, %d, %s, %s)',
+                  [last_bucket.BucketID, Addr, AVar, float_to_str(Value),
+                  DateTimeToDBString(StoredAt)]);
                 if i < Length(FSeriesPointEntries) - 1 then
                     SQL.Text := SQL.Text + ', ';
 
             end;
         s := SQL.Text;
         ExecSQL;
+
         Free;
     end;
+    SetLength(FSeriesPointEntries, 0);
+
 
 end;
 

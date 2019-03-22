@@ -308,12 +308,7 @@ var
     _result: double;
 begin
     try
-        try
-            result := r.GetResponse(ComportProductsWorker);
-        except
-            result := Random;
-
-        end;
+        result := r.GetResponse(ComportProductsWorker);
         _result := result;
         FThread.Synchronize(
             procedure

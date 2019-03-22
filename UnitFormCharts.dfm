@@ -1,45 +1,35 @@
-object FormJournal: TFormJournal
+object FormCharts: TFormCharts
   Left = 0
   Top = 0
-  Caption = 'FormJournal'
-  ClientHeight = 433
-  ClientWidth = 934
+  Caption = 'FormCharts'
+  ClientHeight = 300
+  ClientWidth = 635
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -15
+  Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
-  TextHeight = 18
-  object Splitter1: TSplitter
-    Left = 265
-    Top = 0
-    Width = 5
-    Height = 433
-    ExplicitLeft = 249
-    ExplicitHeight = 300
-  end
+  TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
     Width = 265
-    Height = 433
+    Height = 300
     Align = alLeft
     BevelOuter = bvNone
     Constraints.MinWidth = 265
     TabOrder = 0
-    OnResize = Panel1Resize
-    ExplicitHeight = 300
     object StringGrid1: TStringGrid
       AlignWithMargins = True
       Left = 3
       Top = 34
       Width = 259
-      Height = 396
+      Height = 263
       Align = alClient
       BorderStyle = bsNone
       ColCount = 2
@@ -59,9 +49,7 @@ object FormJournal: TFormJournal
       ParentFont = False
       TabOrder = 0
       OnDrawCell = StringGrid1DrawCell
-      OnKeyDown = StringGrid1KeyDown
       OnSelectCell = StringGrid1SelectCell
-      ExplicitHeight = 263
       ColWidths = (
         64
         64)

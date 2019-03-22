@@ -30,11 +30,13 @@ begin
     Worker.RunWork('опрос',
         procedure
         begin
-            Worker.Synchronize(procedure begin
-                KgsdumData.NewChartSeries('опрос');
-                FormChartSeries.NewChart;
+            Worker.Synchronize(
+                procedure
+                begin
+                    KgsdumData.NewChartSeries('опрос');
+                    FormChartSeries.NewChart;
 
-            end );
+                end);
             while True do
             begin
                 Worker.DoEachProduct(
@@ -148,24 +150,81 @@ begin
     result := p;
 end;
 
+procedure ProductsReadVar(AVar: byte);
+begin
+    Worker.DoEachProduct(
+        procedure(p: TProduct)
+        begin
+            Worker.KgsReadVar(p.FAddr, AVar);
+        end);
+end;
+
+type
+    TMeth = (MWriteKef, MReadKef, MReadVar);
+
+    TTask = record
+        FMeth: TMeth;
+        FVar: byte;
+        FValue: double;
+    end;
+
+function DWriteKef(kef: byte; value: double): TTask;
+begin
+    with result do
+    begin
+        FMeth := MWriteKef;
+        FVar := kef;
+        FValue := value;
+    end;
+end;
+
+function DReadKef(kef: byte): TTask;
+begin
+    with result do
+    begin
+        FMeth := MReadKef;
+        FVar := kef;
+    end;
+end;
+
+function DReadVar(AVar: byte): TTask;
+begin
+    with result do
+    begin
+        FMeth := MReadVar;
+        FVar := AVar;
+    end;
+end;
+
+procedure _do(tasks: TArray<TTask>);
+begin
+    Worker.DoEachProduct(
+        procedure(p: TProduct)
+        var
+            t: TTask;
+        begin
+            for t in tasks do
+            begin
+                case t.FMeth of
+                    MWriteKef:
+                        Worker.KgsWriteCoefficient(p.FAddr, t.FVar, t.FValue);
+                    MReadKef:
+                        Worker.KgsReadCoefficient(p.FAddr, t.FVar);
+                    MReadVar:
+                        Worker.KgsReadVar(p.FAddr, t.FVar);
+                end;
+            end;
+        end);
+end;
+
 procedure Adjust;
 begin
-
     BlowGas(1);
-    Worker.DoEachProduct(
-        procedure(p: TProduct)
-        begin
-            Worker.KgsReadVar(p.FAddr, 100);
-        end);
-
+    ProductsReadVar(100);
     BlowGas(3);
-    Worker.DoEachProduct(
-        procedure(p: TProduct)
-        begin
-            Worker.KgsWriteCoefficient(p.FAddr, 28, LastParty.Pgs[scaleConc3]);
-            Worker.KgsReadVar(p.FAddr, 101);
-        end);
-
+    _do([
+        DWriteKef(28, LastParty.Pgs3),
+        DReadVar(101)]);
 end;
 
 initialization
@@ -184,39 +243,60 @@ MainWorks := [TWork.Create('термоциклирование',
     end),
 
   TWork.Create('калибровка', Adjust),
+
   TWork.Create('линеаризация',
     procedure
     begin
         Adjust;
 
         BlowGas(4);
-        Worker.DoEachProduct(
-            procedure(p: TProduct)
-            begin
-                Worker.KgsWriteCoefficient(p.FAddr, 44, 1);
-                Worker.KgsWriteCoefficient(p.FAddr, 48,
-                  LastParty.Pgs[scaleConc4]);
-                Worker.KgsReadVar(p.FAddr, 102);
-            end);
+        _do([
+            DWriteKef(44, 1),
+            DWriteKef(48, LastParty.Pgs4),
+            DReadVar(102)]);
 
         BlowGas(2);
-        Worker.DoEachProduct(
-            procedure(p: TProduct)
-            begin
-                Worker.KgsWriteCoefficient(p.FAddr, 44, 0);
-                Worker.KgsWriteCoefficient(p.FAddr, 29,
-                  LastParty.Pgs[scaleConc2]);
-                Worker.KgsReadVar(p.FAddr, 102);
-            end);
+        _do([
+            DWriteKef(44, 0),
+            DWriteKef(29, LastParty.Pgs2),
+            DReadVar(102)]);
 
         BlowGas(1);
-        Worker.DoEachProduct(
-            procedure(p: TProduct)
-            begin
-                Worker.KgsWriteCoefficient(p.FAddr, 44, 2);
-                Worker.KgsReadVar(p.FAddr, 102);
-            end);
+        _do([
+            DWriteKef(44, 2),
+            DReadVar(102)]);
+    end),
 
-    end)];
+  TWork.Create('термокомпенсация',
+    procedure
+    begin
+
+        TermochamberSetupTemperature(20);
+
+        BlowGas(1);
+        ProductsReadVar(103);
+        BlowGas(3);
+        ProductsReadVar(107);
+        BlowGas(1);
+
+        TermochamberSetupTemperature(-5);
+
+        BlowGas(1);
+        ProductsReadVar(105);
+        BlowGas(3);
+        ProductsReadVar(109);
+        BlowGas(1);
+
+        TermochamberSetupTemperature(50);
+
+        BlowGas(1);
+        ProductsReadVar(104);
+        BlowGas(3);
+        ProductsReadVar(108);
+        BlowGas(1);
+
+    end)
+
+  ];
 
 end.

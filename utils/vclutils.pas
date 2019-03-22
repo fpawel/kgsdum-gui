@@ -19,9 +19,26 @@ procedure ConvertImagesToHighColor(ImageList: TImageList);
 
 function cut_str(s:string;c:TCanvas; w:integer):string;
 
+function GetVCLControlAtPos(c: TWinControl; mousePos: TPoint): TWinControl;
+
 implementation
 
 uses Winapi.Windows;
+
+function GetVCLControlAtPos(c: TWinControl; mousePos: TPoint): TWinControl;
+var
+    p: TPoint;
+begin
+
+    p := c.ScreenToClient(mousePos);
+    c := TWinControl(c.ControlAtPos(p, false, true));
+    while Assigned(c) do
+    begin
+        Result := c;
+        p := c.ScreenToClient(mousePos);
+        c := TWinControl(c.ControlAtPos(p, false, true));
+    end;
+end;
 
 function cut_str(s:string;c:TCanvas; w:integer):string;
  var i, w1 :integer;

@@ -54,21 +54,15 @@ begin
 //    FCurrentWorkID := 0;
     SetLength(FWorks, 1);
     StringGrid1.Cells[0, 0] := 'За сутки';
-    fetch_days;
+
 
 end;
 
 procedure TFormJournal.FormShow(Sender: TObject);
 begin
-    with FormConsole do
-    begin
-        Font.Assign(self.Font);
-        Parent := self;
-        BorderStyle := bsNone;
-        Align := alClient;
-        Show;
-    end;
+    
     Panel1Resize(nil);
+    fetch_days;
 end;
 
 procedure TFormJournal.Panel1Resize(Sender: TObject);
@@ -231,7 +225,8 @@ begin
               'AND level > 2) AS error_occurred ' + 'FROM work ' +
               'WHERE CAST(STRFTIME(''%Y'', created_at) AS INTEGER) = :year ' +
               'AND CAST(STRFTIME(''%m'', created_at) AS INTEGER) = :month ' +
-              'AND CAST(STRFTIME(''%d'', created_at) AS INTEGER) = :day ';
+              'AND CAST(STRFTIME(''%d'', created_at) AS INTEGER) = :day '+
+              'ORDER BY created_at DESC';
             ParamByName('year').Value := YearOf(combobox_date);
             ParamByName('month').Value := MonthOf(combobox_date);
             ParamByName('day').Value := DayOf(combobox_date);
