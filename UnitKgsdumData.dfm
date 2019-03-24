@@ -107,7 +107,11 @@ object KgsdumData: TKgsdumData
       'SELECT *'
       'FROM product'
       'WHERE party_id IN (SELECT * FROM last_party_id)'
-      'ORDER BY created_at;')
+      'ORDER BY created_at;'
+      ''
+      
+        'INSERT INTO party (created_at) SELECT CURRENT_TIMESTAMP WHERE NO' +
+        'T EXISTS(SELECT 1 FROM party);')
     Left = 200
     Top = 120
   end

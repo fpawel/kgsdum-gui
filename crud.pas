@@ -20,11 +20,6 @@ begin
     begin
         Connection := KgsdumData.Conn;
 
-        SQL.Text :=
-          'INSERT INTO party (created_at) SELECT CURRENT_TIMESTAMP WHERE NOT EXISTS(SELECT 1 FROM party)';
-        ExecSQL;
-        Close;
-
         SQL.Text := 'SELECT * FROM last_party;';
         Open;
         First;
@@ -40,7 +35,7 @@ begin
             Pgs1 := FieldValues['pgs1'];
             Pgs2 := FieldValues['pgs2'];
             Pgs3 := FieldValues['pgs3'];
-            Pgs3 := FieldValues['pgs4'];
+            Pgs4 := FieldValues['pgs4'];
         end;
 
         Close;

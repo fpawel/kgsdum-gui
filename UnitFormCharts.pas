@@ -25,7 +25,6 @@ type
         { Private declarations }
         FBuckets: TArray<TSeriesBucket>;
 
-
     public
         { Public declarations }
         FFormChartSeries: TFormChartSeries;
@@ -45,7 +44,7 @@ uses FireDAC.Comp.Client, FireDAC.stan.param, UnitKgsdumData, dateutils,
 procedure TFormCharts.FormCreate(Sender: TObject);
 begin
     FFormChartSeries := TFormChartSeries.Create(self);
-    //FetchDays;
+    // FetchDays;
 end;
 
 procedure TFormCharts.FormShow(Sender: TObject);
@@ -103,7 +102,11 @@ var
 
 begin
     FFormChartSeries.Visible := false;
-   FFormChartSeries.NewChart;
+
+    if ARow >= length(FBuckets) then
+        exit;
+
+    FFormChartSeries.NewChart;
 
     with TFDQuery.Create(nil) do
     begin
