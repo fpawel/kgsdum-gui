@@ -26,6 +26,10 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = #1057#1094#1077#1085#1072#1088#1080#1081
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object CheckListBox1: TCheckListBox
         Left = 8
         Top = 8
@@ -77,6 +81,10 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     object TabSheet2: TTabSheet
       Caption = #1059#1087#1088#1072#1074#1083#1077#1085#1080#1077
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object FlowPanel1: TFlowPanel
         Left = 3
         Top = 14
@@ -209,6 +217,10 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     object TabSheet3: TTabSheet
       Caption = #1055#1085#1077#1074#1084#1086#1073#1083#1086#1082
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Button5: TButton
         Left = 386
         Top = 167
@@ -282,6 +294,10 @@ object FormSelectWorksDialog: TFormSelectWorksDialog
     object TabSheet4: TTabSheet
       Caption = #1058#1077#1088#1084#1086#1082#1072#1084#1077#1088#1072
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label1: TLabel
         AlignWithMargins = True
         Left = 170

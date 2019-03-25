@@ -7,7 +7,7 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls,
     Vcl.Samples.Spin, Vcl.ToolWin, System.ImageList, Vcl.ImgList, Vcl.ExtCtrls,
-    Vcl.Grids, data_model, Vcl.Menus;
+    Vcl.Grids, data_model, Vcl.Menus, UnitAppIni;
 
 type
 
@@ -29,8 +29,6 @@ type
 
     public
         { Public declarations }
-        procedure AddComportMessage(AComport: string;
-          ARequest, AResponse: TBytes; millis, attempt: Integer);
         procedure NewLine(ACreatedAt: TDatetime; ALevel: data_model.TLogLevel;
           AWork, AText: string);
         procedure Clear;
@@ -104,9 +102,11 @@ begin
             begin
                 ta := taLeftJustify;
                 cnv.Font.Color := clBlack;
-                case FEntries[ARow].Level of
-                    loglevDebug:
+                case FEntries[ARow].FLevel of
+                    loglevTrace:
                         cnv.Font.Color := clGray;
+                    loglevDebug:
+                        cnv.Font.Color := clBlack;
                     loglevInfo:
                         cnv.Font.Color := clNavy;
                     loglevWarn:
@@ -143,13 +143,14 @@ end;
 procedure TFormConsole.NewLine(ACreatedAt: TDatetime;
   ALevel: data_model.TLogLevel; AWork, AText: string);
 begin
+
     SetLength(FEntries, Length(FEntries) + 1);
     with FEntries[Length(FEntries) - 2] do
     begin
-        Work := AWork;
-        Level := ALevel;
-        Text := AText;
-        Time := ACreatedAt;
+        FWork := AWork;
+        FLevel := ALevel;
+        FText := AText;
+        FCreatedAt := ACreatedAt;
     end;
 
     with StringGrid1 do
@@ -163,22 +164,6 @@ begin
         Cells[0, Rowcount - 1] := '';
         Cells[1, Rowcount - 1] := '';
     end;
-end;
-
-procedure TFormConsole.AddComportMessage(AComport: string;
-  ARequest, AResponse: TBytes; millis, attempt: Integer);
-var
-    s: string;
-begin
-    s := AComport + ' : ' + BytesToHex(ARequest);
-    if Length(AResponse) > 0 then
-        s := s + ' --> ' + BytesToHex(ARequest);
-
-    s := s + ' ' + Inttostr(millis) + ' мс';
-
-    if attempt > 1 then
-        s := s + ' (' + Inttostr(attempt) + ')';
-    // NewEntry(loglevDebug, s);
 end;
 
 end.

@@ -3,7 +3,7 @@ object FormAppConfig: TFormAppConfig
   Top = 0
   BorderStyle = bsToolWindow
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
-  ClientHeight = 272
+  ClientHeight = 282
   ClientWidth = 380
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET

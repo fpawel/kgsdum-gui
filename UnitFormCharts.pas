@@ -21,6 +21,7 @@ type
         procedure StringGrid1SelectCell(Sender: TObject; ACol, ARow: Integer;
           var CanSelect: Boolean);
         procedure FormShow(Sender: TObject);
+    procedure Panel1Resize(Sender: TObject);
     private
         { Private declarations }
         FBuckets: TArray<TSeriesBucket>;
@@ -56,6 +57,16 @@ begin
         BorderStyle := bsNone;
         Align := alClient;
         Show;
+    end;
+end;
+
+procedure TFormCharts.Panel1Resize(Sender: TObject);
+begin
+    with StringGrid1 do
+    begin
+        ColWidths[0] := 70;
+        ColWidths[1] := Panel1.Width - ColWidths[0] - 10;
+        Repaint;
     end;
 end;
 

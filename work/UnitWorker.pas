@@ -3,14 +3,12 @@ unit UnitWorker;
 interface
 
 uses
-    System.SysUtils, System.Classes, comport, data_model, wask;
+    System.SysUtils, System.Classes, comport, data_model, wask, UnitKgsdumData,
+    UnitFormChartSeries;
 
 type
 
-
     ESkipDelay = class(Exception);
-
-
 
     TWorker = class;
 
@@ -25,7 +23,6 @@ type
         procedure DataModuleCreate(Sender: TObject);
     private
         { Private declarations }
-        FWithJournal: boolean;
         FFlagRunning, FFlagCanceled, FFlagSkipDelay: longint;
         FHComportProducts, FHComportTermo: THandle;
         FThread: TWorkThread;
@@ -42,6 +39,7 @@ type
         function GetComportTermo: THandle;
 
         procedure OnComport(r: TComportLogEntry);
+        procedure interrogate_product(p: TProduct);
 
     public
         { Public declarations }
@@ -72,6 +70,7 @@ type
         procedure RunWork(AName: string; AWork: TWorkProcedure);
         procedure RunWorks(withJourna: boolean; works: TWorks);
         procedure RunKgsSetAddr(addr: byte);
+        procedure RunInterrogate;
 
         procedure Synchronize(p: TThreadProcedure); overload;
         procedure Synchronize(m: TThreadMethod); overload;
@@ -102,11 +101,11 @@ type
         function ExitCondition: boolean;
         procedure _read(p: TProduct; AVar: byte);
         procedure DoDelay;
+        procedure DoReadProduct(p: TProduct);
     end;
 
 procedure TWorker.DataModuleCreate(Sender: TObject);
 begin
-    FWithJournal := false;
     FThread := nil;
     FFlagRunning := 0;
     FHComportProducts := INVALID_HANDLE_VALUE;
@@ -145,7 +144,6 @@ procedure TWorker.RunWorks(withJourna: boolean; works: TWorks);
 begin
     if AtomicIncrement(FFlagRunning, 0) = 1 then
         raise EConfigError.Create('already running');
-    FWithJournal := withJourna;
     FThread := TWorkThread.Create(true);
     FThread.FreeOnTerminate := true;
     FThread.FWorks := works;
@@ -164,23 +162,19 @@ begin
         end);
 end;
 
-
-
 procedure TWorker.NewLogEntry(ALevel: TLogLevel; AText: string);
 begin
+
+    if FThread.FWork.Name = 'опрос' then
+        exit;
+
     FThread.Synchronize(
         procedure
         begin
-            if FWithJournal then
-            begin
-                FormJournal.NewEntry(ALevel, AText);
-                FormConsole.NewLine(now, ALevel, FThread.FWork.Name, AText)
-            end
-            else
-                FormConsole.NewLine(now, ALevel, '', AText);
+            FormJournal.NewEntry(ALevel, AText);
+            FormConsole.NewLine(now, ALevel, FThread.FWork.Name, AText);
             with FormConsole.StringGrid1 do
                 Row := RowCount - 1;
-
         end);
 end;
 
@@ -197,7 +191,6 @@ end;
 
 procedure TWorker.DoEachProduct1(func: TProductProcedure);
 var
-    v: double;
     p: TProduct;
     i: integer;
     Products: TArray<TProduct>;
@@ -208,10 +201,10 @@ begin
             Products := FormLastParty.ProductionProducts;
         end);
 
-    if length(Products) = 0 then
+    if Length(Products) = 0 then
         raise EConfigError.Create('не отмечено ни одного прибора в таблице');
 
-    for i := 0 to length(Products) - 1 do
+    for i := 0 to Length(Products) - 1 do
     begin
         p := Products[i];
         FThread.Synchronize(
@@ -416,8 +409,8 @@ begin
     v := ceil(setpoint);
 
     s := IntToHex(ceil(v), 4);
-    if length(s) > 4 then
-        s := Copy(s, length(s) - 4, 4);
+    if Length(s) > 4 then
+        s := Copy(s, Length(s) - 4, 4);
     TermochamberStop;
     TermochamberGetResponse(TermochamberSetpointRequest1 + s + #13#10);
 end;
@@ -431,7 +424,11 @@ procedure TWorker.OnComport(r: TComportLogEntry);
 var
     comport: string;
     s, strRequest, strResponse: string;
+    log_level: TLogLevel;
+    kgs_req: TKgsRequest;
+    i:integer;
 begin
+    log_level := loglevDebug;
     comport := 'COM?';
     if r.HComport = FHComportProducts then
         comport := AppIni.ComportProductsName + '-стенд'
@@ -439,7 +436,7 @@ begin
         comport := AppIni.ComportTempName + '-термокамера';
 
     s := comport + ' : ' + BytesToHex(r.Request);
-    if length(r.Response) > 0 then
+    if Length(r.Response) > 0 then
         s := s + ' --> ' + BytesToHex(r.Response);
 
     s := s + ' ' + IntToStr(r.millis) + ' мс';
@@ -449,11 +446,12 @@ begin
 
     if r.HComport = FHComportTermo then
     begin
+        log_level := loglevInfo;
         strRequest := TEncoding.ASCII.GetString(r.Request);
         strResponse := TEncoding.ASCII.GetString(r.Response);
-        if length(r.Response) > 0 then
+        if Length(r.Response) > 0 then
             strResponse := 'нет ответа';
-        if length(r.Response) > 0 then
+        if Length(r.Response) > 0 then
             s := Format('%s "%s" : "%s" %s : %s',
               [TermochamberFormatRequest(strRequest), strRequest, strResponse,
               TermochamberFormatResponse(strResponse), s])
@@ -463,20 +461,32 @@ begin
     end
     else if (r.HComport = FHComportProducts) then
     begin
+
         if r.Request[0] = $20 then
-            s := 'газовый блок: ' + IntToStr(r.Request[8]) + ': ' + s
-        else
-            s := s + ' БО: ' + TKgsRequest.fromBytes(r.Request)
-              .FormatResponse(r.Response);
+        begin
+            s := 'газовый блок: ' + IntToStr(r.Request[8]) + ': ' + s;
+            log_level := loglevInfo;
+        end
+        else if Length(r.Request) = 9 then
+        begin
+            kgs_req := TKgsRequest.fromBytes(r.Request);
+            s := s + ' БО: ' + kgs_req.FormatResponse(r.Response);
+            for I := 0 to Length(KgsMainVars)-1 do
+            begin
+                if KgsMainVars[i] = kgs_req.ValueAddr then
+                    log_level := loglevTrace;
+            end;
+        end;
     end;
 
-    NewLogEntry(loglevDebug, s);
+    NewLogEntry(log_level, s);
 end;
 
 procedure TWorker.TryWithErrorMessage(Proc: TWorkProcedure);
 var
-    _continue: boolean;
+    hardware_error: string;
 begin
+
     try
         Proc();
     except
@@ -485,14 +495,21 @@ begin
             Synchronize(
                 procedure
                 begin
-                    _continue := KgsdumMainForm.ErrorMessageBox
+
+                    if KgsdumMainForm.ErrorMessageBox
                       (Format('Нет связи с оборудованием: %s, %s'#10#13#10#13 +
                       'Ignore - продолжить выполнение настройки'#10#13#10#13 +
-                      'Abort - прекратить настройку', [e.ClassName,
-                      e.Message]));
+                      'Abort - прекратить настройку', [e.ClassName, e.Message]))
+                    then
+                        NewLogEntry(logLevWarn, 'проигнорирована ошибка: ' +
+                          e.ClassName + ', ' + e.Message)
+                    else
+                        hardware_error := e.Message;
                 end);
         end;
-    end
+    end;
+    if hardware_error <> '' then
+        raise EHardwareError.Create(hardware_error);
 end;
 
 procedure TWorker.Delay(what: string; DurationMS: cardinal);
@@ -502,6 +519,7 @@ procedure TWorker.Delay(what: string; DurationMS: cardinal);
         Synchronize(
             procedure
             begin
+                KgsdumData.SaveLastSeriesBucket;
                 with KgsdumMainForm do
                 begin
                     TimerDelay.Enabled := false;
@@ -511,23 +529,13 @@ procedure TWorker.Delay(what: string; DurationMS: cardinal);
     end;
 
 begin
-
     NewLogEntry(loglevInfo, what + ': ' + TimeToStr(IncMilliSecond(0,
       DurationMS)));
     AtomicExchange(FFlagSkipDelay, 0);
     Synchronize(
         procedure
         begin
-            with KgsdumMainForm do
-            begin
-                LabelWhatDelay.Caption := what;
-                LabelDelayElepsedTime.Caption := '00:00:00';
-                LabelProgress.Caption := '';
-                ProgressBar1.Position := 0;
-                ProgressBar1.Max := DurationMS;
-                TimerDelay.Enabled := true;
-                PanelDelay.Show;
-            end;
+            KgsdumMainForm.OnStartDelay(what, DurationMS);
         end);
     try
         TDelay.Create(DurationMS, self).DoDelay;
@@ -568,10 +576,42 @@ begin
 end;
 
 // ------------------------------------------------------------------------------
+procedure TWorker.RunInterrogate;
+begin
+    Worker.RunWork('опрос',
+        procedure
+        begin
+            Worker.Synchronize(
+                procedure
+                begin
+                    KgsdumData.NewChartSeries('опрос');
+                    FormChartSeries.NewChart;
+                end);
+            while true do
+                Worker.DoEachProduct(interrogate_product);
+        end);
+end;
+
+procedure TWorker.interrogate_product(p: TProduct);
+var
+    AVar: byte;
+begin
+    try
+        for AVar in KgsMainVars do
+            Worker.KgsReadVar(p.FAddr, AVar);
+    except
+        on e: EConnectionError do
+        begin
+            Worker.NewLogEntry(loglevError, p.FormatID + ': ' + e.Message)
+        end;
+    end;
+
+end;
+
+// ------------------------------------------------------------------------------
 procedure TWorkThread.Execute;
 var
     AWork: TWork;
-    work_checked: boolean;
 begin
     AtomicExchange(FWorker.FFlagRunning, 1);
     AtomicExchange(FWorker.FFlagCanceled, 0);
@@ -583,13 +623,13 @@ begin
             if AtomicIncrement(FWorker.FFlagCanceled, 0) = 1 then
                 raise EAbort.Create('выполнение прервано');
             FWork := AWork;
-            Synchronize(
-                procedure
-                begin
-                    KgsdumMainForm.NewWork(FWork.Name);
-                    if FWorker.FWithJournal then
+            if AWork.Name <> 'опрос' then
+                Synchronize(
+                    procedure
+                    begin
+                        KgsdumMainForm.NewWork(FWork.Name);
                         FormJournal.NewWork(FWork.Name);
-                end);
+                    end);
             FWork.Proc();
         end;
     except
@@ -642,30 +682,39 @@ begin
     FWorker.KgsReadVar(p.FAddr, AVar);
 end;
 
+procedure TDelay.DoReadProduct(p: TProduct);
+var
+    AVar: byte;
+begin
+    try
+        for AVar in KgsMainVars do
+            _read(p, AVar);
+    except
+        on e: EConnectionError do
+        begin
+            FWorker.NewLogEntry(loglevError, p.FormatID + ': ' + e.Message)
+        end;
+    end;
+
+end;
+
 procedure TDelay.DoDelay;
 var
     _self: TDelay;
+    t:cardinal;
 begin
     _self := self;
     while not ExitCondition do
-        FWorker.DoEachProduct(
-            procedure(p: TProduct)
-            var
-                v: double;
-                AVar: byte;
-            begin
-                try
-                    for AVar in KgsVars do
-                        _self._read(p, AVar);
-                except
-                    on e: EConnectionError do
-                    begin
-                        _self.FWorker.NewLogEntry(loglevError,
-                          p.FormatID + ': ' + e.Message)
-                    end;
-                end;
-
-            end);
+    begin
+        FWorker.DoEachProduct(_self.DoReadProduct);
+        t:= GetTickCount;
+        while (GetTickCount - t < 5000) and (not ExitCondition) do
+        begin
+            if AtomicIncrement(FWorker.FFlagSkipDelay, 0) = 1 then
+                raise ESkipDelay.Create('отмена задержки');
+            Sleep(10);
+        end;
+    end;
 end;
 
 // ------------------------------------------------------------------------------

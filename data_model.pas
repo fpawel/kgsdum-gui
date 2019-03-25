@@ -63,13 +63,14 @@ type
         function Pgs(sc:TScaleConc):double;
     end;
 
-    TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError,
+    TLogLevel = (loglevTrace, loglevDebug, loglevInfo, loglevWarn, loglevError,
       loglevException);
 
     TLogEntry = record
-        Time: TDateTime;
-        Level: TLogLevel;
-        Work, Text: string;
+        FWorkID : longint;
+        FCreatedAt: TDateTime;
+        FLevel: TLogLevel;
+        FWork, FText: string;
     end;
 
     TWorkEntryInfo = record
@@ -121,7 +122,7 @@ const
     Var0 = 60;
     Var1 = 61;
     VarTemp = 63;
-    KgsVars: array [0 .. 3] of byte = (VarConc, Var0, Var1, VarTemp);
+    KgsMainVars: array [0 .. 3] of byte = (VarConc, Var0, Var1, VarTemp);
 
     product_column_name: array [TProductField] of string = ('π', '¿‰ÂÒÒ',
       '«‡‚.π', ' ÓÌˆ.', 'Var0', 'Var1', 'T,"C', 'œ√—1', 'œ√—2', 'œ√—3', 'œ√—4',

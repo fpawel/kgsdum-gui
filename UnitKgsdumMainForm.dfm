@@ -176,6 +176,25 @@ object KgsdumMainForm: TKgsdumMainForm
         Layout = tlCenter
         ExplicitHeight = 18
       end
+      object LabelDelayTotalTime: TLabel
+        AlignWithMargins = True
+        Left = 106
+        Top = 3
+        Width = 58
+        Height = 25
+        Margins.Left = 5
+        Margins.Right = 5
+        Align = alLeft
+        Caption = '00:00:00'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clNavy
+        Font.Height = -15
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        Layout = tlCenter
+        ExplicitHeight = 18
+      end
       object ToolBar6: TToolBar
         Left = 783
         Top = 0
@@ -203,9 +222,9 @@ object KgsdumMainForm: TKgsdumMainForm
         end
       end
       object Panel2: TPanel
-        Left = 101
+        Left = 169
         Top = 0
-        Width = 641
+        Width = 573
         Height = 31
         Align = alClient
         Alignment = taLeftJustify
@@ -220,12 +239,12 @@ object KgsdumMainForm: TKgsdumMainForm
         ParentFont = False
         TabOrder = 1
         DesignSize = (
-          641
+          573
           31)
         object ProgressBar1: TProgressBar
           Left = 3
           Top = 8
-          Width = 635
+          Width = 567
           Height = 15
           Anchors = [akLeft, akTop, akRight, akBottom]
           TabOrder = 0

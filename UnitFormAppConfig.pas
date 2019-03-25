@@ -119,6 +119,8 @@ end;
 
 procedure TFormAppConfig.ComboBoxComportProductsChange(Sender: TObject);
 begin
+    if FUpdate then
+        exit;
     AppIni.ComportProductsName := ComboBoxComportProducts.Text;
 
 end;
@@ -127,6 +129,8 @@ procedure TFormAppConfig.ComboBoxComportProductsDropDown(Sender: TObject);
 var
     n: integer;
 begin
+    if FUpdate then
+        exit;
     with Sender as TComboBox do
     begin
         n := ItemIndex;
@@ -137,6 +141,8 @@ end;
 
 procedure TFormAppConfig.ComboBoxComportTempChange(Sender: TObject);
 begin
+    if FUpdate then
+        exit;
     AppIni.ComportTempName := ComboBoxComportTemp.Text;
 
 end;

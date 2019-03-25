@@ -14,8 +14,8 @@ type
         Panel1: TPanel;
         StringGrid1: TStringGrid;
         Splitter1: TSplitter;
-    Panel3: TPanel;
-    ComboBox1: TComboBox;
+        Panel3: TPanel;
+        ComboBox1: TComboBox;
         procedure Panel1Resize(Sender: TObject);
         procedure FormShow(Sender: TObject);
         procedure FormCreate(Sender: TObject);
@@ -50,17 +50,16 @@ uses FireDAC.Comp.Client, FireDAC.stan.param, UnitKgsdumData, dateutils,
 
 procedure TFormJournal.FormCreate(Sender: TObject);
 begin
-//    FCurrentWork := '';
-//    FCurrentWorkID := 0;
+    // FCurrentWork := '';
+    // FCurrentWorkID := 0;
     SetLength(FWorks, 1);
     StringGrid1.Cells[0, 0] := 'За сутки';
-
 
 end;
 
 procedure TFormJournal.FormShow(Sender: TObject);
 begin
-    
+
     Panel1Resize(nil);
     fetch_days;
 end;
@@ -225,8 +224,8 @@ begin
               'AND level > 2) AS error_occurred ' + 'FROM work ' +
               'WHERE CAST(STRFTIME(''%Y'', created_at) AS INTEGER) = :year ' +
               'AND CAST(STRFTIME(''%m'', created_at) AS INTEGER) = :month ' +
-              'AND CAST(STRFTIME(''%d'', created_at) AS INTEGER) = :day '+
-              'ORDER BY created_at DESC';
+              'AND CAST(STRFTIME(''%d'', created_at) AS INTEGER) = :day ' +
+              'ORDER BY created_at';
             ParamByName('year').Value := YearOf(combobox_date);
             ParamByName('month').Value := MonthOf(combobox_date);
             ParamByName('day').Value := DayOf(combobox_date);
@@ -275,22 +274,18 @@ begin
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnJournal;
-        try
-            SQL.Text :=
-              'SELECT work.created_at, max(level) > 2 AS error_occurred FROM entry '
-              + 'INNER JOIN work ON entry.work_id = work.work_id ' +
-              'GROUP BY STRFTIME(''%Y-%m-%d'', work.created_at) ' +
-              'ORDER BY work.created_at DESC';
-            Open;
-            First;
-            while not eof do
-            begin
-                dt := FieldValues['created_at'];
-                ComboBox1.Items.Add(DateToStr(dt));
-                Next;
-            end;
-        finally
-            Free;
+        SQL.Text :=
+          'SELECT work.created_at, max(level) > 2 AS error_occurred FROM entry '
+          + 'INNER JOIN work ON entry.work_id = work.work_id ' +
+          'GROUP BY STRFTIME(''%Y-%m-%d'', work.created_at) ' +
+          'ORDER BY work.created_at';
+        Open;
+        First;
+        while not eof do
+        begin
+            dt := FieldValues['created_at'];
+            ComboBox1.Items.Add(DateToStr(dt));
+            Next;
         end;
     end;
 
@@ -329,8 +324,6 @@ begin
             Name := work;
             ErrorOccurred := false;
         end;
-
-        Close;
         Free;
     end;
 
@@ -376,8 +369,7 @@ end;
 procedure TFormJournal.NewExceptionEntry(What, AText: string);
 begin
     _DoNewWork(What);
-    NewEntry( loglevException, AText);
-
+    NewEntry(loglevException, AText);
 end;
 
 end.

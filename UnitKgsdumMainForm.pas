@@ -41,9 +41,10 @@ type
         N1: TMenuItem;
         TimerDelay: TTimer;
         PageControlMain: TPageControl;
-    TabSheetParty: TTabSheet;
-    TabSheetCharts: TTabSheet;
+        TabSheetParty: TTabSheet;
+        TabSheetCharts: TTabSheet;
         TabSheetJournal: TTabSheet;
+        LabelDelayTotalTime: TLabel;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
@@ -58,8 +59,8 @@ type
         procedure PageControlMainChange(Sender: TObject);
         procedure PageControlMainDrawTab(Control: TCustomTabControl;
           TabIndex: Integer; const Rect: TRect; Active: Boolean);
-    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+        procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
+          WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     private
         { Private declarations }
         procedure DoAppException(Sender: TObject; E: Exception);
@@ -75,6 +76,7 @@ type
         function ErrorMessageBox(AMsg: string): Boolean;
         procedure ShowNonModalErrorMessage(title, error: string);
 
+        procedure OnStartDelay(what: String; durationMs: cardinal);
     end;
 
 var
@@ -86,7 +88,8 @@ implementation
 
 {$R *.dfm}
 
-uses uitypes, types, ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug, vclutils,
+uses uitypes, types, ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug,
+    vclutils,
     UnitFormLastParty, dateutils, math,
     UnitFormSelectWorksDialog,
     works, UnitFormConsole, UnitFormJournal,
@@ -104,8 +107,8 @@ procedure TKgsdumMainForm.FormMouseWheel(Sender: TObject; Shift: TShiftState;
 begin
     FormChartSeries.ChangeAxisOrder(GetVCLControlAtPos(self, MousePos),
       WheelDelta);
-    FormCharts.FFormChartSeries.ChangeAxisOrder(GetVCLControlAtPos(self, MousePos),
-      WheelDelta);
+    FormCharts.FFormChartSeries.ChangeAxisOrder(GetVCLControlAtPos(self,
+      MousePos), WheelDelta);
 end;
 
 procedure TKgsdumMainForm.FormResize(Sender: TObject);
@@ -167,26 +170,23 @@ begin
         Show;
     end;
 
-
-
     PanelTop.Top := 0;
 end;
 
 procedure TKgsdumMainForm.TimerDelayTimer(Sender: TObject);
 var
     s: string;
-    v: TDateTime;
+    elepsed_time, total_time: TDateTime;
 begin
-    s := LabelDelayElepsedTime.Caption;
-    if TryStrToTime(s, v) then
-        LabelDelayElepsedTime.Caption := FormatDateTime('HH:mm:ss',
-          IncSecond(v));
-    ProgressBar1.Position := ProgressBar1.Position +
-      Integer(TimerDelay.Interval);
+
+    LabelDelayElepsedTime.Caption :=
+      TimeToStr(IncMilliSecond(StrToTime(LabelDelayElepsedTime.Caption), 1000));
+
+    ProgressBar1.Position := ProgressBar1.Position + 1000;
 
     LabelProgress.Caption :=
-      inttostr(ceil(ProgressBar1.Position * 100 / ProgressBar1.Max)) + '%';
-
+      inttostr(ceil(100.0 * (ProgressBar1.Position * 1.0) / (ProgressBar1.Max *
+      1.0))) + '%';
 end;
 
 procedure TKgsdumMainForm.ToolButton1Click(Sender: TObject);
@@ -345,7 +345,6 @@ begin
     if PageControl.ActivePage = TabSheetCharts then
         FormCharts.FetchDays;
 
-
 end;
 
 procedure TKgsdumMainForm.PageControlMainDrawTab(Control: TCustomTabControl;
@@ -391,6 +390,20 @@ begin
     PanelMessageBox.Show;
     PanelMessageBox.BringToFront;
     FormResize(self);
+end;
+
+procedure TKgsdumMainForm.OnStartDelay(what: String; durationMs: cardinal);
+begin
+    FormChartSeries.NewChart;
+    KgsdumData.NewChartSeries(what);
+    LabelWhatDelay.Caption := what;
+    LabelDelayElepsedTime.Caption := '00:00:00';
+    LabelDelayTotalTime.Caption := TimeToStr(IncMilliSecond(0, durationMs));
+    LabelProgress.Caption := '';
+    ProgressBar1.Position := 0;
+    ProgressBar1.Max := durationMs;
+    TimerDelay.Enabled := true;
+    PanelDelay.Show;
 end;
 
 Function GetTextSize(const Text: String; Font: TFont): TSize;

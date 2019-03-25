@@ -33,7 +33,6 @@ object FormJournal: TFormJournal
     Constraints.MinWidth = 265
     TabOrder = 0
     OnResize = Panel1Resize
-    ExplicitHeight = 300
     object StringGrid1: TStringGrid
       AlignWithMargins = True
       Left = 3
@@ -61,7 +60,6 @@ object FormJournal: TFormJournal
       OnDrawCell = StringGrid1DrawCell
       OnKeyDown = StringGrid1KeyDown
       OnSelectCell = StringGrid1SelectCell
-      ExplicitHeight = 263
       ColWidths = (
         64
         64)

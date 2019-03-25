@@ -9,7 +9,8 @@ uses
     FireDAC.Phys.PGDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
     FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
     FireDAC.Comp.DataSet, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLiteDef,
-    FireDAC.Phys.SQLite, data_model;
+    FireDAC.Phys.SQLite, data_model, Vcl.ExtCtrls, FireDAC.ConsoleUI.Wait,
+  FireDAC.Comp.UI;
 
 type
     TQueryProcedure = reference to procedure(_: TFDQuery);
@@ -22,6 +23,8 @@ type
         FDQuery2: TFDQuery;
         ConnCharts: TFDConnection;
         FDQuery3: TFDQuery;
+    Timer1: TTimer;
+    FDGUIxWaitCursor1: TFDGUIxWaitCursor;
         procedure DataModuleCreate(Sender: TObject);
 
     private
@@ -36,6 +39,7 @@ type
         procedure NewChartSeries(AName: string);
 
         function GetLastSeriesBucket: TSeriesBucket;
+        procedure SaveLastSeriesBucket;
 
     end;
 
@@ -43,6 +47,7 @@ var
     KgsdumData: TKgsdumData;
 
 function DateTimeFromDBString(dt: string): TDateTime;
+function DateTimeToDBString(dt: TDateTime): string;
 
 implementation
 
@@ -142,7 +147,6 @@ procedure TKgsdumData.AddSeriesPoint(TheAddr, TheVar: byte; TheValue: double);
 var
     i: integer;
     s: string;
-    last_bucket: TSeriesBucket;
     seconds_elapsed: Int64;
 
 begin
@@ -157,20 +161,16 @@ begin
 
     seconds_elapsed := SecondsBetween(now, FSeriesPointEntries[0].StoredAt);
 
-    if seconds_elapsed < 120 then
-        exit;
+    if seconds_elapsed > 120 then
+        SaveLastSeriesBucket;
 
+end;
+
+procedure TKgsdumData.SaveLastSeriesBucket;
+var i : integer ;
+    last_bucket: TSeriesBucket;
+begin
     last_bucket := GetLastSeriesBucket;
-
-    seconds_elapsed := SecondsBetween(now, last_bucket.UpdatedAt);
-
-    if (last_bucket.BucketID = 0) or
-      (last_bucket.CreatedAt <> last_bucket.UpdatedAt) and
-      (seconds_elapsed > 120) then
-    begin
-        NewChartSeries('опрос');
-        last_bucket := GetLastSeriesBucket;
-    end;
 
     with TFDQuery.Create(nil) do
     begin
@@ -188,13 +188,11 @@ begin
                     SQL.Text := SQL.Text + ', ';
 
             end;
-        s := SQL.Text;
         ExecSQL;
 
         Free;
     end;
     SetLength(FSeriesPointEntries, 0);
-
 
 end;
 

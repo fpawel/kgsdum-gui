@@ -109,7 +109,7 @@ end;
 
 procedure TFormSelectWorksDialog.Button16Click(Sender: TObject);
 begin
-    RunInterrogate;
+    Worker.RunInterrogate;
 end;
 
 procedure TFormSelectWorksDialog.Button1Click(Sender: TObject);

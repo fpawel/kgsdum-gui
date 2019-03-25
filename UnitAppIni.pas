@@ -15,6 +15,7 @@ type
 
         procedure SetComportProductsName(value: string);
         procedure SetComportTempName(value: string);
+
     public
         { Public declarations }
         Ini: TInifile;

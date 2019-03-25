@@ -24,6 +24,7 @@ object FormCharts: TFormCharts
     BevelOuter = bvNone
     Constraints.MinWidth = 265
     TabOrder = 0
+    OnResize = Panel1Resize
     object StringGrid1: TStringGrid
       AlignWithMargins = True
       Left = 3

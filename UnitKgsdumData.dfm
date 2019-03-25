@@ -202,4 +202,14 @@ object KgsdumData: TKgsdumData
     Left = 312
     Top = 200
   end
+  object Timer1: TTimer
+    Interval = 120000
+    Left = 384
+    Top = 64
+  end
+  object FDGUIxWaitCursor1: TFDGUIxWaitCursor
+    Provider = 'Console'
+    Left = 408
+    Top = 160
+  end
 end

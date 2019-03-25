@@ -4,7 +4,6 @@ interface
 
 uses data_model;
 
-procedure RunInterrogate;
 procedure RunReadVar(addr: byte; AVar: byte);
 procedure RunReadVars(AVar: byte);
 procedure RunReadCoefficient(addr: byte; ACoefficient: byte);
@@ -22,43 +21,10 @@ uses sysutils, comport, UnitFormLastParty, stringutils,
     UnitKgsdumMainForm, UnitWorker, UnitFormChartSeries, UnitKgsdumData;
 
 const
-    _one_minute_ms = 1000 * 60 * 60;
+    _one_minute_ms = 1000 * 60;
     _one_hour_ms = _one_minute_ms * 60;
 
-procedure RunInterrogate;
-begin
-    Worker.RunWork('опрос',
-        procedure
-        begin
-            Worker.Synchronize(
-                procedure
-                begin
-                    KgsdumData.NewChartSeries('опрос');
-                    FormChartSeries.NewChart;
 
-                end);
-            while True do
-            begin
-                Worker.DoEachProduct(
-                    procedure(p: TProduct)
-                    var
-                        AVar: byte;
-                    begin
-                        try
-                            for AVar in KgsVars do
-                                Worker.KgsReadVar(p.FAddr, AVar);
-                        except
-                            on e: EConnectionError do
-                            begin
-                                Worker.NewLogEntry(loglevError,
-                                  p.FormatID + ': ' + e.Message)
-                            end;
-                        end;
-
-                    end);
-            end;
-        end);
-end;
 
 procedure RunReadVars(AVar: byte);
 begin
@@ -115,7 +81,7 @@ begin
             var
                 AVar: byte;
             begin
-                for AVar in KgsVars do
+                for AVar in KgsMainVars do
                     Worker.KgsReadVar(p.FAddr, AVar);
 
             end);
@@ -134,7 +100,11 @@ end;
 
 procedure BlowGas(code: byte);
 begin
-    Worker.SwitchGasBlock6006(code);
+    Worker.TryWithErrorMessage(
+        procedure
+        begin
+            Worker.SwitchGasBlock6006(code);
+        end);
     Worker.Delay('продувка газа: ' + IntToStr(code), _one_minute_ms * 5);
 end;
 
@@ -222,9 +192,7 @@ begin
     BlowGas(1);
     ProductsReadVar(100);
     BlowGas(3);
-    _do([
-        DWriteKef(28, LastParty.Pgs3),
-        DReadVar(101)]);
+    _do([DWriteKef(28, LastParty.Pgs3), DReadVar(101)]);
 end;
 
 initialization
@@ -250,21 +218,13 @@ MainWorks := [TWork.Create('термоциклирование',
         Adjust;
 
         BlowGas(4);
-        _do([
-            DWriteKef(44, 1),
-            DWriteKef(48, LastParty.Pgs4),
-            DReadVar(102)]);
+        _do([DWriteKef(44, 1), DWriteKef(48, LastParty.Pgs4), DReadVar(102)]);
 
         BlowGas(2);
-        _do([
-            DWriteKef(44, 0),
-            DWriteKef(29, LastParty.Pgs2),
-            DReadVar(102)]);
+        _do([DWriteKef(44, 0), DWriteKef(29, LastParty.Pgs2), DReadVar(102)]);
 
         BlowGas(1);
-        _do([
-            DWriteKef(44, 2),
-            DReadVar(102)]);
+        _do([DWriteKef(44, 2), DReadVar(102)]);
     end),
 
   TWork.Create('термокомпенсация',
