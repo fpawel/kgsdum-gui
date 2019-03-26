@@ -66,7 +66,7 @@ type
         function ProductionProducts: TArray<TProduct>;
         function Products: TArray<TProduct>;
 
-        function FindProductWithAddr(addr: byte; f: TProductProcedure): Boolean;
+        function FindProductByAddr(addr: byte): TProduct;
 
         procedure SetProductionAll(production: Boolean);
 
@@ -74,7 +74,8 @@ type
 
         procedure SetProductInterrogate(place: Integer);
         procedure SetAddrValue(AAddr: byte; AVar: byte; AValue: double);
-        procedure SetAddrConnection(AAddr: byte; AConnection: string; failed:boolean);
+        procedure SetAddrConnection(AAddr: byte; AConnection: string;
+          failed: Boolean);
     end;
 
 var
@@ -212,11 +213,15 @@ begin
 end;
 
 procedure TFormLastParty.ToolButtonPartyClick(Sender: TObject);
+var
+    r: Integer;
 begin
-    if not MessageBox(Handle,
-      'Подтвердите необходимость создания новой партии.',
-      'Запрос подтверждения', mb_IconQuestion or mb_YesNo) <> mrYes then
+    r := MessageBox(Handle, 'Подтвердите необходимость создания новой партии.',
+      'Запрос подтверждения', mb_IconQuestion or mb_YesNo);
+
+    if r <> mrYes then
         exit;
+
 
     with TFDQuery.Create(nil) do
     begin
@@ -283,10 +288,11 @@ begin
             end;
 
             SQL.Text :=
-              'INSERT INTO product (party_id, serial_number, addr, production) '
-              + 'VALUES ((SELECT * FROM last_party_id), :serial_number, :addr, 1);';
+              'INSERT INTO product (party_id, serial_number, addr, production, created_at) '
+              + 'VALUES ((SELECT * FROM last_party_id), :serial_number, :addr, 1, :created_at);';
             ParamByName('serial_number').Value := inttostr(serial);
             ParamByName('addr').Value := addr;
+            ParamByName('created_at').AsDateTime := now;
             ExecSQL;
         finally
             Free;
@@ -372,8 +378,10 @@ begin
 
     if ACol = 0 then
     begin
-        StringGrid_DrawCheckBoxCell(StringGrid1, 0, ARow, Rect, State,
-          p.FProduction);
+
+        grd.Canvas.FillRect(Rect);
+        DrawCheckbox(grd, grd.Canvas, Rect, p.FProduction,
+          grd.Cells[ACol, ARow]);
         StringGrid_DrawCellBounds(cnv, ACol, ARow, Rect);
         exit;
     end;
@@ -551,16 +559,15 @@ begin
             FProducts[i].FConnectionFailed := false;
             reset_products;
             FormChartSeries.AddValue(AAddr, AVar, AValue, now);
-
-
+            FormChartSeries.Show;
             KgsdumData.AddSeriesPoint(AAddr, AVar, AValue);
-
             exit;
         end;
 
 end;
 
-procedure TFormLastParty.SetAddrConnection(AAddr: byte; AConnection: string; failed:boolean);
+procedure TFormLastParty.SetAddrConnection(AAddr: byte; AConnection: string;
+  failed: Boolean);
 var
     i: Integer;
 begin
@@ -574,18 +581,14 @@ begin
         end;
 end;
 
-function TFormLastParty.FindProductWithAddr(addr: byte;
-  f: TProductProcedure): Boolean;
+function TFormLastParty.FindProductByAddr(addr: byte): TProduct;
 var
     p: TProduct;
 begin
     for p in FProducts do
         if p.FAddr = addr then
-        begin
-            f(p);
-            exit(true);
-        end;
-    exit(false);
+            exit(p);
+    result.FProductID := 0;
 end;
 
 function TFormLastParty.Products: TArray<TProduct>;

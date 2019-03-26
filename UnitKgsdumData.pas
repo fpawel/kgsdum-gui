@@ -170,6 +170,9 @@ procedure TKgsdumData.SaveLastSeriesBucket;
 var i : integer ;
     last_bucket: TSeriesBucket;
 begin
+    if length(FSeriesPointEntries) = 0 then
+        exit;
+
     last_bucket := GetLastSeriesBucket;
 
     with TFDQuery.Create(nil) do
@@ -186,10 +189,8 @@ begin
                   DateTimeToDBString(StoredAt)]);
                 if i < Length(FSeriesPointEntries) - 1 then
                     SQL.Text := SQL.Text + ', ';
-
             end;
         ExecSQL;
-
         Free;
     end;
     SetLength(FSeriesPointEntries, 0);

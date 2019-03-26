@@ -24,8 +24,6 @@ const
     _one_minute_ms = 1000 * 60;
     _one_hour_ms = _one_minute_ms * 60;
 
-
-
 procedure RunReadVars(AVar: byte);
 begin
     Worker.RunWork(Format('считать var%d', [AVar]),
@@ -72,20 +70,32 @@ begin
         end);
 end;
 
+function TermochamberTryReadTemperature: double;
+var
+    t: double;
+begin
+    Worker.TryWithErrorMessage(
+        procedure
+        begin
+            t := Worker.TermochamberReadTemperature;
+        end);
+    result := t;
+end;
+
 procedure TermochamberSetupTemperature(temperature: double);
 begin
-    Worker.TermochamberSetSetpoint(temperature);
-    while abs(Worker.TermochamberReadTemperature - temperature) < 1 do
-        Worker.DoEachProduct(
-            procedure(p: TProduct)
-            var
-                AVar: byte;
-            begin
-                for AVar in KgsMainVars do
-                    Worker.KgsReadVar(p.FAddr, AVar);
+    Worker.TryWithErrorMessage(
+        procedure
+        begin
+            Worker.TermochamberSetSetpoint(temperature);
+        end);
 
-            end);
-    Worker.Delay('выдержка термокамеры при ' + floattostr(temperature) + '\"C',
+    while abs(TermochamberTryReadTemperature - temperature) < 1 do
+    begin
+        Worker.DoEachProduct(Worker.InterrogateProduct);
+    end;
+
+    Worker.Delay('выдержка термокамеры при ' + floattostr(temperature) + '"C',
       _one_hour_ms * 3);
 end;
 

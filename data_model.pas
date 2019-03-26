@@ -5,7 +5,7 @@ interface
 uses classes, graphics;
 
 type
-    TProductField = (pcPlace, pcAddr, pcSerial, pcConc, pcVar0, pcVar1, pcTemp,
+    TProductField = (pcPlace, pcProductID, pcAddr, pcSerial, pcConc, pcVar0, pcVar1, pcTemp,
       pcConcNorm1, pcConcNorm2, pcConcNorm3, pcConcNorm4, pcConcMinus1,
       pcConcMinus2, pcConcMinus3, pcConcMinus4, pcConcPlus1, pcConcPlus2,
       pcConcPlus3, pcConcPlus4);
@@ -124,7 +124,7 @@ const
     VarTemp = 63;
     KgsMainVars: array [0 .. 3] of byte = (VarConc, Var0, Var1, VarTemp);
 
-    product_column_name: array [TProductField] of string = ('¹', 'Àäðåññ',
+    product_column_name: array [TProductField] of string = ('¹', 'ID', 'Àäðåññ',
       'Çàâ.¹', 'Êîíö.', 'Var0', 'Var1', 'T,"C', 'ÏÃÑ1', 'ÏÃÑ2', 'ÏÃÑ3', 'ÏÃÑ4',
       'ÏÃÑ1-', 'ÏÃÑ2-', 'ÏÃÑ3-', 'ÏÃÑ4-', 'ÏÃÑ1+', 'ÏÃÑ2+', 'ÏÃÑ3+', 'ÏÃÑ4+');
 
@@ -146,7 +146,7 @@ end;
 
 function TProduct.FormatID: string;
 begin
-    result := Format('ÁÎ ¹%d ID%d ñåð.%s', [FPlace + 1, FProductID, FSerial]);
+    result := Format('¹%d ID%d ñåð.%s', [FPlace + 1, FProductID, FSerial]);
 end;
 
 function TConcValue.Check: TCheckValueResult;
@@ -269,18 +269,21 @@ function FormatProductFieldValue(product: TProduct; field: TProductField;
   err_det: TErrorDetail): string;
 begin
     with product do
+    begin
         case field of
+            pcProductID:
+                exit(IntToStr(FProductID));
             pcPlace:
                 exit(IntToStr(FPlace + 1));
-
             pcAddr:
                 exit(IntToStr(FAddr));
-
             pcSerial:
                 exit(FSerial);
-
             pcConc:
-                exit(FVarValue[VarConc]);
+                if FConnectionFailed then
+                    exit('íåò ñâÿçè')
+                else
+                    exit(FVarValue[VarConc]);
             pcVar0:
                 exit(FVarValue[Var0]);
             pcVar1:
@@ -294,6 +297,7 @@ begin
 
             Assert(false, 'uncmown case: ' + IntToStr(integer(field)));
         end;
+    end;
 
 end;
 

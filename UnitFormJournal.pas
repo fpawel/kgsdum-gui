@@ -123,6 +123,7 @@ procedure TFormJournal.StringGrid1KeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
     r: Integer;
+    combobox_date, created_at: TDateTime;
 begin
     if Key <> VK_DELETE then
         exit;
@@ -130,17 +131,32 @@ begin
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnJournal;
-        try
-            with StringGrid1.Selection do
-                for r := Top to Bottom do
+        with StringGrid1 do
+        begin
+            if Row = 0 then
+            begin
+                combobox_date := StrToDate(ComboBox1.Text);
+                SQL.Text := 'DELETE FROM work ' +
+                  'WHERE CAST(STRFTIME(''%Y'', created_at) AS INTEGER) = :year '
+                  + '  AND CAST(STRFTIME(''%m'', created_at) AS INTEGER) = :month '
+                  + '  AND CAST(STRFTIME(''%d'', created_at) AS INTEGER) = :day';
+                ParamByName('year').Value := YearOf(combobox_date);
+                ParamByName('month').Value := MonthOf(combobox_date);
+                ParamByName('day').Value := DayOf(combobox_date);
+                ExecSQL;
+
+            end
+            else
+                for r := Selection.Top to Selection.Bottom do
                 begin
                     SQL.Text := 'DELETE FROM work WHERE work_id = :work_id';
                     ParamByName('work_id').Value := FWorks[r].WorkID;
                     ExecSQL;
                 end;
-        finally
-            Free;
+
         end;
+
+        Free;
     end;
     ComboBox1Change(nil);
 
@@ -152,21 +168,24 @@ var
     combobox_date, created_at: TDateTime;
     _message: string;
 begin
-
+    combobox_date := StrToDate(ComboBox1.Text);
     FormConsole.Clear;
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnJournal;
         try
+            SQL.Text :=
+              'SELECT STRFTIME(''%Y-%m-%d %H:%M:%f'', entry.created_at) AS created_at, '
+              + 'message, level, name ' +
+              'FROM entry INNER JOIN work ON entry.work_id = work.work_id ';
             if ARow = 0 then
             begin
                 combobox_date := StrToDate(ComboBox1.Text);
-                SQL.Text := 'SELECT entry.*, work.name FROM entry INNER JOIN ' +
-                  'work ON entry.work_id = work.work_id ' +
+                SQL.Text := SQL.Text +
                   'WHERE CAST(STRFTIME(''%Y'', entry.created_at) AS INTEGER) = :year '
                   + '  AND CAST(STRFTIME(''%m'', entry.created_at) AS INTEGER) = :month '
                   + '  AND CAST(STRFTIME(''%d'', entry.created_at) AS INTEGER) = :day '
-                  + 'ORDER BY entry.created_at ';
+                  + 'ORDER BY entry.created_at;';
 
                 ParamByName('year').Value := YearOf(combobox_date);
                 ParamByName('month').Value := MonthOf(combobox_date);
@@ -174,9 +193,7 @@ begin
             end
             else
             begin
-                SQL.Text := 'SELECT entry.*, work.name FROM entry ' +
-                  'INNER JOIN work ON entry.work_id = work.work_id ' +
-                  'WHERE entry.work_id = :work_id';
+                SQL.Text := SQL.Text + 'WHERE entry.work_id = :work_id;';
                 ParamByName('work_id').Value := FWorks[ARow].WorkID;
             end;
 
@@ -184,7 +201,7 @@ begin
             First;
             while not eof do
             begin
-                created_at := FieldValues['created_at'];
+                created_at := DateTimeFromDBString(FieldValues['created_at']);
                 _message := FieldValues['message'];
 
                 FormConsole.NewLine(created_at, TLogLevel(FieldValues['level']),
@@ -259,7 +276,7 @@ begin
     with StringGrid1 do
     begin
         OnSelectCell := StringGrid1SelectCell;
-        Row := 0;
+        Row := RowCount - 1;
         StringGrid1SelectCell(nil, 0, Row, can_select);
     end;
 
@@ -339,6 +356,8 @@ end;
 procedure TFormJournal.NewWork(work: string);
 begin
     _DoNewWork(work);
+    with StringGrid1 do
+        Row := Rowcount-1;
     NewEntry(loglevInfo, 'начало выполнения');
 end;
 
@@ -350,18 +369,20 @@ begin
         FWorks[Length(FWorks) - 1].ErrorOccurred := true;
         StringGrid_RedrawRow(StringGrid1, StringGrid1.RowCount - 1);
     end;
-
+    Sleep(1);
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnJournal;
-        SQL.Text :=
-          'INSERT INTO entry(work_id, created_at, level, message) VALUES ' +
-          '((SELECT work_id FROM last_work), :created_at, :level, :message)';
+        SQL.Text := 'INSERT INTO entry(work_id, level, message) VALUES ' +
+          '((SELECT work_id FROM last_work), :level, :message)';
         ParamByName('level').Value := ALevel;
-        ParamByName('created_at').Value := now;
         ParamByName('message').Value := AText;
-        ExecSQL;
-        Close;
+        try
+            ExecSQL;
+        except
+            on e: Exception do
+                ShowMessage(AText + ': ' + e.Message);
+        end;
         Free;
     end;
 end;

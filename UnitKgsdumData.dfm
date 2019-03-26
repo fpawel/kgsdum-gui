@@ -125,27 +125,28 @@ object KgsdumData: TKgsdumData
       '('
       '  work_id    INTEGER   NOT NULL PRIMARY KEY,'
       
-        '  created_at TIMESTAMP NOT NULL UNIQUE DEFAULT (DATETIME('#39'now'#39'))' +
-        ','
+        '  created_at TIMESTAMP NOT NULL UNIQUE DEFAULT (DATETIME('#39'now'#39', ' +
+        #39'+3 hours'#39')),'
       '  name       TEXT      NOT NULL'
       ');'
       ''
       'CREATE TABLE IF NOT EXISTS entry'
       '('
-      '  entry_id   INTEGER   NOT NULL PRIMARY KEY,'
-      '  work_id    INTEGER   NOT NULL,'
+      '  entry_id   INTEGER NOT NULL PRIMARY KEY,'
+      '  work_id    INTEGER NOT NULL,'
       
-        '  created_at TIMESTAMP NOT NULL UNIQUE DEFAULT (DATETIME('#39'now'#39'))' +
-        ','
-      '  level      INTEGER   NOT NULL,'
-      '  message    TEXT      NOT NULL,'
+        '  created_at REAL    NOT NULL UNIQUE DEFAULT (julianday('#39'now'#39', '#39 +
+        '+3 hours'#39')),'
+      '  level      INTEGER NOT NULL,'
+      '  message    TEXT    NOT NULL,'
       
         '  FOREIGN KEY (work_id) REFERENCES work (work_id) ON DELETE CASC' +
         'ADE'
       ');'
       ''
       'CREATE VIEW IF NOT EXISTS last_work AS'
-      'SELECT * FROM work'
+      'SELECT *'
+      'FROM work'
       'ORDER BY created_at DESC'
       'LIMIT 1;')
     Left = 288

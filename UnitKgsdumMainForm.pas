@@ -140,6 +140,7 @@ begin
         BorderStyle := bsNone;
         Align := alClient;
         Show;
+        Hide;
     end;
 
     with FormJournal do
@@ -256,9 +257,9 @@ begin
         exit;
     end;
 
-    stackList := JclCreateStackList(false, 0, Caller(0, false));
+    stackList := JclCreateStackList(true, 0, Caller(0, false));
     sl := TStringList.Create;
-    stackList.AddToStrings(sl, false, false, false, false);
+    stackList.AddToStrings(sl, false, false, true, false);
     stacktrace := sl.Text;
     sl.Free;
     stackList.Free;

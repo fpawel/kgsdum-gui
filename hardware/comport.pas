@@ -128,8 +128,7 @@ end;
 function doOpenComport(portName: string; baud: integer): THandle;
 begin
     if not portNameAvail(portName) then
-        raise EComportError.Create
-          (format('COM порт "%s" не представлен в системе', [portName]));
+        raise EComportError.Create('нет COM порта с таким именем');
 
     portName := '\\.\' + portName;
 
@@ -151,8 +150,13 @@ begin
     try
         result := doOpenComport(portName, baud);
     except
-        CloseHandle(result);
-        raise;
+        on e:Exception do
+        begin
+            CloseHandle(result);
+            e.Message := portName + ': ' + e.Message;
+            raise;
+        end;
+
     end;
 end;
 
@@ -303,7 +307,7 @@ begin
     s := '';
     if length(result) <> 0 then
         s := ' --> ' + BytesToHex(result);
-    s := format('%s%s, %d мс, попытка %d', [BytesToHex(request), s,
+    s := format('%s%s %d мс попытка %d', [BytesToHex(request), s,
       since_tickcount(t), attempt_number - 1]);
 
     if length(result) = 0 then

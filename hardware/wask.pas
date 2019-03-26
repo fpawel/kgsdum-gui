@@ -53,10 +53,7 @@ begin
     result := toString;
 
     if length(response) = 0 then
-    begin
-        result := result + ' : нет ответа';
         exit;
-    end;
 
     if Direction = KgsRead then
         try

@@ -17,6 +17,7 @@ type
         FWork: TWork;
         FWorker: TWorker;
         procedure Execute; override;
+        function _stacktrace: string;
     end;
 
     TWorker = class(TDataModule)
@@ -39,7 +40,6 @@ type
         function GetComportTermo: THandle;
 
         procedure OnComport(r: TComportLogEntry);
-        procedure interrogate_product(p: TProduct);
 
     public
         { Public declarations }
@@ -75,6 +75,8 @@ type
         procedure Synchronize(p: TThreadProcedure); overload;
         procedure Synchronize(m: TThreadMethod); overload;
 
+        procedure InterrogateProduct(p: TProduct);
+
     end;
 
 var
@@ -87,7 +89,7 @@ implementation
 uses UnitFormLastParty, hardware_errors, UnitFormJournal, UnitFormConsole,
     UnitKgsdumMainForm, windows, math, UnitAppIni, termochamber, stringutils,
     dateutils,
-    modbus;
+    modbus, JclDebug;
 
 {$R *.dfm}
 
@@ -99,9 +101,7 @@ type
 
         constructor Create(DurationMS: cardinal; AWorker: TWorker);
         function ExitCondition: boolean;
-        procedure _read(p: TProduct; AVar: byte);
         procedure DoDelay;
-        procedure DoReadProduct(p: TProduct);
     end;
 
 procedure TWorker.DataModuleCreate(Sender: TObject);
@@ -206,14 +206,22 @@ begin
 
     for i := 0 to Length(Products) - 1 do
     begin
+        OnComportBackground;
         p := Products[i];
+
         FThread.Synchronize(
             procedure
             begin
                 FormLastParty.SetProductInterrogate(p.FPlace);
             end);
-
-        func(p);
+        try
+            func(p);
+        except
+            on e: EConnectionError do
+            begin
+                NewLogEntry(loglevError, p.FormatID + ': ' + e.Message)
+            end;
+        end;
     end;
 end;
 
@@ -227,6 +235,17 @@ begin
             begin
                 FormLastParty.SetProductInterrogate(-1);
             end);
+    end;
+end;
+
+procedure TWorker.InterrogateProduct(p: TProduct);
+var
+    AVar: byte;
+begin
+    for AVar in KgsMainVars do
+    begin
+        OnComportBackground;
+        KgsReadVar(p.FAddr, AVar);
     end;
 end;
 
@@ -266,8 +285,13 @@ begin
           (AppIni.ComportProductsName, 9600);
         exit(FHComportProducts);
     except
-        FHComportProducts := INVALID_HANDLE_VALUE;
-        raise;
+        on e: Exception do
+        begin
+            FHComportProducts := INVALID_HANDLE_VALUE;
+            e.Message := 'попытка открыть СОМ порт стенда: ' + e.Message;
+            raise;
+        end;
+
     end
 end;
 
@@ -279,8 +303,12 @@ begin
         FHComportTermo := comport.OpenComport(AppIni.ComportTempName, 9600);
         exit(FHComportTermo);
     except
-        FHComportTermo := INVALID_HANDLE_VALUE;
-        raise;
+        on e: Exception do
+        begin
+            FHComportTermo := INVALID_HANDLE_VALUE;
+            e.Message := 'попытка открыть СОМ порт термокамеры: ' + e.Message;
+            raise;
+        end;
     end
 end;
 
@@ -358,6 +386,8 @@ coefficient: byte): double;
 var
     r: TKgsRequest;
 begin
+    NewLogEntry(loglevDebug, Format('адр.%d: READ К%d ',
+      [DeviceAddr, coefficient]));
     r.DeviceAddr := DeviceAddr;
     r.ValueAddr := 97;
     r.Direction := KgsRead;
@@ -371,6 +401,9 @@ Value: double);
 var
     r: TKgsRequest;
 begin
+    NewLogEntry(loglevDebug, Format('адр.%d: WRITE К%d=%s',
+      [DeviceAddr, coefficient, floattostr(Value)]));
+
     r.DeviceAddr := DeviceAddr;
     r.ValueAddr := 97;
     r.Direction := KgsRead;
@@ -426,7 +459,7 @@ var
     s, strRequest, strResponse: string;
     log_level: TLogLevel;
     kgs_req: TKgsRequest;
-    i:integer;
+    i: integer;
 begin
     log_level := loglevDebug;
     comport := 'COM?';
@@ -437,46 +470,63 @@ begin
 
     s := comport + ' : ' + BytesToHex(r.Request);
     if Length(r.Response) > 0 then
-        s := s + ' --> ' + BytesToHex(r.Response);
+        s := s + ' : ' + BytesToHex(r.Response);
 
-    s := s + ' ' + IntToStr(r.millis) + ' мс';
+    s := s + ', ' + IntToStr(r.millis) + ' мс';
 
     if r.attempt > 1 then
-        s := s + ' (' + IntToStr(r.attempt) + ')';
+        s := s + ', (' + IntToStr(r.attempt) + ')';
 
     if r.HComport = FHComportTermo then
     begin
         log_level := loglevInfo;
         strRequest := TEncoding.ASCII.GetString(r.Request);
         strResponse := TEncoding.ASCII.GetString(r.Response);
-        if Length(r.Response) > 0 then
-            strResponse := 'нет ответа';
+
         if Length(r.Response) > 0 then
             s := Format('%s "%s" : "%s" %s : %s',
               [TermochamberFormatRequest(strRequest), strRequest, strResponse,
               TermochamberFormatResponse(strResponse), s])
         else
-            s := Format('%s "%s" : нет ответа : %s',
-              [TermochamberFormatRequest(strRequest), strRequest, s]);
+            s := Format('%s "%s" : %s', [TermochamberFormatRequest(strRequest),
+              strRequest, s]);
     end
     else if (r.HComport = FHComportProducts) then
     begin
 
         if r.Request[0] = $20 then
         begin
-            s := 'газовый блок: ' + IntToStr(r.Request[8]) + ': ' + s;
+            s := 'газовый блок: ' + IntToStr(r.Request[8]) + ' ' + s;
             log_level := loglevInfo;
         end
         else if Length(r.Request) = 9 then
         begin
             kgs_req := TKgsRequest.fromBytes(r.Request);
-            s := s + ' БО: ' + kgs_req.FormatResponse(r.Response);
-            for I := 0 to Length(KgsMainVars)-1 do
+
+            s := s + ' БО ';
+
+            FThread.Synchronize(
+                procedure
+                begin
+                    with FormLastParty.FindProductByAddr(kgs_req.DeviceAddr) do
+                        if FProductID <> 0 then
+                            s := s + FormatID;
+                end);
+
+            s := s + kgs_req.FormatResponse(r.Response);
+
+            for i := 0 to Length(KgsMainVars) - 1 do
             begin
                 if KgsMainVars[i] = kgs_req.ValueAddr then
                     log_level := loglevTrace;
             end;
         end;
+    end;
+
+    if Length(r.Response) = 0 then
+    begin
+        s := s + ' нет ответа';
+        log_level := logLevWarn;
     end;
 
     NewLogEntry(log_level, s);
@@ -588,24 +638,8 @@ begin
                     FormChartSeries.NewChart;
                 end);
             while true do
-                Worker.DoEachProduct(interrogate_product);
+                Worker.DoEachProduct(InterrogateProduct);
         end);
-end;
-
-procedure TWorker.interrogate_product(p: TProduct);
-var
-    AVar: byte;
-begin
-    try
-        for AVar in KgsMainVars do
-            Worker.KgsReadVar(p.FAddr, AVar);
-    except
-        on e: EConnectionError do
-        begin
-            Worker.NewLogEntry(loglevError, p.FormatID + ': ' + e.Message)
-        end;
-    end;
-
 end;
 
 // ------------------------------------------------------------------------------
@@ -623,13 +657,13 @@ begin
             if AtomicIncrement(FWorker.FFlagCanceled, 0) = 1 then
                 raise EAbort.Create('выполнение прервано');
             FWork := AWork;
-            if AWork.Name <> 'опрос' then
-                Synchronize(
-                    procedure
-                    begin
-                        KgsdumMainForm.NewWork(FWork.Name);
+            Synchronize(
+                procedure
+                begin
+                    KgsdumMainForm.NewWork(FWork.Name);
+                    if AWork.Name <> 'опрос' then
                         FormJournal.NewWork(FWork.Name);
-                    end);
+                end);
             FWork.Proc();
         end;
     except
@@ -651,6 +685,7 @@ begin
 
         on e: Exception do
         begin
+            e.Message := e.Message + ' ' + _stacktrace;
             Synchronize(
                 procedure
                 begin
@@ -659,6 +694,20 @@ begin
         end;
     end;
     FWorker.DoEndWork;
+
+end;
+
+function TWorkThread._stacktrace: string;
+var
+    stackList: TJclStackInfoList; // JclDebug.pas
+    sl: TStringList;
+begin
+    stackList := JclCreateStackList(true, 0, Caller(0, false));
+    sl := TStringList.Create;
+    stackList.AddToStrings(sl, false, false, true, false);
+    result := sl.Text;
+    sl.Free;
+    stackList.Free;
 
 end;
 
@@ -675,44 +724,20 @@ begin
     result := ((GetTickCount - FStartTimeMS) >= FDurationMS);
 end;
 
-procedure TDelay._read(p: TProduct; AVar: byte);
-begin
-    if ExitCondition then
-        exit;
-    FWorker.KgsReadVar(p.FAddr, AVar);
-end;
-
-procedure TDelay.DoReadProduct(p: TProduct);
-var
-    AVar: byte;
-begin
-    try
-        for AVar in KgsMainVars do
-            _read(p, AVar);
-    except
-        on e: EConnectionError do
-        begin
-            FWorker.NewLogEntry(loglevError, p.FormatID + ': ' + e.Message)
-        end;
-    end;
-
-end;
-
 procedure TDelay.DoDelay;
 var
     _self: TDelay;
-    t:cardinal;
+    t: cardinal;
 begin
     _self := self;
     while not ExitCondition do
     begin
-        FWorker.DoEachProduct(_self.DoReadProduct);
-        t:= GetTickCount;
+        FWorker.DoEachProduct(_self.FWorker.InterrogateProduct);
+        t := GetTickCount;
         while (GetTickCount - t < 5000) and (not ExitCondition) do
         begin
-            if AtomicIncrement(FWorker.FFlagSkipDelay, 0) = 1 then
-                raise ESkipDelay.Create('отмена задержки');
-            Sleep(10);
+            FWorker.OnComportBackground;
+            Sleep(1);
         end;
     end;
 end;
