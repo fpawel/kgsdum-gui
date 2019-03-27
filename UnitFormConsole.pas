@@ -48,7 +48,6 @@ uses FireDAC.Comp.Client, Rest.Json, dateutils, richeditutils, stringutils,
 procedure TFormConsole.FormCreate(Sender: TObject);
 begin
     SetLength(FEntries, 1);
-
 end;
 
 procedure TFormConsole.FormResize(Sender: TObject);
@@ -165,5 +164,6 @@ begin
         Cells[1, Rowcount - 1] := '';
     end;
 end;
+
 
 end.

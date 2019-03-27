@@ -17,10 +17,17 @@ function BytesToHex(BA: TArray<byte>; Sep: string = ' ';
     index_to : integer = -1
     ): string;
 
+function MillisecondsToStr(ms:cardinal):string;
+
 implementation
 
 
 uses SysUtils, dateutils;
+
+function MillisecondsToStr(ms:cardinal):string;
+begin
+    result := TimeToStr(IncMilliSecond(0, ms));
+end;
 
 function month_name(month_number:integer):string;
 begin

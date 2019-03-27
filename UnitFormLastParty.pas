@@ -222,7 +222,6 @@ begin
     if r <> mrYes then
         exit;
 
-
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.Conn;
@@ -549,7 +548,8 @@ end;
 
 procedure TFormLastParty.SetAddrValue(AAddr: byte; AVar: byte; AValue: double);
 var
-    i: Integer;
+    i, nVar: Integer;
+
 begin
     for i := 0 to Length(FProducts) - 1 do
         if FProducts[i].FAddr = AAddr then
@@ -558,9 +558,14 @@ begin
             FProducts[i].FConnection := 'ок';
             FProducts[i].FConnectionFailed := false;
             reset_products;
-            FormChartSeries.AddValue(AAddr, AVar, AValue, now);
-            FormChartSeries.Show;
-            KgsdumData.AddSeriesPoint(AAddr, AVar, AValue);
+
+            for nVar := 0 to Length(KgsMainVars) - 1 do
+                if KgsMainVars[nVar] = AVar then
+                begin
+                    FormChartSeries.AddValue(AAddr, AVar, AValue, now);
+                    FormChartSeries.Show;
+                    KgsdumData.AddSeriesPoint(AAddr, AVar, AValue);
+                end;
             exit;
         end;
 

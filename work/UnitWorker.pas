@@ -93,17 +93,6 @@ uses UnitFormLastParty, hardware_errors, UnitFormJournal, UnitFormConsole,
 
 {$R *.dfm}
 
-type
-    TDelay = record
-        FStartTimeMS, FDurationMS: cardinal;
-
-        FWorker: TWorker;
-
-        constructor Create(DurationMS: cardinal; AWorker: TWorker);
-        function ExitCondition: boolean;
-        procedure DoDelay;
-    end;
-
 procedure TWorker.DataModuleCreate(Sender: TObject);
 begin
     FThread := nil;
@@ -563,6 +552,29 @@ begin
 end;
 
 procedure TWorker.Delay(what: string; DurationMS: cardinal);
+
+    procedure _Do_Delay;
+    var
+        _startTimeMs, t: cardinal;
+        function ExitCondition: boolean;
+        begin
+            result := ((GetTickCount - _startTimeMs) >= DurationMS);
+        end;
+
+    begin
+        _startTimeMs := GetTickCount;
+        while not ExitCondition do
+        begin
+            DoEachProduct(InterrogateProduct);
+            t := GetTickCount;
+            while (GetTickCount - t < 5000) and (not ExitCondition) do
+            begin
+                OnComportBackground;
+                Sleep(1);
+            end;
+        end;
+    end;
+
     procedure _do_end;
     begin
         AtomicExchange(FFlagSkipDelay, 0);
@@ -579,16 +591,18 @@ procedure TWorker.Delay(what: string; DurationMS: cardinal);
     end;
 
 begin
-    NewLogEntry(loglevInfo, what + ': ' + TimeToStr(IncMilliSecond(0,
-      DurationMS)));
+    NewLogEntry(loglevInfo, what + ': ' + MillisecondsToStr(DurationMS));
     AtomicExchange(FFlagSkipDelay, 0);
+
     Synchronize(
         procedure
         begin
+            KgsdumData.NewChartSeries(FThread.FWork.Name + ': ' + what + ': ' +
+              MillisecondsToStr(DurationMS));
             KgsdumMainForm.OnStartDelay(what, DurationMS);
         end);
     try
-        TDelay.Create(DurationMS, self).DoDelay;
+        _Do_Delay;
         NewLogEntry(logLevWarn, what + ': ' + TimeToStr(IncMilliSecond(0,
           DurationMS)) + ': задержка выполнена');
     except
@@ -709,37 +723,6 @@ begin
     sl.Free;
     stackList.Free;
 
-end;
-
-// ------------------------------------------------------------------------------
-constructor TDelay.Create(DurationMS: cardinal; AWorker: TWorker);
-begin
-    FStartTimeMS := GetTickCount;
-    FDurationMS := DurationMS;
-    FWorker := AWorker;
-end;
-
-function TDelay.ExitCondition: boolean;
-begin
-    result := ((GetTickCount - FStartTimeMS) >= FDurationMS);
-end;
-
-procedure TDelay.DoDelay;
-var
-    _self: TDelay;
-    t: cardinal;
-begin
-    _self := self;
-    while not ExitCondition do
-    begin
-        FWorker.DoEachProduct(_self.FWorker.InterrogateProduct);
-        t := GetTickCount;
-        while (GetTickCount - t < 5000) and (not ExitCondition) do
-        begin
-            FWorker.OnComportBackground;
-            Sleep(1);
-        end;
-    end;
 end;
 
 // ------------------------------------------------------------------------------

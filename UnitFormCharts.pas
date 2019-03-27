@@ -14,6 +14,7 @@ type
         StringGrid1: TStringGrid;
         Panel3: TPanel;
         ComboBox1: TComboBox;
+    Splitter1: TSplitter;
         procedure FormCreate(Sender: TObject);
         procedure ComboBox1Change(Sender: TObject);
         procedure StringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer;

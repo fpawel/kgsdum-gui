@@ -173,47 +173,43 @@ begin
     with TFDQuery.Create(nil) do
     begin
         Connection := KgsdumData.ConnJournal;
-        try
-            SQL.Text :=
-              'SELECT STRFTIME(''%Y-%m-%d %H:%M:%f'', entry.created_at) AS created_at, '
-              + 'message, level, name ' +
-              'FROM entry INNER JOIN work ON entry.work_id = work.work_id ';
-            if ARow = 0 then
-            begin
-                combobox_date := StrToDate(ComboBox1.Text);
-                SQL.Text := SQL.Text +
-                  'WHERE CAST(STRFTIME(''%Y'', entry.created_at) AS INTEGER) = :year '
-                  + '  AND CAST(STRFTIME(''%m'', entry.created_at) AS INTEGER) = :month '
-                  + '  AND CAST(STRFTIME(''%d'', entry.created_at) AS INTEGER) = :day '
-                  + 'ORDER BY entry.created_at;';
+        SQL.Text :=
+          'SELECT STRFTIME(''%Y-%m-%d %H:%M:%f'', entry.created_at) AS created_at, '
+          + 'message, level, name ' +
+          'FROM entry INNER JOIN work ON entry.work_id = work.work_id ';
+        if ARow = 0 then
+        begin
+            combobox_date := StrToDate(ComboBox1.Text);
+            SQL.Text := SQL.Text +
+              'WHERE CAST(STRFTIME(''%Y'', entry.created_at) AS INTEGER) = :year '
+              + '  AND CAST(STRFTIME(''%m'', entry.created_at) AS INTEGER) = :month '
+              + '  AND CAST(STRFTIME(''%d'', entry.created_at) AS INTEGER) = :day '
+              + 'ORDER BY entry.created_at;';
 
-                ParamByName('year').Value := YearOf(combobox_date);
-                ParamByName('month').Value := MonthOf(combobox_date);
-                ParamByName('day').Value := DayOf(combobox_date);
-            end
-            else
-            begin
-                SQL.Text := SQL.Text + 'WHERE entry.work_id = :work_id;';
-                ParamByName('work_id').Value := FWorks[ARow].WorkID;
-            end;
-
-            Open;
-            First;
-            while not eof do
-            begin
-                created_at := DateTimeFromDBString(FieldValues['created_at']);
-                _message := FieldValues['message'];
-
-                FormConsole.NewLine(created_at, TLogLevel(FieldValues['level']),
-                  FieldValues['name'], FieldValues['message']);
-
-                Next;
-            end;
-        finally
-            Free;
+            ParamByName('year').Value := YearOf(combobox_date);
+            ParamByName('month').Value := MonthOf(combobox_date);
+            ParamByName('day').Value := DayOf(combobox_date);
+        end
+        else
+        begin
+            SQL.Text := SQL.Text + 'WHERE entry.work_id = :work_id;';
+            ParamByName('work_id').Value := FWorks[ARow].WorkID;
         end;
-    end;
 
+        Open;
+        First;
+        while not eof do
+        begin
+            created_at := DateTimeFromDBString(FieldValues['created_at']);
+            _message := FieldValues['message'];
+
+            FormConsole.NewLine(created_at, TLogLevel(FieldValues['level']),
+              FieldValues['name'], FieldValues['message']);
+
+            Next;
+        end;
+        Free;
+    end;
 end;
 
 procedure TFormJournal.ComboBox1Change(Sender: TObject);
@@ -357,7 +353,7 @@ procedure TFormJournal.NewWork(work: string);
 begin
     _DoNewWork(work);
     with StringGrid1 do
-        Row := Rowcount-1;
+        Row := RowCount - 1;
     NewEntry(loglevInfo, 'начало выполнения');
 end;
 

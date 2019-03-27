@@ -15,6 +15,12 @@ object FormCharts: TFormCharts
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
+  object Splitter1: TSplitter
+    Left = 265
+    Top = 0
+    Width = 5
+    Height = 300
+  end
   object Panel1: TPanel
     Left = 0
     Top = 0
