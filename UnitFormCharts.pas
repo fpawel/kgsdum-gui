@@ -168,7 +168,8 @@ begin
             SQL.Text := 'SELECT * FROM bucket ' +
               'WHERE CAST(STRFTIME(''%Y'', created_at) AS INTEGER) = :year ' +
               'AND CAST(STRFTIME(''%m'', created_at) AS INTEGER) = :month ' +
-              'AND CAST(STRFTIME(''%d'', created_at) AS INTEGER) = :day ';
+              'AND CAST(STRFTIME(''%d'', created_at) AS INTEGER) = :day '+
+              'AND EXISTS(SELECT * FROM series WHERE series.bucket_id = bucket.bucket_id)';
             ParamByName('year').value := YearOf(combobox_date);
             ParamByName('month').value := MonthOf(combobox_date);
             ParamByName('day').value := DayOf(combobox_date);
@@ -201,7 +202,7 @@ begin
     with StringGrid1 do
     begin
         OnSelectCell := StringGrid1SelectCell;
-        Row := 0;
+        Row := Rowcount -1;
         StringGrid1SelectCell(nil, 0, Row, not_used);
     end;
 

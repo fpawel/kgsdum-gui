@@ -651,8 +651,13 @@ begin
                     KgsdumData.NewChartSeries('опрос');
                     FormChartSeries.NewChart;
                 end);
-            while true do
-                Worker.DoEachProduct(InterrogateProduct);
+            try
+                while true do
+                    Worker.DoEachProduct(InterrogateProduct);
+            finally
+                KgsdumData.SaveLastSeriesBucket;
+            end;
+
         end);
 end;
 
