@@ -60,7 +60,6 @@ object FormJournal: TFormJournal
       OnDrawCell = StringGrid1DrawCell
       OnKeyDown = StringGrid1KeyDown
       OnSelectCell = StringGrid1SelectCell
-      ExplicitLeft = 0
       ColWidths = (
         64
         64)

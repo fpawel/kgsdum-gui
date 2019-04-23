@@ -395,7 +395,7 @@ end;
 
 procedure TKgsdumMainForm.OnStartDelay(what: String; durationMs: cardinal);
 begin
-    FormChartSeries.NewChart;
+    //FormChartSeries.NewChart;
 
     LabelWhatDelay.Caption := what;
     LabelDelayElepsedTime.Caption := '00:00:00';

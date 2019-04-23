@@ -586,6 +586,8 @@ object KgsdumMainForm: TKgsdumMainForm
     object TabSheetParty: TTabSheet
       Caption = #1055#1072#1088#1090#1080#1103
       ImageIndex = 4
+      ExplicitLeft = 105
+      ExplicitTop = 3
     end
     object TabSheetJournal: TTabSheet
       Caption = #1046#1091#1088#1085#1072#1083
@@ -594,10 +596,6 @@ object KgsdumMainForm: TKgsdumMainForm
     object TabSheetCharts: TTabSheet
       Caption = #1043#1088#1072#1092#1080#1082#1080
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
     end
   end
   object ImageList4: TImageList
@@ -610,7 +608,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Left = 632
     Top = 106
     Bitmap = {
-      494C01010B002403080014001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
+      494C01010B002403040014001400FFFFFF002110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000500000003C0000000100200000000000004B
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

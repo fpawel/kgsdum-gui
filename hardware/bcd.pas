@@ -3,7 +3,7 @@ unit bcd;
 interface
 
 procedure PutBCD6(var b: TArray<byte>; x: double; index0: integer);
-function ParseBCD6(b: TArray<byte>; Index: integer; var r: double): boolean;
+function ParseBCD6(const b: TArray<byte>; Index: integer; var r: double): boolean;
 
 implementation
 
@@ -56,10 +56,11 @@ begin
     result := (v1 > -1) and (v2 > -1) and (v1 < 10) and (v2 < 10);
 end;
 
-function ParseBCD6(b: TArray<byte>; Index: integer; var r: double): boolean;
+function ParseBCD6(const b: TArray<byte>; Index: integer; var r: double): boolean;
 var
     sign, coma, x, y: double;
 begin
+    r := 0;
     if index + 4 >= Length(b) then
         raise Exception.Create('out of range');
 

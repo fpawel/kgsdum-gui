@@ -77,6 +77,8 @@ type
 
         procedure InterrogateProduct(p: TProduct);
 
+        procedure Pause(ms: cardinal);
+
     end;
 
 var
@@ -99,7 +101,7 @@ begin
     FFlagRunning := 0;
     FHComportProducts := INVALID_HANDLE_VALUE;
     FHComportTermo := INVALID_HANDLE_VALUE;
-    ComportProductsConfig := TConfigGetResponse.Create(500, 30, 2);
+    ComportProductsConfig := TConfigGetResponse.Create(3000, 30, 2);
     ComportGasConfig := TConfigGetResponse.Create(500, 30, 2);
     ComportTermoConfig := TConfigGetResponse.Create(1000, 50, 3);
 
@@ -133,6 +135,7 @@ procedure TWorker.RunWorks(withJourna: boolean; works: TWorks);
 begin
     if AtomicIncrement(FFlagRunning, 0) = 1 then
         raise EConfigError.Create('already running');
+
     FThread := TWorkThread.Create(true);
     FThread.FreeOnTerminate := true;
     FThread.FWorks := works;
@@ -233,8 +236,9 @@ var
 begin
     for AVar in KgsMainVars do
     begin
-        OnComportBackground;
         KgsReadVar(p.FAddr, AVar);
+        if AVar <> VarTemp then
+             Pause(2000);
     end;
 end;
 
@@ -249,7 +253,12 @@ end;
 
 procedure TWorker.DoEndWork;
 begin
-    FThread.Synchronize(KgsdumMainForm.OnStopWork);
+    FThread.Synchronize(
+        procedure
+        begin
+            KgsdumMainForm.OnStopWork();
+            KgsdumData.SaveLastSeriesBucket;
+        end);
     CloseComport(FHComportProducts);
     CloseComport(FHComportTermo);
     AtomicExchange(FFlagRunning, 0);
@@ -313,6 +322,19 @@ begin
       OnComportBackground);
 end;
 
+procedure TWorker.Pause(ms: cardinal);
+var
+    t: cardinal;
+begin
+    t := GetTickCount;
+    while (GetTickCount - t < ms) do
+    begin
+        OnComportBackground;
+        Sleep(1);
+    end;
+
+end;
+
 function TWorker.KgsGetResponse(r: TKgsRequest): double;
 var
     _result: double;
@@ -331,6 +353,7 @@ begin
                       'ok: ' + r.ToString, false);
 
             end);
+
     except
         on e: EConnectionError do
         begin
@@ -364,7 +387,7 @@ var
     r: TKgsRequest;
 begin
     r.DeviceAddr := DeviceAddr;
-    r.ValueAddr := 97;
+    r.ValueAddr := ValueAddr;
     r.Direction := KgsWrite;
     r.Value := Value;
     KgsGetResponse(r);
@@ -382,6 +405,7 @@ begin
     r.Direction := KgsRead;
     r.Value := (coefficient div 60) * 60.;
     KgsGetResponse(r);
+    Pause(3000);
     result := KgsReadVar(DeviceAddr, ceil(1. * coefficient - r.Value));
 end;
 
@@ -398,6 +422,8 @@ begin
     r.Direction := KgsRead;
     r.Value := (coefficient div 60) * 60.;
     KgsGetResponse(r);
+
+    Pause(3000);
 
     r.ValueAddr := ceil(1. * coefficient - r.Value);
     r.Value := Value;
@@ -432,9 +458,13 @@ begin
 
     s := IntToHex(ceil(v), 4);
     if Length(s) > 4 then
-        s := Copy(s, Length(s) - 4, 4);
+        s := Copy(s, Length(s) - 4 + 1, 4);
     TermochamberStop;
     TermochamberGetResponse(TermochamberSetpointRequest1 + s + #13#10);
+    TermochamberStart;
+    while abs(TermochamberReadTemperature - setpoint) < 3 do
+        DoEachProduct(InterrogateProduct);
+
 end;
 
 function TWorker.TermochamberReadTemperature: double;
@@ -555,7 +585,7 @@ procedure TWorker.Delay(what: string; DurationMS: cardinal);
 
     procedure _Do_Delay;
     var
-        _startTimeMs, t: cardinal;
+        _startTimeMs: cardinal;
         function ExitCondition: boolean;
         begin
             result := ((GetTickCount - _startTimeMs) >= DurationMS);
@@ -566,12 +596,6 @@ procedure TWorker.Delay(what: string; DurationMS: cardinal);
         while not ExitCondition do
         begin
             DoEachProduct(InterrogateProduct);
-            t := GetTickCount;
-            while (GetTickCount - t < 5000) and (not ExitCondition) do
-            begin
-                OnComportBackground;
-                Sleep(1);
-            end;
         end;
     end;
 
@@ -581,11 +605,11 @@ procedure TWorker.Delay(what: string; DurationMS: cardinal);
         Synchronize(
             procedure
             begin
-                KgsdumData.SaveLastSeriesBucket;
                 with KgsdumMainForm do
                 begin
                     TimerDelay.Enabled := false;
                     PanelDelay.Hide;
+                    KgsdumData.SaveLastSeriesBucket;
                 end;
             end);
     end;
@@ -597,8 +621,6 @@ begin
     Synchronize(
         procedure
         begin
-            KgsdumData.NewChartSeries(FThread.FWork.Name + ': ' + what + ': ' +
-              MillisecondsToStr(DurationMS));
             KgsdumMainForm.OnStartDelay(what, DurationMS);
         end);
     try
@@ -642,21 +664,12 @@ end;
 // ------------------------------------------------------------------------------
 procedure TWorker.RunInterrogate;
 begin
+
     Worker.RunWork('опрос',
         procedure
         begin
-            Worker.Synchronize(
-                procedure
-                begin
-                    KgsdumData.NewChartSeries('опрос');
-                    FormChartSeries.NewChart;
-                end);
-            try
-                while true do
-                    Worker.DoEachProduct(InterrogateProduct);
-            finally
-                KgsdumData.SaveLastSeriesBucket;
-            end;
+            while true do
+                Worker.DoEachProduct(InterrogateProduct);
 
         end);
 end;

@@ -89,8 +89,20 @@ begin
             exit('УСТАВКА ' + FloatToStr((setpoint * 1.0) / 10.0));
     end;
 
+
     exit('?');
 end;
+
+
+function myHexToInt(s:string; var n : integer):boolean;
+begin
+    if (s[1] = 'F') or (s[1] = 'f') then
+        s := '$FFFF'+s
+    else
+        s := '$'+s;
+    exit(TryStrToInt(s,n));
+end;
+
 
 function TermochamberParseTemperature(strResponse: string): double;
 var
@@ -106,7 +118,7 @@ begin
         raise EBadResponse.Create
           ('ответ на запрос температуры не соответствует образцу');
 
-    if not TryStrToInt('$' + match.Groups[1].Value, temperature10) then
+    if not myHexToInt(match.Groups[1].Value, temperature10) then
         raise EBadResponse.Create
           (format('ответ на запрос температуры : match.Groups[1]: %s - ?',
           [match.Groups[1].Value]));

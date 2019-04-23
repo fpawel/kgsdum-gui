@@ -291,7 +291,7 @@ begin
           'SELECT work.created_at, max(level) > 2 AS error_occurred FROM entry '
           + 'INNER JOIN work ON entry.work_id = work.work_id ' +
           'GROUP BY STRFTIME(''%Y-%m-%d'', work.created_at) ' +
-          'ORDER BY work.created_at';
+          'ORDER BY work.created_at DESC';
         Open;
         First;
         while not eof do

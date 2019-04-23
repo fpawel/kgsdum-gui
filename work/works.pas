@@ -10,6 +10,12 @@ procedure RunReadCoefficient(addr: byte; ACoefficient: byte);
 procedure RunReadCoefficients(ACoefficient: byte);
 procedure RunSwitchGasBlock(code: byte);
 
+procedure RunWriteVars(AVar: byte; AValue: double);
+procedure RunWriteVar(addr: byte; AVar: byte; AValue: double);
+
+procedure RunWriteCoefs(ACoef: byte; AValue: double);
+procedure RunWriteCoef(addr: byte; ACoef: byte; AValue: double);
+
 var
     MainWorks: TWorks;
 
@@ -23,6 +29,54 @@ uses sysutils, comport, UnitFormLastParty, stringutils,
 const
     _one_minute_ms = 1000 * 60;
     _one_hour_ms = _one_minute_ms * 60;
+
+procedure RunWriteCoefs(ACoef: byte; AValue: double);
+begin
+    Worker.RunWork(Format('записать coef%d=%s', [ACoef, floattostr(AValue)]),
+        procedure
+        begin
+            Worker.DoEachProduct(
+                procedure(p: TProduct)
+                begin
+                    Worker.KgsWriteCoefficient(p.FAddr, ACoef, AValue);
+                end);
+
+        end);
+end;
+
+procedure RunWriteCoef(addr: byte; ACoef: byte; AValue: double);
+begin
+    Worker.RunWork(Format('записать адр.%d coef%d=%s',
+      [addr, ACoef, floattostr(AValue)]),
+        procedure
+        begin
+            Worker.KgsWriteCoefficient(addr, ACoef, AValue);
+        end);
+end;
+
+procedure RunWriteVars(AVar: byte; AValue: double);
+begin
+    Worker.RunWork(Format('записать var%d=%s', [AVar, floattostr(AValue)]),
+        procedure
+        begin
+            Worker.DoEachProduct(
+                procedure(p: TProduct)
+                begin
+                    Worker.KgsWriteVar(p.FAddr, AVar, AValue);
+                end);
+
+        end);
+end;
+
+procedure RunWriteVar(addr: byte; AVar: byte; AValue: double);
+begin
+    Worker.RunWork(Format('записать адр.%d var%d=%s',
+      [addr, AVar, floattostr(AValue)]),
+        procedure
+        begin
+            Worker.KgsWriteVar(addr, AVar, AValue);
+        end);
+end;
 
 procedure RunReadVars(AVar: byte);
 begin
@@ -82,15 +136,25 @@ begin
     result := t;
 end;
 
+procedure TrySwitchGas(code: byte);
+begin
+    Worker.TryWithErrorMessage(
+        procedure
+        begin
+            Worker.SwitchGasBlock6006(code);
+        end);
+end;
+
 procedure TermochamberSetupTemperature(temperature: double);
 begin
+    TrySwitchGas(0);
     Worker.TryWithErrorMessage(
         procedure
         begin
             Worker.TermochamberSetSetpoint(temperature);
         end);
 
-    while abs(TermochamberTryReadTemperature - temperature) < 1 do
+    while abs(TermochamberTryReadTemperature - temperature) > 1 do
     begin
         Worker.DoEachProduct(Worker.InterrogateProduct);
     end;
@@ -110,12 +174,15 @@ end;
 
 procedure BlowGas(code: byte);
 begin
-    Worker.TryWithErrorMessage(
-        procedure
-        begin
-            Worker.SwitchGasBlock6006(code);
-        end);
-    Worker.Delay('продувка газа: ' + IntToStr(code), _one_minute_ms * 5);
+    TrySwitchGas(code);
+    Worker.Delay('продувка газа: ' + IntToStr(code), _one_minute_ms * 10);
+end;
+
+procedure BlowAir;
+begin
+    TrySwitchGas(1);
+    Worker.Delay('продувка воздухом', _one_minute_ms * 5);
+    TrySwitchGas(0);
 end;
 
 function LastParty: TParty;
@@ -176,6 +243,7 @@ begin
     end;
 end;
 
+
 procedure _do(tasks: TArray<TTask>);
 begin
     Worker.DoEachProduct(
@@ -199,6 +267,8 @@ end;
 
 procedure Adjust;
 begin
+    _do([DWriteKef(95, 135), DWriteKef(55, 0), DWriteKef(37, 0)]);
+
     BlowGas(1);
     ProductsReadVar(100);
     BlowGas(3);
@@ -235,6 +305,7 @@ MainWorks := [TWork.Create('термоциклирование',
 
         BlowGas(1);
         _do([DWriteKef(44, 2), DReadVar(102)]);
+        TrySwitchGas(0);
     end),
 
   TWork.Create('термокомпенсация',
@@ -244,10 +315,14 @@ MainWorks := [TWork.Create('термоциклирование',
         TermochamberSetupTemperature(20);
 
         BlowGas(1);
+
         ProductsReadVar(103);
+        Worker.Pause(1000 * 60);
+        ProductsReadVar(103);
+
         BlowGas(3);
         ProductsReadVar(107);
-        BlowGas(1);
+        BlowAir;
 
         TermochamberSetupTemperature(-5);
 
@@ -255,7 +330,7 @@ MainWorks := [TWork.Create('термоциклирование',
         ProductsReadVar(105);
         BlowGas(3);
         ProductsReadVar(109);
-        BlowGas(1);
+        BlowAir;
 
         TermochamberSetupTemperature(50);
 
@@ -263,7 +338,7 @@ MainWorks := [TWork.Create('термоциклирование',
         ProductsReadVar(104);
         BlowGas(3);
         ProductsReadVar(108);
-        BlowGas(1);
+        BlowAir;
 
     end)
 

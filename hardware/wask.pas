@@ -13,11 +13,11 @@ type
         Direction: byte;
         Value: double;
         function Bytes: TBytes;
-        function ParseResponse(response: TBytes): double;
+        function ParseResponse(const Aresponse: TBytes): double;
 
-        function FormatResponse(response: TBytes): string;
+        function FormatResponse(const AResponse: TBytes): string;
 
-        constructor FromBytes(b: TBytes);
+        constructor FromBytes(const b: TBytes);
 
         function GetResponse(ComportWorker: TComportWorker): double;
         function toString: string;
@@ -46,18 +46,18 @@ begin
         result := result + '=' + floattostr(Value);
 end;
 
-function TKgsRequest.FormatResponse(response: TBytes): string;
+function TKgsRequest.FormatResponse(const AResponse: TBytes): string;
 var
     r: TKgsRequest;
 begin
     result := toString;
 
-    if length(response) = 0 then
+    if length(AResponse) = 0 then
         exit;
 
     if Direction = KgsRead then
         try
-            result := result + ' : ' + floattostr(ParseResponse(response));
+            result := result + ' : ' + floattostr(ParseResponse(AResponse));
         except
             result := result + ' : ?';
         end;
@@ -84,7 +84,7 @@ begin
             else
                 b1 := b1 shl 1;
 
-            if (b1 and $80) <> 0 then
+            if (b1 and $80) = $80 then
                 b3 := 1
             else
                 b3 := 0;
@@ -154,7 +154,7 @@ end;
 
 function TKgsRequest.Bytes: TBytes;
 var
-    crc: word;
+    CRC: word;
 begin
     setlength(result, 9);
     result[0] := byte(DeviceAddr);
@@ -162,29 +162,37 @@ begin
     result[2] := byte(ValueAddr);
     PutBCD6(result, Value, 3);
     pack(result);
-    crc := CRC16(result, 1, 6);
-    result[7] := crc shr 8;
-    result[8] := crc;
+    CRC := CRC16(result, 1, 6);
+    result[7] := CRC shr 8;
+    result[8] := CRC;
 
 end;
 
-function TKgsRequest.ParseResponse(response: TBytes): double;
+function TKgsRequest.ParseResponse(const AResponse: TBytes): double;
 var
-    crc: word;
+    CRC: word;
+    response: TBytes;
+    i:integer;
 begin
+    result := 0;
+    SetLength(response, Length(AResponse));
+    for i:= 0 to Length(AResponse)-1 do
+        response[i] := AResponse[i];
+
+
+
+    CRC := CRC16(response, 1, 6);
+    if ((CRC shr 8) <> response[7]) or (byte(CRC) <> response[8]) then
+        raise EBadResponse.Create(Format('не совпадает CRC ответа %s = %s',
+          [BytesToHex([CRC shr 8, byte(CRC)]),
+          BytesToHex([response[7], response[8]])]));
+
     if length(response) = 0 then
         raise EDeadlineExceeded.Create('нет ответа');
 
     if length(response) < 9 then
         raise EBadResponse.Create(Format('длина ответа %d менее 9',
           [length(response)]));
-
-    crc := CRC16(response, 1, 6);
-
-    if ((crc shr 8) <> response[7]) or (byte(crc) <> response[8]) then
-        raise EBadResponse.Create(Format('не совпадает CRC ответа %s = %s',
-          [BytesToHex([crc shr 8, byte(crc)]),
-          BytesToHex([response[7], response[8]])]));
 
     if response[0] <> DeviceAddr then
         raise EBadResponse.Create
@@ -210,6 +218,9 @@ begin
         raise EBadResponse.Create
           (Format('записано не правильное значение, запрос %v, ответ %v',
           [Value, result]));
+
+
+
 end;
 
 function TKgsRequest.GetResponse(ComportWorker: TComportWorker): double;
@@ -217,6 +228,7 @@ var
     _result: double;
     _self: TKgsRequest;
 begin
+    result := 0;
     _self := self;
     comport.GetResponse(Bytes, ComportWorker,
         procedure(response: TBytes)
@@ -226,9 +238,8 @@ begin
     result := _result;
 end;
 
-constructor TKgsRequest.FromBytes(b: TBytes);
+constructor TKgsRequest.FromBytes(const b: TBytes);
 var
-    crc: word;
     a: TBytes;
     i: integer;
 begin

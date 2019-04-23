@@ -6,7 +6,10 @@
         <Projects Include="kgsdum.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="parse_termo.dproj">
+        <Projects Include="caclcrc1.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="parse_temp.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -26,23 +29,32 @@
     <Target Name="kgsdum:Make">
         <MSBuild Projects="kgsdum.dproj" Targets="Make"/>
     </Target>
-    <Target Name="parse_termo">
-        <MSBuild Projects="parse_termo.dproj"/>
+    <Target Name="caclcrc1">
+        <MSBuild Projects="caclcrc1.dproj"/>
     </Target>
-    <Target Name="parse_termo:Clean">
-        <MSBuild Projects="parse_termo.dproj" Targets="Clean"/>
+    <Target Name="caclcrc1:Clean">
+        <MSBuild Projects="caclcrc1.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="parse_termo:Make">
-        <MSBuild Projects="parse_termo.dproj" Targets="Make"/>
+    <Target Name="caclcrc1:Make">
+        <MSBuild Projects="caclcrc1.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="parse_temp">
+        <MSBuild Projects="parse_temp.dproj"/>
+    </Target>
+    <Target Name="parse_temp:Clean">
+        <MSBuild Projects="parse_temp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="parse_temp:Make">
+        <MSBuild Projects="parse_temp.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="kgsdum;parse_termo"/>
+        <CallTarget Targets="kgsdum;caclcrc1;parse_temp"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="kgsdum:Clean;parse_termo:Clean"/>
+        <CallTarget Targets="kgsdum:Clean;caclcrc1:Clean;parse_temp:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="kgsdum:Make;parse_termo:Make"/>
+        <CallTarget Targets="kgsdum:Make;caclcrc1:Make;parse_temp:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
