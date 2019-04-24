@@ -109,10 +109,10 @@ begin
     with ComboBoxComportTemp do
         ItemIndex := Items.IndexOf(AppIni.ComportTempName);
 
-    EditPgs1.Text := FloatToStr(party.Pgs1);
-    EditPgs2.Text := FloatToStr(party.Pgs2);
-    EditPgs3.Text := FloatToStr(party.Pgs3);
-    EditPgs4.Text := FloatToStr(party.Pgs4);
+    EditPgs1.Text := FloatToStr(party.FPgs1);
+    EditPgs2.Text := FloatToStr(party.FPgs2);
+    EditPgs3.Text := FloatToStr(party.FPgs3);
+    EditPgs4.Text := FloatToStr(party.FPgs4);
 
     FUpdate := false;
 end;

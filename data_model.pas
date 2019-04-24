@@ -5,49 +5,58 @@ interface
 uses classes, graphics;
 
 type
-    TProductField = (pcPlace, pcProductID, pcAddr, pcSerial, pcConc, pcVar0, pcVar1, pcTemp,
-      pcConcNorm1, pcConcNorm2, pcConcNorm3, pcConcNorm4, pcConcMinus1,
-      pcConcMinus2, pcConcMinus3, pcConcMinus4, pcConcPlus1, pcConcPlus2,
-      pcConcPlus3, pcConcPlus4);
+    TProductField = (pcPlace, pcProductID, pcAddr, pcSerial, pcVarConc, pcVarWork,
+      pcVarRef, pcVarTemp,
 
-    TScaleConc = (scaleConc1, scaleConc2, scaleConc3, scaleConc4);
-    TScaleTemp = (scaleTempNorm, scaleTempMinus, scaleTempPlus);
+      pc_work_plus20,
+      pc_ref_plus20,
 
-    TScaleConcTemp = record
-        ScaleConc: TScaleConc;
-        ScaleTemp: TScaleTemp;
-    end;
+      pc_work_gas3,
+
+      pc_work_minus5,
+      pc_ref_minus5,
+
+      pc_work_plus50,
+      pc_ref_plus50,
+
+
+
+      pc_conc1_plus20, pc_conc4_plus20, pc_conc1_zero, pc_conc4_zero,
+      pc_conc1_plus50, pc_conc4_plus50
+
+      );
 
     TCheckValueResult = (cvrNone, cvrOk, cvrErr);
 
-    TConcValue = record
-        FConc: double;
-        FAbsErr: double;
-        FAbsErrLimit: double;
-        FErrPercent: double;
+    TNullFloat = record
+        FValue: double;
         FValid: boolean;
-        function Check: TCheckValueResult;
+        function Format: string;
     end;
 
     TProduct = record
+        FCreatedAt: TDateTime;
         FProductID, FPartyID: int64;
         FProduction: boolean;
         FPlace, FAddr: integer;
         FSerial: string;
         FConnection: string;
-
-        FVarValue: array [byte] of string;
-
         FConnectionFailed: boolean;
-        FConc: array [TScaleConc, TScaleTemp] of TConcValue;
-        FCreatedAt: TDateTime;
+
+        FPgs1, FPgs4: double;
+
+        FVarConc, FVarWork, FVarRef, FVarTemp: string;
+
+        FWorkPlus20, FWorkMinus5, FWorkPlus50, FRefPlus20, FRefMinus5,
+          FRefPlus50,
+
+          FWorkGas3,
+
+          FConc1Plus20, FConc4Plus20, FConc1Zero, FConc4Zero, FConc1Plus50,
+          FConc4Plus50: TNullFloat;
 
         function FormatID: string;
 
-        function GetConc(sc: TScaleConc; st: TScaleTemp): TConcValue;
-        function GetConc1(f: TProductField): TConcValue;
-        property Conc[sc: TScaleConc; st: TScaleTemp]: TConcValue read GetConc;
-        property Conc1[f: TProductField]: TConcValue read GetConc1;
     end;
 
     TProductProcedure = reference to procedure(_: TProduct);
@@ -58,16 +67,14 @@ type
         FPartyID: int64;
         FCreatedAt: TDateTime;
 
-
-        Pgs1, Pgs2, Pgs3, Pgs4: double;
-        function Pgs(sc:TScaleConc):double;
+        FPgs1, FPgs2, FPgs3, FPgs4: double;
     end;
 
     TLogLevel = (loglevTrace, loglevDebug, loglevInfo, loglevWarn, loglevError,
       loglevException);
 
     TLogEntry = record
-        FWorkID : longint;
+        FWorkID: longint;
         FCreatedAt: TDateTime;
         FLevel: TLogLevel;
         FWork, FText: string;
@@ -99,11 +106,10 @@ type
     TSeriesPointEntries = TArray<TSeriesPointEntry>;
 
     TSeriesBucket = record
-        BucketID : longint;
+        BucketID: longint;
         UpdatedAt, CreatedAt: TDateTime;
-        Name : string;
+        Name: string;
     end;
-
 
 function ProductColumnWidth(column: TProductField; canvas: TCanvas;
   prods: TArray<TProduct>; err_det: TErrorDetail): integer;
@@ -119,150 +125,47 @@ function ProductFieldAlignment(c: TProductField): TAlignment;
 
 const
     VarConc = 72;
-    Var0 = 60;
-    Var1 = 61;
+    VarRef = 60;
+    VarWork = 61;
     VarTemp = 63;
-    KgsMainVars: array [0 .. 3] of byte = (VarConc, Var0, Var1, VarTemp);
+    KgsMainVars: array [0 .. 3] of byte = (VarConc, VarWork, VarRef, VarTemp);
 
     product_column_name: array [TProductField] of string = ('π', 'ID', '¿‰ÂÒÒ',
-      '«‡‚.π', ' ÓÌˆ.', 'Var0', 'Var1', 'T,"C', 'œ√—1', 'œ√—2', 'œ√—3', 'œ√—4',
-      'œ√—1-', 'œ√—2-', 'œ√—3-', 'œ√—4-', 'œ√—1+', 'œ√—2+', 'œ√—3+', 'œ√—4+');
+      '«‡‚.π', ' ÓÌˆ.',
+
+        'Work', 'Ref', 'T',
+
+        'Work+20"C',
+        'Ref+20"C',
+
+        'Work_œ√—3',
+
+        'Work-5"C',
+        'Ref-5"C',
+
+        'Work+50"C',
+        'Ref+50"C',
+
+        'œ√—1+20"C', 'œ√—4+20"C',
+        'œ√—1 0"C', 'œ√—4 0"C',
+        'œ√—1+50"C', 'œ√—4+50"C'
+
+        );
 
 implementation
 
 uses SysUtils, math;
 
-function TParty.Pgs(sc:TScaleConc):double;
+function TNullFloat.Format: string;
 begin
-    case sc of
-        scaleConc1: exit(Pgs1);
-        scaleConc2: exit(Pgs2);
-        scaleConc3: exit(Pgs3);
-        scaleConc4: exit(Pgs4);
-        else
-        assert(false, 'wrong scale point');
-    end;
+    if not FValid then
+        exit('');
+    exit(floattostr(FValue));
 end;
 
 function TProduct.FormatID: string;
 begin
     result := Format('π%d ID%d ÒÂ.%s', [FPlace + 1, FProductID, FSerial]);
-end;
-
-function TConcValue.Check: TCheckValueResult;
-begin
-    if not FValid then
-        exit(cvrNone)
-    else
-    begin
-        if abs(FErrPercent) < 100 then
-            exit(cvrOk)
-        else
-            exit(cvrErr);
-    end;
-
-end;
-
-function fieldToConc(field: TProductField): TScaleConc;
-begin
-    case field of
-        pcConcNorm1:
-            exit(scaleConc1);
-        pcConcNorm2:
-            exit(scaleConc2);
-        pcConcNorm3:
-            exit(scaleConc3);
-        pcConcNorm4:
-            exit(scaleConc4);
-        pcConcMinus1:
-            exit(scaleConc1);
-        pcConcMinus2:
-            exit(scaleConc2);
-        pcConcMinus3:
-            exit(scaleConc3);
-        pcConcMinus4:
-            exit(scaleConc4);
-        pcConcPlus1:
-            exit(scaleConc1);
-        pcConcPlus2:
-            exit(scaleConc2);
-        pcConcPlus3:
-            exit(scaleConc3);
-        pcConcPlus4:
-            exit(scaleConc4);
-    else
-        exit(TScaleConc(-1));
-    end;
-end;
-
-function fieldToTemp(field: TProductField): TScaleTemp;
-begin
-    case field of
-        pcConcNorm1:
-            exit(scaleTempNorm);
-        pcConcNorm2:
-            exit(scaleTempNorm);
-        pcConcNorm3:
-            exit(scaleTempNorm);
-        pcConcNorm4:
-            exit(scaleTempNorm);
-        pcConcMinus1:
-            exit(scaleTempMinus);
-        pcConcMinus2:
-            exit(scaleTempMinus);
-        pcConcMinus3:
-            exit(scaleTempMinus);
-        pcConcMinus4:
-            exit(scaleTempMinus);
-        pcConcPlus1:
-            exit(scaleTempPlus);
-        pcConcPlus2:
-            exit(scaleTempPlus);
-        pcConcPlus3:
-            exit(scaleTempPlus);
-        pcConcPlus4:
-            exit(scaleTempPlus);
-    else
-        exit(TScaleTemp(-1));
-    end;
-end;
-
-function fieldIsConc(field: TProductField): boolean;
-begin
-    result := (integer(fieldToConc(field)) <> -1) and
-      (integer(fieldToTemp(field)) <> -1);
-end;
-
-function TProduct.GetConc(sc: TScaleConc; st: TScaleTemp): TConcValue;
-begin
-    result := FConc[sc, st];
-end;
-
-function TProduct.GetConc1(f: TProductField): TConcValue;
-begin
-    Assert(fieldIsConc(f));
-    result := FConc[fieldToConc(f), fieldToTemp(f)];
-end;
-
-function FormatProductConcValue(product: TProduct; field: TProductField;
-  d: TErrorDetail): string;
-begin
-
-    Assert(fieldIsConc(field));
-
-    with product.FConc[fieldToConc(field), fieldToTemp(field)] do
-    begin
-        if not FValid then
-            exit('');
-        case d of
-            erdtConc:
-                exit(floattostr(FConc));
-            erdtAbsErr:
-                exit(floattostr(FAbsErr));
-            erdtErrPercent:
-                exit(floattostr(FErrPercent));
-        end;
-    end;
 end;
 
 function FormatProductFieldValue(product: TProduct; field: TProductField;
@@ -279,23 +182,51 @@ begin
                 exit(IntToStr(FAddr));
             pcSerial:
                 exit(FSerial);
-            pcConc:
+            pcVarConc:
                 if FConnectionFailed then
                     exit('ÌÂÚ Ò‚ˇÁË')
                 else
-                    exit(FVarValue[VarConc]);
-            pcVar0:
-                exit(FVarValue[Var0]);
-            pcVar1:
-                exit(FVarValue[Var1]);
-            pcTemp:
-                exit(FVarValue[VarTemp]);
+                    exit(FVarConc);
+            pcVarWork:
+                exit(FVarWork);
+            pcVarRef:
+                exit(FVarRef);
+            pcVarTemp:
+                exit(FVarTemp);
+
+            pc_work_plus20:
+                exit(FWorkPlus20.Format);
+            pc_work_minus5:
+                exit(FWorkMinus5.Format);
+            pc_work_plus50:
+                exit(FWorkPlus50.Format);
+
+            pc_work_gas3:
+                exit(FWorkGas3.Format);
+
+            pc_ref_plus20:
+                exit(FRefPlus20.Format);
+            pc_ref_minus5:
+                exit(FRefMinus5.Format);
+            pc_ref_plus50:
+                exit(FRefPlus50.Format);
+
+            pc_conc1_plus20:
+                exit(FConc1Plus20.Format);
+            pc_conc4_plus20:
+                exit(FConc4Plus20.Format);
+            pc_conc1_zero:
+                exit(FConc1Zero.Format);
+            pc_conc4_zero:
+                exit(FConc4Zero.Format);
+            pc_conc1_plus50:
+                exit(FConc1Plus50.Format);
+            pc_conc4_plus50:
+                exit(FConc4Plus50.Format);
 
         else
-            if fieldIsConc(field) then
-                exit(FormatProductConcValue(product, field, err_det));
 
-            Assert(false, 'uncmown case: ' + IntToStr(integer(field)));
+            assert(false, 'uncmown case: ' + IntToStr(integer(field)));
         end;
     end;
 
@@ -323,10 +254,44 @@ end;
 
 function CheckProductFieldValue(product: TProduct; field: TProductField)
   : TCheckValueResult;
+
+    function chck(conc: TNullFloat; pgs: double): TCheckValueResult;
+    var d, limit_d : double;
+    begin
+        if not conc.FValid then
+            exit(cvrNone);
+        d := abs(conc.FValue - pgs);
+        limit_d := 0.1 + pgs * 0.12;
+        if abs(d) < limit_d then
+            exit(cvrOk)
+        else
+            exit(cvrErr);
+    end;
+
 begin
-    if fieldIsConc(field) then
-        exit(product.Conc1[field].Check);
-    exit(cvrNone);
+    with product do
+    begin
+        case field of
+            pc_conc1_plus20:
+                exit(chck(FConc1Plus20, FPgs1));
+            pc_conc4_plus20:
+                exit(chck(FConc4Plus20, FPgs4));
+
+            pc_conc1_zero:
+                exit(chck(FConc1Zero, FPgs1));
+            pc_conc4_zero:
+                exit(chck(FConc4Zero, FPgs4));
+
+            pc_conc1_plus50:
+                exit(chck(FConc1Plus50, FPgs1));
+            pc_conc4_plus50:
+                exit(chck(FConc4Plus50, FPgs4));
+
+        else
+            exit(cvrNone);
+        end;
+    end;
+
 end;
 
 function ProductFieldAlignment(c: TProductField): TAlignment;

@@ -79,6 +79,8 @@ type
 
         procedure Pause(ms: cardinal);
 
+        procedure SaveVarValue(ValueAddr: byte; field: string);
+
     end;
 
 var
@@ -91,7 +93,7 @@ implementation
 uses UnitFormLastParty, hardware_errors, UnitFormJournal, UnitFormConsole,
     UnitKgsdumMainForm, windows, math, UnitAppIni, termochamber, stringutils,
     dateutils,
-    modbus, JclDebug;
+    modbus, JclDebug, crud;
 
 {$R *.dfm}
 
@@ -230,6 +232,24 @@ begin
     end;
 end;
 
+procedure TWorker.SaveVarValue(ValueAddr: byte; field: string);
+begin
+    DoEachProduct(
+        procedure(p: TProduct)
+        var
+            Value: double;
+        begin
+            Value := Worker.KgsReadVar(p.FAddr, ValueAddr);
+            Synchronize(
+                procedure
+                begin
+                    SaveProductValue(p.FProductID, field, Value);
+                end);
+        end);
+    Synchronize(FormLastParty.reload_data);
+
+end;
+
 procedure TWorker.InterrogateProduct(p: TProduct);
 var
     AVar: byte;
@@ -238,7 +258,7 @@ begin
     begin
         KgsReadVar(p.FAddr, AVar);
         if AVar <> VarTemp then
-             Pause(2000);
+            Pause(2000);
     end;
 end;
 

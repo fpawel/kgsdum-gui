@@ -5,6 +5,7 @@ interface
 uses data_model, sysutils;
 
 function GetLastPartyProducts: TArray<TProduct>;
+procedure SaveProductValue(AProductID:int64; AField:string; AValue:double);
 
 function GetLastParty: TParty;
 
@@ -32,10 +33,10 @@ begin
             FCreatedAt := FieldValues['created_at'];
             s := DateTimeToStr(FCreatedAt);
             FPartyID := FieldValues['party_id'];
-            Pgs1 := FieldValues['pgs1'];
-            Pgs2 := FieldValues['pgs2'];
-            Pgs3 := FieldValues['pgs3'];
-            Pgs4 := FieldValues['pgs4'];
+            FPgs1 := FieldValues['pgs1'];
+            FPgs2 := FieldValues['pgs2'];
+            FPgs3 := FieldValues['pgs3'];
+            FPgs4 := FieldValues['pgs4'];
         end;
 
         Close;
@@ -43,15 +44,33 @@ begin
     end;
 end;
 
+function VariantIsEmptyOrNull(const Value: Variant): Boolean;
+begin
+  Result := VarIsClear(Value) or VarIsEmpty(Value) or VarIsNull(Value) or (VarCompareValue(Value, Unassigned) = vrEqual);
+  if (not Result) and VarIsStr(Value) then
+    Result := Value = '';
+end;
+
+function FetchNullFloat(q:TFDQuery; field:string): TNullFloat;
+begin
+     if VariantIsEmptyOrNull(q.FieldValues[field]) then
+     begin
+         Result.FValid := false;
+         exit;
+     end;
+     Result.FValid := true;
+     Result.FValue := q.FieldValues[field];
+
+end;
+
 function GetLastPartyProducts: TArray<TProduct>;
 var
     party: TParty;
-    _sc: TScaleConc;
-    _st: TScaleTemp;
 
     key: string;
-    abs_err, err_limit:double;
+    abs_err, err_limit: double;
 
+    query_product:TFDQuery;
 
 begin
     party := GetLastParty;
@@ -61,7 +80,7 @@ begin
         Connection := KgsdumData.Conn;
 
         SQL.Text :=
-          'SELECT * FROM product WHERE party_id = (SELECT * FROM last_party_id) ORDER BY created_at;';
+          'SELECT product_id FROM product WHERE party_id = (SELECT * FROM last_party_id) ORDER BY created_at;';
         Open;
         First;
         while not eof do
@@ -69,52 +88,76 @@ begin
             SetLength(result, Length(result) + 1);
             with result[Length(result) - 1] do
             begin
-                FPlace := Length(result) - 1;
-                FAddr := FieldValues['addr'];
                 FProductID := FieldValues['product_id'];
-                FPartyID := FieldValues['party_id'];
-                FProduction := FieldValues['production'];
-                FSerial := FieldValues['serial_number'];
-                FCreatedAt := FieldValues['created_at'];
-                for _sc := low(TScaleConc) to High(TScaleConc) do
-                    for _st := Low(TScaleTemp) to High(TScaleTemp) do
-                    begin
-                        case _st of
-                            scaleTempNorm:
-                                key := 'c_norm';
-                            scaleTempMinus:
-                                key := 'c_minus';
-                            scaleTempPlus:
-                                key := 'c_plus';
-                        end;
-                        key := key + IntToStr(integer(_sc) + 1);
 
-                        with FConc[_sc, _st] do
-                        begin
-                            if FieldValues[key] <> Variants.Null then
-                            begin
-                                FConc := FieldValues[key];
-                                FValid := true;
-                            end
-                            else
-                            begin
-                                FConc := 0;
-                                FValid := false;
-                            end;
-                            err_limit := 0.1 + 0.12 * party.Pgs(_sc);
-                            abs_err := FConc - party.Pgs(_sc);
+                query_product := TFDQuery.Create(nil);
+                with query_product do
+                begin
+                    Connection := KgsdumData.Conn;
+                    SQL.Text :=
+          'SELECT * FROM product WHERE product_id = :product_id;';
+                    ParamByName('product_id').Value := FProductID;
 
-                            FAbsErrLimit := err_limit;
-                            FAbsErr := abs_err;
-                            FErrPercent := 100.0 * FAbsErr / FAbsErrLimit;
-                        end;
-                    end;
+                    Open;
+                    First;
+
+                    FPlace := Length(result) - 1;
+                    FAddr := FieldValues['addr'];
+
+                    FPartyID := FieldValues['party_id'];
+                    FProduction := FieldValues['production'];
+                    FSerial := FieldValues['serial_number'];
+                    FCreatedAt := FieldValues['created_at'];
+
+                    FPgs1 := party.FPgs1;
+                    FPgs4 := party.FPgs4;
+
+                    FPgs1 := party.FPgs1;
+                    FWorkPlus20 := FetchNullFloat(query_product, 'work_plus20');
+                    FWorkMinus5 := FetchNullFloat(query_product, 'work_minus5');
+                    FWorkPlus50 := FetchNullFloat(query_product, 'work_plus50');
+
+                    FWorkGas3 := FetchNullFloat(query_product, 'work_gas3');
+
+                    FRefPlus20 := FetchNullFloat(query_product, 'ref_plus20');
+                    FRefMinus5 := FetchNullFloat(query_product, 'ref_minus5');
+                    FRefPlus50 := FetchNullFloat(query_product, 'ref_plus50');
+
+                    FConc1Plus20 := FetchNullFloat(query_product, 'c1_plus20');
+                    FConc4Plus20 := FetchNullFloat(query_product, 'c4_plus20');
+
+                    FConc1Zero := FetchNullFloat(query_product, 'c1_zero');
+                    FConc4Zero := FetchNullFloat(query_product, 'c4_zero');
+
+                    FConc1Plus50 := FetchNullFloat(query_product, 'c1_plus50');
+                    FConc4Plus50 := FetchNullFloat(query_product, 'c4_plus50');
+
+
+                    Close;
+                    Free;
+                end;
+
             end;
             Next;
         end;
         Close;
         Free;
     end;
+end;
+
+procedure SaveProductValue(AProductID:int64; AField:string; AValue:double);
+begin
+
+    with TFDQuery.Create(nil) do
+    begin
+        Connection := KgsdumData.Conn;
+        SQL.Text :=
+          'UPDATE product SET '+ AField + ' = :value WHERE product_id = :product_id;';
+        ParamByName('value').Value := AValue;
+        ParamByName('product_id').Value := AProductID;
+        ExecSQL;
+    end;
+
 end;
 
 end.

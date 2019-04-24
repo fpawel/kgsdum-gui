@@ -32,63 +32,69 @@ object KgsdumData: TKgsdumData
     SQL.Strings = (
       'CREATE TABLE IF NOT EXISTS party'
       '('
-      '  party_id     INTEGER PRIMARY KEY      NOT NULL,'
+      '    party_id     INTEGER PRIMARY KEY      NOT NULL,'
       
-        '  created_at   TIMESTAMP WITH TIME ZONE NOT NULL                ' +
-        '     DEFAULT (datetime('#39'now'#39')) UNIQUE,'
+        '    created_at   TIMESTAMP WITH TIME ZONE NOT NULL              ' +
+        '       DEFAULT (datetime('#39'now'#39')) UNIQUE,'
       
-        '  product_type TEXT                     NOT NULL                ' +
-        '     DEFAULT '#39'00.01'#39','
+        '    product_type TEXT                     NOT NULL              ' +
+        '       DEFAULT '#39'00.01'#39','
       
-        '  pgs1         REAL                     NOT NULL CHECK ( pgs1 >=' +
-        ' 0 ) DEFAULT 0,'
+        '    pgs1         REAL                     NOT NULL CHECK ( pgs1 ' +
+        '>= 0 ) DEFAULT 0,'
       
-        '  pgs2         REAL                     NOT NULL CHECK ( pgs2 >=' +
-        ' 0 ) DEFAULT 4,'
+        '    pgs2         REAL                     NOT NULL CHECK ( pgs2 ' +
+        '>= 0 ) DEFAULT 4,'
       
-        '  pgs3         REAL                     NOT NULL CHECK ( pgs3 >=' +
-        ' 0 ) DEFAULT 7.5,'
+        '    pgs3         REAL                     NOT NULL CHECK ( pgs3 ' +
+        '>= 0 ) DEFAULT 7.5,'
       
-        '  pgs4         REAL                     NOT NULL CHECK ( pgs4 >=' +
-        ' 0 ) DEFAULT 12'
+        '    pgs4         REAL                     NOT NULL CHECK ( pgs4 ' +
+        '>= 0 ) DEFAULT 12'
       ');'
       ''
       'CREATE TABLE IF NOT EXISTS product'
       '('
-      '  product_id    INTEGER PRIMARY KEY      NOT NULL,'
-      '  party_id      INTEGER                  NOT NULL,'
+      '    product_id                INTEGER PRIMARY KEY      NOT NULL,'
+      '    party_id                  INTEGER                  NOT NULL,'
       
-        '  created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (datet' +
-        'ime('#39'now'#39')) UNIQUE,'
+        '    created_at                TIMESTAMP WITH TIME ZONE NOT NULL ' +
+        'DEFAULT (datetime('#39'now'#39')) UNIQUE,'
       
-        '  serial_number TEXT                     NOT NULL CHECK (serial_' +
-        'number <> '#39#39' ),'
+        '    serial_number             TEXT                     NOT NULL ' +
+        'CHECK (serial_number <> '#39#39' ),'
       
-        '  addr          SMALLINT                 NOT NULL CHECK (addr > ' +
-        '0),'
-      '  production    BOOLEAN                  NOT NULL DEFAULT FALSE,'
-      ''
-      '  c_norm1       REAL,'
-      '  c_norm2       REAL,'
-      '  c_norm3       REAL,'
-      '  c_norm4       REAL,'
-      ''
-      '  c_plus1       REAL,'
-      '  c_plus2       REAL,'
-      '  c_plus3       REAL,'
-      '  c_plus4       REAL,'
-      ''
-      '  c_minus1      REAL,'
-      '  c_minus2      REAL,'
-      '  c_minus3      REAL,'
-      '  c_minus4      REAL,'
-      ''
-      '  UNIQUE (party_id, addr),'
-      '  UNIQUE (party_id, serial_number),'
+        '    addr                      SMALLINT                 NOT NULL ' +
+        'CHECK (addr > 0),'
       
-        '  FOREIGN KEY (party_id) REFERENCES party (party_id) ON DELETE C' +
-        'ASCADE'
+        '    production                BOOLEAN                  NOT NULL ' +
+        'DEFAULT FALSE,'
+      ''
+      '    work_plus20        REAL,'
+      '    ref_plus20         REAL,'
+      ''
+      '    work_gas3          REAL,'
+      ''
+      '    work_minus5        REAL,'
+      '    ref_minus5         REAL,'
+      ''
+      '    work_plus50        REAL,'
+      '    ref_plus50         REAL,'
+      ''
+      '    c1_plus20 REAL,'
+      '    c4_plus20 REAL,'
+      '    c1_zero   REAL,'
+      '    c4_zero   REAL,'
+      '    c1_plus50 REAL,'
+      '    c4_plus50 REAL,'
+      ''
+      '    UNIQUE (party_id, addr),'
+      '    UNIQUE (party_id, serial_number),'
+      
+        '    FOREIGN KEY (party_id) REFERENCES party (party_id) ON DELETE' +
+        ' CASCADE'
       ');'
+      ''
       ''
       ''
       'CREATE VIEW IF NOT EXISTS last_party AS'
@@ -108,10 +114,7 @@ object KgsdumData: TKgsdumData
       'FROM product'
       'WHERE party_id IN (SELECT * FROM last_party_id)'
       'ORDER BY created_at;'
-      ''
-      
-        'INSERT INTO party (created_at) SELECT CURRENT_TIMESTAMP WHERE NO' +
-        'T EXISTS(SELECT 1 FROM party);')
+      '')
     Left = 200
     Top = 120
   end

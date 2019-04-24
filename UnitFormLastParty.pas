@@ -549,12 +549,23 @@ end;
 procedure TFormLastParty.SetAddrValue(AAddr: byte; AVar: byte; AValue: double);
 var
     i, nVar: Integer;
+    s : string;
 
 begin
     for i := 0 to Length(FProducts) - 1 do
         if FProducts[i].FAddr = AAddr then
         begin
-            FProducts[i].FVarValue[AVar] := floattostr(AValue);
+            s := floattostr(AValue);
+            case AVar of
+                VarConc:
+                    FProducts[i].FVarConc := s;
+                VarWork:
+                    FProducts[i].FVarWork := s;
+                VarRef:
+                    FProducts[i].FVarRef := s;
+                VarTemp:
+                    FProducts[i].FVarTemp := s;
+            end;
             FProducts[i].FConnection := 'ок';
             FProducts[i].FConnectionFailed := false;
             reset_products;

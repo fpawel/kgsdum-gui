@@ -272,7 +272,8 @@ begin
     BlowGas(1);
     ProductsReadVar(100);
     BlowGas(3);
-    _do([DWriteKef(28, LastParty.Pgs3), DReadVar(101)]);
+    _do([DWriteKef(28, LastParty.FPgs3), DReadVar(101)]);
+
 end;
 
 initialization
@@ -295,17 +296,18 @@ MainWorks := [TWork.Create('термоциклирование',
   TWork.Create('линеаризация',
     procedure
     begin
-        Adjust;
 
         BlowGas(4);
-        _do([DWriteKef(44, 1), DWriteKef(48, LastParty.Pgs4), DReadVar(102)]);
+        _do([DWriteKef(44, 1), DWriteKef(48, LastParty.FPgs4), DReadVar(102)]);
 
         BlowGas(2);
-        _do([DWriteKef(44, 0), DWriteKef(29, LastParty.Pgs2), DReadVar(102)]);
+        _do([DWriteKef(44, 0), DWriteKef(29, LastParty.FPgs2), DReadVar(102)]);
 
         BlowGas(1);
         _do([DWriteKef(44, 2), DReadVar(102)]);
-        TrySwitchGas(0);
+
+        BlowAir;
+
     end),
 
   TWork.Create('термокомпенсация',
@@ -320,14 +322,28 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.Pause(1000 * 60);
         ProductsReadVar(103);
 
+        Worker.Pause(1000 * 60);
+        Worker.SaveVarValue(VarWork, 'work_plus20');
+        Worker.SaveVarValue(VarRef, 'ref_plus20');
+
         BlowGas(3);
         ProductsReadVar(107);
+
+        Worker.Pause(1000 * 60);
+        Worker.SaveVarValue(VarWork, 'work_gas3');
+
         BlowAir;
 
         TermochamberSetupTemperature(-5);
 
         BlowGas(1);
         ProductsReadVar(105);
+
+        Worker.Pause(1000 * 60);
+        Worker.SaveVarValue(VarWork, 'work_minus5');
+        Worker.SaveVarValue(VarRef, 'ref_minus5');
+
+
         BlowGas(3);
         ProductsReadVar(109);
         BlowAir;
@@ -336,9 +352,45 @@ MainWorks := [TWork.Create('термоциклирование',
 
         BlowGas(1);
         ProductsReadVar(104);
+
+        Worker.Pause(1000 * 60);
+        Worker.SaveVarValue(VarWork, 'work_plus50');
+        Worker.SaveVarValue(VarRef, 'ref_plus50');
+
         BlowGas(3);
         ProductsReadVar(108);
         BlowAir;
+
+        ProductsReadVar(106);
+        Worker.Pause(1000 * 60);
+        ProductsReadVar(110);
+
+    end),
+
+
+    TWork.Create('проверка БО',
+    procedure
+    begin
+        TermochamberSetupTemperature(20);
+        Adjust;
+
+        BlowGas(1);
+        Worker.SaveVarValue(VarConc, 'c1_plus20');
+        BlowGas(4);
+        Worker.SaveVarValue(VarConc, 'c4_plus20');
+
+        TermochamberSetupTemperature(0);
+        BlowGas(1);
+        Worker.SaveVarValue(VarConc, 'c1_zero');
+        BlowGas(4);
+        Worker.SaveVarValue(VarConc, 'c4_zero');
+
+        TermochamberSetupTemperature(50);
+        BlowGas(1);
+        Worker.SaveVarValue(VarConc, 'c1_plus50');
+        BlowGas(4);
+        Worker.SaveVarValue(VarConc, 'c4_plus50');
+
 
     end)
 
