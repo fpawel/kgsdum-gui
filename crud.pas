@@ -26,7 +26,22 @@ begin
         First;
 
         if eof then
-            raise Exception.Create('unexpected EOF');
+        begin
+            with TFDQuery.Create(nil) do
+            begin
+                Connection := KgsdumData.Conn;
+                SQL.Text := 'INSERT INTO party DEFAULT VALUES;';
+                ExecSQL;
+                Free;
+            end;
+
+            Close;
+            Open;
+            First;
+
+            if eof then
+                raise Exception.Create('unexpected EOf');
+        end;
 
         with result do
         begin
