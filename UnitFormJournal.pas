@@ -210,6 +210,9 @@ begin
         end;
         Free;
     end;
+    with FormConsole.StringGrid1 do
+        row := RowCount -1;
+
 end;
 
 procedure TFormJournal.ComboBox1Change(Sender: TObject);
@@ -271,9 +274,9 @@ begin
 
     with StringGrid1 do
     begin
-        OnSelectCell := StringGrid1SelectCell;
         Row := RowCount - 1;
         StringGrid1SelectCell(nil, 0, Row, can_select);
+        OnSelectCell := StringGrid1SelectCell;
     end;
 
 end;

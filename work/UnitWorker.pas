@@ -234,6 +234,8 @@ end;
 
 procedure TWorker.SaveVarValue(ValueAddr: byte; field: string);
 begin
+    Worker.NewLogEntry(loglevInfo, Format('Сохранить значение %s=var%d',
+      [field, ValueAddr]));
     DoEachProduct(
         procedure(p: TProduct)
         var

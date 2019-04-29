@@ -1,4 +1,4 @@
-unit data_model;
+Ôªøunit data_model;
 
 interface
 
@@ -22,7 +22,8 @@ type
 
 
       pc_conc1_plus20, pc_conc4_plus20, pc_conc1_zero, pc_conc4_zero,
-      pc_conc1_plus50, pc_conc4_plus50
+      pc_conc1_plus50, pc_conc4_plus50,
+      pc_conc1_plus20ret, pc_conc4_plus20ret
 
       );
 
@@ -31,7 +32,7 @@ type
     TNullFloat = record
         FValue: double;
         FValid: boolean;
-        function Format: string;
+        function ToString: string;
     end;
 
     TProduct = record
@@ -53,7 +54,7 @@ type
           FWorkGas3,
 
           FConc1Plus20, FConc4Plus20, FConc1Zero, FConc4Zero, FConc1Plus50,
-          FConc4Plus50: TNullFloat;
+          FConc4Plus50, FConc1Plus20ret, FConc4Plus20ret : TNullFloat;
 
         function FormatID: string;
 
@@ -130,25 +131,26 @@ const
     VarTemp = 63;
     KgsMainVars: array [0 .. 3] of byte = (VarConc, VarWork, VarRef, VarTemp);
 
-    product_column_name: array [TProductField] of string = ('π', 'ID', '¿‰ÂÒÒ',
-      '«‡‚.π', ' ÓÌˆ.',
+    product_column_name: array [TProductField] of string = ('‚Ññ', 'ID', '–ê–¥—Ä–µ—Å—Å',
+      '–ó–∞–≤.‚Ññ', '–ö–æ–Ω—Ü.',
 
         'Work', 'Ref', 'T',
 
-        'Work+20"C',
-        'Ref+20"C',
+        'Work+20‚Å∞C',
+        'Ref+20‚Å∞C',
 
-        'Work_œ√—3',
+        'Work_–ü–ì–°3',
 
-        'Work-5"C',
-        'Ref-5"C',
+        'Work-5‚Å∞C',
+        'Ref-5‚Å∞C',
 
-        'Work+50"C',
-        'Ref+50"C',
+        'Work+50‚Å∞C',
+        'Ref+50‚Å∞C',
 
-        'œ√—1+20"C', 'œ√—4+20"C',
-        'œ√—1 0"C', 'œ√—4 0"C',
-        'œ√—1+50"C', 'œ√—4+50"C'
+        '–ü–ì–°1+20‚Å∞C(1)', '–ü–ì–°4+20‚Å∞C(1)',
+        '–ü–ì–°1 0‚Å∞C', '–ü–ì–°4 0‚Å∞C',
+        '–ü–ì–°1+50‚Å∞C', '–ü–ì–°4+50‚Å∞C',
+        '–ü–ì–°1+20‚Å∞C(2)', '–ü–ì–°4+20‚Å∞C(2)'
 
         );
 
@@ -156,7 +158,7 @@ implementation
 
 uses SysUtils, math;
 
-function TNullFloat.Format: string;
+function TNullFloat.ToString: string;
 begin
     if not FValid then
         exit('');
@@ -165,7 +167,7 @@ end;
 
 function TProduct.FormatID: string;
 begin
-    result := Format('π%d ID%d ÒÂ.%s', [FPlace + 1, FProductID, FSerial]);
+    result := Format('‚Ññ%d ID=%d –∑–∞–≤–æ–¥—Å–∫–æ–π_–Ω–æ–º–µ—Ä=%s', [FPlace + 1, FProductID, FSerial]);
 end;
 
 function FormatProductFieldValue(product: TProduct; field: TProductField;
@@ -184,7 +186,7 @@ begin
                 exit(FSerial);
             pcVarConc:
                 if FConnectionFailed then
-                    exit('ÌÂÚ Ò‚ˇÁË')
+                    exit('–Ω–µ—Ç —Å–≤—è–∑–∏')
                 else
                     exit(FVarConc);
             pcVarWork:
@@ -195,34 +197,39 @@ begin
                 exit(FVarTemp);
 
             pc_work_plus20:
-                exit(FWorkPlus20.Format);
+                exit(FWorkPlus20.ToString);
             pc_work_minus5:
-                exit(FWorkMinus5.Format);
+                exit(FWorkMinus5.ToString);
             pc_work_plus50:
-                exit(FWorkPlus50.Format);
+                exit(FWorkPlus50.ToString);
 
             pc_work_gas3:
-                exit(FWorkGas3.Format);
+                exit(FWorkGas3.ToString);
 
             pc_ref_plus20:
-                exit(FRefPlus20.Format);
+                exit(FRefPlus20.ToString);
             pc_ref_minus5:
-                exit(FRefMinus5.Format);
+                exit(FRefMinus5.ToString);
             pc_ref_plus50:
-                exit(FRefPlus50.Format);
+                exit(FRefPlus50.ToString);
 
             pc_conc1_plus20:
-                exit(FConc1Plus20.Format);
+                exit(FConc1Plus20.ToString);
             pc_conc4_plus20:
-                exit(FConc4Plus20.Format);
+                exit(FConc4Plus20.ToString);
             pc_conc1_zero:
-                exit(FConc1Zero.Format);
+                exit(FConc1Zero.ToString);
             pc_conc4_zero:
-                exit(FConc4Zero.Format);
+                exit(FConc4Zero.ToString);
             pc_conc1_plus50:
-                exit(FConc1Plus50.Format);
+                exit(FConc1Plus50.ToString);
             pc_conc4_plus50:
-                exit(FConc4Plus50.Format);
+                exit(FConc4Plus50.ToString);
+
+            pc_conc1_plus20ret:
+                exit(FConc1Plus20ret.ToString);
+            pc_conc4_plus20ret:
+                exit(FConc4Plus20ret.ToString);
 
         else
 
@@ -286,6 +293,11 @@ begin
                 exit(chck(FConc1Plus50, FPgs1));
             pc_conc4_plus50:
                 exit(chck(FConc4Plus50, FPgs4));
+
+            pc_conc1_plus20ret:
+                exit(chck(FConc1Plus20ret, FPgs1));
+            pc_conc4_plus20ret:
+                exit(chck(FConc4Plus20ret, FPgs4));
 
         else
             exit(cvrNone);

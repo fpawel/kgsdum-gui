@@ -32,7 +32,7 @@ const
 
 procedure RunWriteCoefs(ACoef: byte; AValue: double);
 begin
-    Worker.RunWork(Format('записать coef%d=%s', [ACoef, floattostr(AValue)]),
+    Worker.RunWork(Format('записать коэффициент[%d]=%s', [ACoef, floattostr(AValue)]),
         procedure
         begin
             Worker.DoEachProduct(
@@ -46,7 +46,7 @@ end;
 
 procedure RunWriteCoef(addr: byte; ACoef: byte; AValue: double);
 begin
-    Worker.RunWork(Format('записать адр.%d coef%d=%s',
+    Worker.RunWork(Format('записать адрес=%d коэффициент[%d]=%s',
       [addr, ACoef, floattostr(AValue)]),
         procedure
         begin
@@ -56,7 +56,7 @@ end;
 
 procedure RunWriteVars(AVar: byte; AValue: double);
 begin
-    Worker.RunWork(Format('записать var%d=%s', [AVar, floattostr(AValue)]),
+    Worker.RunWork(Format('записать var[%d]=%s', [AVar, floattostr(AValue)]),
         procedure
         begin
             Worker.DoEachProduct(
@@ -70,7 +70,7 @@ end;
 
 procedure RunWriteVar(addr: byte; AVar: byte; AValue: double);
 begin
-    Worker.RunWork(Format('записать адр.%d var%d=%s',
+    Worker.RunWork(Format('записать адрес=%d var[%d]=%s',
       [addr, AVar, floattostr(AValue)]),
         procedure
         begin
@@ -80,7 +80,7 @@ end;
 
 procedure RunReadVars(AVar: byte);
 begin
-    Worker.RunWork(Format('считать var%d', [AVar]),
+    Worker.RunWork(Format('считать var[%d]', [AVar]),
         procedure
         begin
             Worker.DoEachProduct(
@@ -94,7 +94,7 @@ end;
 
 procedure RunReadVar(addr: byte; AVar: byte);
 begin
-    Worker.RunWork(Format('считать var%d адр.%d', [AVar, addr]),
+    Worker.RunWork(Format('считать var[%d] адрес=%d', [AVar, addr]),
         procedure
         begin
             Worker.KgsReadVar(addr, AVar);
@@ -103,7 +103,7 @@ end;
 
 procedure RunReadCoefficients(ACoefficient: byte);
 begin
-    Worker.RunWork(Format('считать коэф.%d', [ACoefficient]),
+    Worker.RunWork(Format('считать коэффициент[%d]', [ACoefficient]),
         procedure
         begin
             Worker.DoEachProduct(
@@ -117,7 +117,7 @@ end;
 
 procedure RunReadCoefficient(addr: byte; ACoefficient: byte);
 begin
-    Worker.RunWork(Format('считать коэф.%d адр.%d', [ACoefficient, addr]),
+    Worker.RunWork(Format('считать коэффициент[%d] адрес=%d', [ACoefficient, addr]),
         procedure
         begin
             Worker.KgsReadCoefficient(addr, ACoefficient);
@@ -147,6 +147,8 @@ end;
 
 procedure TermochamberSetupTemperature(temperature: double);
 begin
+    Worker.NewLogEntry(loglevInfo, 'Перевод термокамеры на температуру ' +
+      floattostr(temperature));
     TrySwitchGas(0);
     Worker.TryWithErrorMessage(
         procedure
@@ -158,6 +160,8 @@ begin
     begin
         Worker.DoEachProduct(Worker.InterrogateProduct);
     end;
+    Worker.NewLogEntry(loglevInfo, 'Термокамера вышла на температуру ' +
+      floattostr(temperature));
 
     Worker.Delay('выдержка термокамеры при ' + floattostr(temperature) + '"C',
       _one_hour_ms * 3);
@@ -180,8 +184,9 @@ end;
 
 procedure BlowAir;
 begin
+    Worker.NewLogEntry(loglevInfo, 'продувка азотом');
     TrySwitchGas(1);
-    Worker.Delay('продувка воздухом', _one_minute_ms * 5);
+    Worker.Delay('продувка азотом', _one_minute_ms * 5);
     TrySwitchGas(0);
 end;
 
@@ -199,6 +204,7 @@ end;
 
 procedure ProductsReadVar(AVar: byte);
 begin
+    Worker.NewLogEntry(loglevInfo, 'Считать var' + IntToStr(AVar));
     Worker.DoEachProduct(
         procedure(p: TProduct)
         begin
@@ -213,7 +219,21 @@ type
         FMeth: TMeth;
         FVar: byte;
         FValue: double;
+        function ToString: string;
     end;
+
+function TTask.ToString: string;
+begin
+    case FMeth of
+        MWriteKef:
+            result := Format('записать коэффициент[%d]=%s',
+              [FVar, floattostr(FValue)]);
+        MReadKef:
+            result := Format('считать коэффициент K%d', [FVar]);
+        MReadVar:
+            result := Format('считать var%d', [FVar]);
+    end;
+end;
 
 function DWriteKef(kef: byte; value: double): TTask;
 begin
@@ -243,9 +263,13 @@ begin
     end;
 end;
 
-
 procedure _do(tasks: TArray<TTask>);
+var
+    t: TTask;
 begin
+    for t in tasks do
+        Worker.NewLogEntry(loglevInfo, t.ToString);
+
     Worker.DoEachProduct(
         procedure(p: TProduct)
         var
@@ -267,10 +291,12 @@ end;
 
 procedure Adjust;
 begin
+    Worker.NewLogEntry(loglevInfo, 'Корректировка нуля');
     _do([DWriteKef(95, 135), DWriteKef(55, 0), DWriteKef(37, 0)]);
-
     BlowGas(1);
     ProductsReadVar(100);
+
+    Worker.NewLogEntry(loglevInfo, 'Корректировка чувствительности');
     BlowGas(3);
     _do([DWriteKef(28, LastParty.FPgs3), DReadVar(101)]);
 
@@ -297,12 +323,15 @@ MainWorks := [TWork.Create('термоциклирование',
     procedure
     begin
 
+        Worker.NewLogEntry(loglevInfo, 'Линеаризация ПГС4');
         BlowGas(4);
         _do([DWriteKef(44, 1), DWriteKef(48, LastParty.FPgs4), DReadVar(102)]);
 
+        Worker.NewLogEntry(loglevInfo, 'Линеаризация ПГС2');
         BlowGas(2);
         _do([DWriteKef(44, 0), DWriteKef(29, LastParty.FPgs2), DReadVar(102)]);
 
+        Worker.NewLogEntry(loglevInfo, 'Линеаризация ПГС1');
         BlowGas(1);
         _do([DWriteKef(44, 2), DReadVar(102)]);
 
@@ -313,6 +342,7 @@ MainWorks := [TWork.Create('термоциклирование',
   TWork.Create('термокомпенсация',
     procedure
     begin
+        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация +20"C');
 
         TermochamberSetupTemperature(20);
 
@@ -334,6 +364,8 @@ MainWorks := [TWork.Create('термоциклирование',
 
         BlowAir;
 
+        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация -5"C');
+
         TermochamberSetupTemperature(-5);
 
         BlowGas(1);
@@ -343,10 +375,11 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.SaveVarValue(VarWork, 'work_minus5');
         Worker.SaveVarValue(VarRef, 'ref_minus5');
 
-
         BlowGas(3);
         ProductsReadVar(109);
         BlowAir;
+
+        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация +50"C');
 
         TermochamberSetupTemperature(50);
 
@@ -361,16 +394,19 @@ MainWorks := [TWork.Create('термоциклирование',
         ProductsReadVar(108);
         BlowAir;
 
+        Worker.NewLogEntry(loglevInfo, 'Окончание термокомпенсации');
+
         ProductsReadVar(106);
         Worker.Pause(1000 * 60);
         ProductsReadVar(110);
 
     end),
 
-
-    TWork.Create('проверка БО',
+  TWork.Create('проверка БО',
     procedure
     begin
+        Worker.NewLogEntry(loglevInfo, 'проверка БО +20"С');
+
         TermochamberSetupTemperature(20);
         Adjust;
 
@@ -378,19 +414,34 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.SaveVarValue(VarConc, 'c1_plus20');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_plus20');
+        BlowAir;
+
+        Worker.NewLogEntry(loglevInfo, 'проверка БО 0"С');
 
         TermochamberSetupTemperature(0);
         BlowGas(1);
         Worker.SaveVarValue(VarConc, 'c1_zero');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_zero');
+        BlowAir;
+
+        Worker.NewLogEntry(loglevInfo, 'проверка БО +50"С');
 
         TermochamberSetupTemperature(50);
         BlowGas(1);
         Worker.SaveVarValue(VarConc, 'c1_plus50');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_plus50');
+        BlowAir;
 
+        Worker.NewLogEntry(loglevInfo, 'проверка БО +20"С, повторно');
+
+        TermochamberSetupTemperature(20);
+        BlowGas(1);
+        Worker.SaveVarValue(VarConc, 'c1_plus20ret');
+        BlowGas(4);
+        Worker.SaveVarValue(VarConc, 'c4_plus20ret');
+        BlowAir;
 
     end)
 

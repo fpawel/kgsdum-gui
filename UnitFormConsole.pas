@@ -14,18 +14,18 @@ type
     TFormConsole = class(TForm)
         ImageList4: TImageList;
         StringGrid1: TStringGrid;
-    PopupMenu1: TPopupMenu;
-    N1: TMenuItem;
+        PopupMenu1: TPopupMenu;
+        N1: TMenuItem;
         procedure FormCreate(Sender: TObject);
         procedure FormResize(Sender: TObject);
         procedure StringGrid1DrawCell(Sender: TObject; ACol, ARow: Integer;
           Rect: TRect; State: TGridDrawState);
         procedure StringGrid1DblClick(Sender: TObject);
-    procedure N1Click(Sender: TObject);
+        procedure N1Click(Sender: TObject);
 
     private
         { Private declarations }
-        FEntries: TArray<TLogEntry>;
+        FEntriessLevels: TArray<TLogLevel>;
 
     public
         { Public declarations }
@@ -47,7 +47,7 @@ uses FireDAC.Comp.Client, Rest.Json, dateutils, richeditutils, stringutils,
 
 procedure TFormConsole.FormCreate(Sender: TObject);
 begin
-    SetLength(FEntries, 1);
+    SetLength(FEntriessLevels, 0);
 end;
 
 procedure TFormConsole.FormResize(Sender: TObject);
@@ -101,19 +101,20 @@ begin
             begin
                 ta := taLeftJustify;
                 cnv.Font.Color := clBlack;
-                case FEntries[ARow].FLevel of
-                    loglevTrace:
-                        cnv.Font.Color := clGray;
-                    loglevDebug:
-                        cnv.Font.Color := clBlack;
-                    loglevInfo:
-                        cnv.Font.Color := clNavy;
-                    loglevWarn:
-                        cnv.Font.Color := clMaroon;
-                    loglevError, loglevException:
-                        cnv.Font.Color := clRed;
+                if ARow < length(FEntriessLevels) then
+                    case FEntriessLevels[ARow] of
+                        loglevTrace:
+                            cnv.Font.Color := clGray;
+                        loglevDebug:
+                            cnv.Font.Color := clBlack;
+                        loglevInfo:
+                            cnv.Font.Color := clNavy;
+                        loglevWarn:
+                            cnv.Font.Color := clMaroon;
+                        loglevError, loglevException:
+                            cnv.Font.Color := clRed;
 
-                end;
+                    end;
             end;
 
     end;
@@ -131,7 +132,6 @@ begin
         Cells[0, 0] := '';
         Cells[1, 0] := '';
     end;
-    SetLength(FEntries, 1);
 end;
 
 procedure TFormConsole.N1Click(Sender: TObject);
@@ -143,27 +143,20 @@ procedure TFormConsole.NewLine(ACreatedAt: TDatetime;
   ALevel: data_model.TLogLevel; AWork, AText: string);
 begin
 
-    SetLength(FEntries, Length(FEntries) + 1);
-    with FEntries[Length(FEntries) - 2] do
-    begin
-        FWork := AWork;
-        FLevel := ALevel;
-        FText := AText;
-        FCreatedAt := ACreatedAt;
-    end;
+    SetLength(FEntriessLevels, length(FEntriessLevels) + 1);
+    FEntriessLevels[length(FEntriessLevels) - 1] :=  ALevel;
 
     with StringGrid1 do
     begin
+        if length(FEntriessLevels) > 1 then
+            Rowcount := Rowcount + 1;
+
         Cells[0, Rowcount - 1] := formatDatetime('hh:mm:ss', ACreatedAt);
         if AWork <> '' then
             Cells[1, Rowcount - 1] := AWork + ': ' + AText
         else
             Cells[1, Rowcount - 1] := AText;
-        Rowcount := Rowcount + 1;
-        Cells[0, Rowcount - 1] := '';
-        Cells[1, Rowcount - 1] := '';
     end;
 end;
-
 
 end.

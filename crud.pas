@@ -147,6 +147,9 @@ begin
                     FConc1Plus50 := FetchNullFloat(query_product, 'c1_plus50');
                     FConc4Plus50 := FetchNullFloat(query_product, 'c4_plus50');
 
+                    FConc1Plus20ret := FetchNullFloat(query_product, 'c1_plus20ret');
+                    FConc4Plus20ret := FetchNullFloat(query_product, 'c4_plus20ret');
+
 
                     Close;
                     Free;
