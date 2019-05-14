@@ -103,15 +103,13 @@ begin
                 cnv.Font.Color := clBlack;
                 if ARow < length(FEntriessLevels) then
                     case FEntriessLevels[ARow] of
-                        loglevTrace:
-                            cnv.Font.Color := clGray;
                         loglevDebug:
-                            cnv.Font.Color := clBlack;
+                            cnv.Font.Color := clGray;
                         loglevInfo:
-                            cnv.Font.Color := clNavy;
+                            cnv.Font.Color := clBlack;
                         loglevWarn:
                             cnv.Font.Color := clMaroon;
-                        loglevError, loglevException:
+                        loglevError:
                             cnv.Font.Color := clRed;
 
                     end;

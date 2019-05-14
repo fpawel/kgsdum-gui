@@ -389,7 +389,7 @@ end;
 procedure TFormJournal.NewExceptionEntry(What, AText: string);
 begin
     _DoNewWork(What);
-    NewEntry(loglevException, AText);
+    NewEntry(loglevError, AText);
 end;
 
 end.

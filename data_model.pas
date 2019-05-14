@@ -71,8 +71,7 @@ type
         FPgs1, FPgs2, FPgs3, FPgs4: double;
     end;
 
-    TLogLevel = (loglevTrace, loglevDebug, loglevInfo, loglevWarn, loglevError,
-      loglevException);
+    TLogLevel = (loglevDebug, loglevInfo, loglevWarn, loglevError);
 
     TLogEntry = record
         FWorkID: longint;

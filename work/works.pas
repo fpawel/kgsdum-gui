@@ -441,6 +441,9 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.SaveVarValue(VarConc, 'c1_plus20ret');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_plus20ret');
+
+        Worker.TermochamberStop;
+
         BlowAir;
 
     end)

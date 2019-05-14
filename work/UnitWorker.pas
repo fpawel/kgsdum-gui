@@ -559,7 +559,7 @@ begin
             for i := 0 to Length(KgsMainVars) - 1 do
             begin
                 if KgsMainVars[i] = kgs_req.ValueAddr then
-                    log_level := loglevTrace;
+                    log_level := loglevDebug;
             end;
         end;
     end;
