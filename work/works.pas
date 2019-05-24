@@ -32,7 +32,8 @@ const
 
 procedure RunWriteCoefs(ACoef: byte; AValue: double);
 begin
-    Worker.RunWork(Format('записать коэффициент[%d]=%s', [ACoef, floattostr(AValue)]),
+    Worker.RunWork(Format('записать коэффициент[%d]=%s',
+      [ACoef, floattostr(AValue)]),
         procedure
         begin
             Worker.DoEachProduct(
@@ -117,7 +118,8 @@ end;
 
 procedure RunReadCoefficient(addr: byte; ACoefficient: byte);
 begin
-    Worker.RunWork(Format('считать коэффициент[%d] адрес=%d', [ACoefficient, addr]),
+    Worker.RunWork(Format('считать коэффициент[%d] адрес=%d',
+      [ACoefficient, addr]),
         procedure
         begin
             Worker.KgsReadCoefficient(addr, ACoefficient);
@@ -164,7 +166,7 @@ begin
       floattostr(temperature));
 
     Worker.Delay('выдержка термокамеры при ' + floattostr(temperature) + '"C',
-      _one_hour_ms * 3);
+      _one_minute_ms * AppIni.TempTime);
 end;
 
 procedure RunSwitchGasBlock(code: byte);
@@ -186,7 +188,7 @@ procedure BlowAir;
 begin
     Worker.NewLogEntry(loglevInfo, 'продувка азотом');
     TrySwitchGas(1);
-    Worker.Delay('продувка азотом', _one_minute_ms * 5);
+    Worker.Delay('продувка азотом', _one_minute_ms * AppIni.GasTime);
     TrySwitchGas(0);
 end;
 
@@ -291,8 +293,9 @@ end;
 
 procedure Adjust;
 begin
+    _do([DWriteKef(94, 0)]);
     Worker.NewLogEntry(loglevInfo, 'Корректировка нуля');
-    _do([DWriteKef(95, 135), DWriteKef(55, 0), DWriteKef(37, 0)]);
+    _do([DWriteKef(95, 135), DWriteKef(55, 0)]);
     BlowGas(1);
     ProductsReadVar(100);
 
@@ -314,6 +317,12 @@ MainWorks := [TWork.Create('термоциклирование',
             TermochamberSetupTemperature(-60);
             TermochamberSetupTemperature(80);
         end;
+        TermochamberSetupTemperature(20);
+    end),
+
+  TWork.Create('установка НКУ',
+    procedure
+    begin
         TermochamberSetupTemperature(20);
     end),
 
@@ -441,6 +450,7 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.SaveVarValue(VarConc, 'c1_plus20ret');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_plus20ret');
+        BlowGas(3);
 
         Worker.TermochamberStop;
 

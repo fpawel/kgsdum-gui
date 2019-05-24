@@ -16,6 +16,13 @@ type
         procedure SetComportProductsName(value: string);
         procedure SetComportTempName(value: string);
 
+
+        procedure SetGasTime(value: integer);
+        procedure SetTempTime(value: integer);
+
+        function GetGasTime: integer;
+        function GetTempTime: integer;
+
     public
         { Public declarations }
         Ini: TInifile;
@@ -24,6 +31,13 @@ type
           write SetComportProductsName;
         property ComportTempName: string read GetComportTempName
           write SetComportTempName;
+
+        property GasTime: integer read GetGasTime
+          write SetGasTime;
+        property TempTime: integer read GetTempTime
+          write SetTempTime;
+
+
 
     end;
 
@@ -40,6 +54,27 @@ procedure TAppIni.DataModuleCreate(Sender: TObject);
 begin
     Ini := TInifile.Create(ExtractFileDir(paramstr(0)) + '\main.ini');
 end;
+
+function TAppIni.GetGasTime: integer;
+begin
+    result := Ini.ReadInteger('work', 'gas_time', 5);
+end;
+
+function TAppIni.GetTempTime: integer;
+begin
+    result := Ini.ReadInteger('work', 'temp_time', 120);
+end;
+
+procedure TAppIni.SetGasTime(value: integer);
+begin
+    Ini.WriteInteger('work', 'gas_time', value);
+end;
+
+procedure TAppIni.SetTempTime(value: integer);
+begin
+    Ini.WriteInteger('work', 'temp_time', value);
+end;
+
 
 function TAppIni.GetComportProductsName: string;
 begin

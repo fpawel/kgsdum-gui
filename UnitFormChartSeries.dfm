@@ -194,8 +194,6 @@ object FormChartSeries: TFormChartSeries
       BevelOuter = bvNone
       Color = clWindow
       TabOrder = 0
-      ExplicitLeft = 6
-      ExplicitTop = 26
       DefaultCanvas = 'TGDIPlusCanvas'
       ColorPaletteIndex = 13
     end

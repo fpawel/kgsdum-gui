@@ -36,6 +36,14 @@ type
         Shape6: TShape;
         Panel12: TPanel;
         EditPgs2: TEdit;
+        Panel13: TPanel;
+        Shape7: TShape;
+        Panel14: TPanel;
+        EdTempTime: TEdit;
+        Panel15: TPanel;
+        Shape8: TShape;
+        Panel16: TPanel;
+        EdGasTime: TEdit;
         procedure ComboBoxComportProductsDropDown(Sender: TObject);
         procedure FormCreate(Sender: TObject);
         procedure FormDeactivate(Sender: TObject);
@@ -44,6 +52,8 @@ type
         procedure FormShow(Sender: TObject);
         procedure EditPgs1Change(Sender: TObject);
         procedure EditTempNormChange(Sender: TObject);
+        procedure EdTempTimeChange(Sender: TObject);
+        procedure EdGasTimeChange(Sender: TObject);
     private
         { Private declarations }
         FUpdate: boolean;
@@ -79,13 +89,14 @@ begin
     FKey := TDictionary<TObject, string>.create;
     FKey.Add(ComboBoxComportProducts, 'comport_products');
     FKey.Add(ComboBoxComportTemp, 'comport_temp');
-
     FKey.Add(EditPgs1, 'pgs1');
     FKey.Add(EditPgs2, 'pgs2');
     FKey.Add(EditPgs3, 'pgs3');
     FKey.Add(EditPgs4, 'pgs4');
-
     _reload;
+
+    EdGasTime.Text := inttostr(AppIni.GasTime);
+    EdTempTime.Text := inttostr(AppIni.TempTime);
 end;
 
 procedure TFormAppConfig.FormShow(Sender: TObject);
@@ -147,14 +158,56 @@ begin
 
 end;
 
+procedure TFormAppConfig.EdTempTimeChange(Sender: TObject);
+var
+    n: integer;
+begin
+    if FUpdate then
+        exit;
+    CloseWindow(FhWndTip);
+
+    if TryStrToInt(EdTempTime.Text, n) then
+        AppIni.TempTime := n
+    else
+    begin
+        ShowBalloonTip(Sender as TWinControl, TIconKind.Error, '',
+          'не допустимое значение');
+        if Visible then
+            (Sender as TWinControl).SetFocus;
+    end;
+    if Visible then
+        (Sender as TWinControl).SetFocus;
+end;
+
+procedure TFormAppConfig.EdGasTimeChange(Sender: TObject);
+var
+    n: integer;
+begin
+    if FUpdate then
+        exit;
+    CloseWindow(FhWndTip);
+
+    if TryStrToInt(EdGasTime.Text, n) then
+        AppIni.GasTime := n
+    else
+    begin
+        ShowBalloonTip(Sender as TWinControl, TIconKind.Error, '',
+          'не допустимое значение');
+        if Visible then
+            (Sender as TWinControl).SetFocus;
+    end;
+    if Visible then
+        (Sender as TWinControl).SetFocus;
+end;
+
 procedure TFormAppConfig.EditPgs1Change(Sender: TObject);
 begin
     if FUpdate then
         exit;
+    CloseWindow(FhWndTip);
     try
         KgsdumData.SetPartyValue(FKey[Sender],
           str_to_float((Sender as TEdit).Text));
-        CloseWindow(FhWndTip);
     except
         on e: Exception do
         begin
@@ -171,10 +224,10 @@ procedure TFormAppConfig.EditTempNormChange(Sender: TObject);
 begin
     if FUpdate then
         exit;
+    CloseWindow(FhWndTip);
     try
         AppIni.Ini.WriteFloat('work', FKey[Sender],
           str_to_float((Sender as TEdit).Text));
-        CloseWindow(FhWndTip);
     except
         on e: Exception do
         begin
