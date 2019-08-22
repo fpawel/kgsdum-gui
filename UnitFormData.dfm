@@ -40,9 +40,6 @@ object FormData: TFormData
     ParentFont = False
     TabOrder = 0
     OnDrawCell = StringGrid2DrawCell
-    ExplicitLeft = 11
-    ExplicitTop = 37
-    ExplicitWidth = 264
     ColWidths = (
       64
       64
@@ -69,7 +66,6 @@ object FormData: TFormData
     ParentBackground = False
     ParentFont = False
     TabOrder = 1
-    ExplicitWidth = 270
     object ComboBox1: TComboBox
       Left = 77
       Top = 2

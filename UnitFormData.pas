@@ -52,7 +52,7 @@ implementation
 
 uses FireDAC.Comp.Client, dateutils, stringgridutils, stringutils,
     UnitFormPopup,    System.NetEncoding,
-    UnitKgsdumData, JclSysUtils;
+    UnitKgsdumData, Grijjy.Bson.Serialization, JclSysUtils;
 
 procedure TFormData.FormCreate(Sender: TObject);
 begin
@@ -138,19 +138,14 @@ end;
 
 procedure TFormData.ComboBox1Change(Sender: TObject);
 var
-    I: Integer;
-    Abort: Boolean;
     StrOutput:string;
-    Base64: TBase64Encoding;
 begin
     KgsdumData.Conn.Connected := false;
-    JclSysUtils.Execute('kgsdump d1 -y=2019 -m=4 -f=base64', StrOutput);
+    JclSysUtils.Execute('kgsdump products.table -y=2019 -m=4 -f=base64', StrOutput);
     KgsdumData.Conn.Connected := True;
+    StrOutput := TEncoding.UTF8.GetString(TNetEncoding.Base64.DecodeStringToBytes(StrOutput));
+    TgoBsonSerializer.Deserialize(StrOutput, FTable);
 
-    Base64 := TBase64Encoding.Create;
-    StrOutput := TEncoding.UTF8.GetString(Base64.DecodeStringToBytes(StrOutput));
-    StrOutput := '';
-    Base64.Free;
 
 end;
 

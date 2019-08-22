@@ -169,6 +169,13 @@
             <Form>FormData</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="Grijjy\Grijjy.Bson.Serialization.pas"/>
+        <DCCReference Include="Grijjy\Grijjy.Collections.pas"/>
+        <DCCReference Include="Grijjy\Grijjy.Bson.pas"/>
+        <DCCReference Include="Grijjy\Grijjy.SysUtils.pas"/>
+        <DCCReference Include="Grijjy\Grijjy.DateUtils.pas"/>
+        <DCCReference Include="Grijjy\Grijjy.Bson.IO.pas"/>
+        <DCCReference Include="Grijjy\Grijjy.BinaryCoding.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

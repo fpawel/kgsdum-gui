@@ -28,7 +28,14 @@ uses
   UnitFormChartSeries in 'UnitFormChartSeries.pas' {FormChartSeries},
   UnitFormCharts in 'UnitFormCharts.pas' {FormCharts},
   vclutils in 'utils\vclutils.pas',
-  UnitFormData in 'UnitFormData.pas' {FormData};
+  UnitFormData in 'UnitFormData.pas' {FormData},
+  Grijjy.Bson.Serialization in 'Grijjy\Grijjy.Bson.Serialization.pas',
+  Grijjy.Collections in 'Grijjy\Grijjy.Collections.pas',
+  Grijjy.Bson in 'Grijjy\Grijjy.Bson.pas',
+  Grijjy.SysUtils in 'Grijjy\Grijjy.SysUtils.pas',
+  Grijjy.DateUtils in 'Grijjy\Grijjy.DateUtils.pas',
+  Grijjy.Bson.IO in 'Grijjy\Grijjy.Bson.IO.pas',
+  Grijjy.BinaryCoding in 'Grijjy\Grijjy.BinaryCoding.pas';
 
 {$R *.res}
 
