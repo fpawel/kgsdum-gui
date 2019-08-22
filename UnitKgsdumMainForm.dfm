@@ -277,8 +277,52 @@ object KgsdumMainForm: TKgsdumMainForm
       end
     end
   end
+  object PageControlMain: TPageControl
+    Left = 0
+    Top = 31
+    Width = 1056
+    Height = 659
+    ActivePage = TabSheetParty
+    Align = alClient
+    MultiLine = True
+    OwnerDraw = True
+    TabHeight = 100
+    TabOrder = 1
+    TabPosition = tpLeft
+    TabWidth = 40
+    OnChange = PageControlMainChange
+    OnDrawTab = PageControlMainDrawTab
+    object TabSheetParty: TTabSheet
+      Caption = #1055#1072#1088#1090#1080#1103
+      ImageIndex = 4
+    end
+    object TabSheetJournal: TTabSheet
+      Caption = #1046#1091#1088#1085#1072#1083
+      ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+    end
+    object TabSheetCharts: TTabSheet
+      Caption = #1043#1088#1072#1092#1080#1082#1080
+      ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+    end
+    object TabSheetData: TTabSheet
+      Caption = #1040#1088#1093#1080#1074
+      ImageIndex = 3
+      ExplicitLeft = 105
+      ExplicitTop = 3
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+    end
+  end
   object PanelMessageBox: TPanel
-    Left = 603
+    Left = 475
     Top = 79
     Width = 581
     Height = 177
@@ -287,7 +331,7 @@ object KgsdumMainForm: TKgsdumMainForm
     Color = clInfoBk
     Constraints.MinHeight = 150
     ParentBackground = False
-    TabOrder = 1
+    TabOrder = 2
     Visible = False
     DesignSize = (
       577
@@ -566,36 +610,6 @@ object KgsdumMainForm: TKgsdumMainForm
       ReadOnly = True
       TabOrder = 1
       Zoom = 100
-    end
-  end
-  object PageControlMain: TPageControl
-    Left = 0
-    Top = 31
-    Width = 1056
-    Height = 659
-    ActivePage = TabSheetParty
-    Align = alClient
-    MultiLine = True
-    OwnerDraw = True
-    TabHeight = 100
-    TabOrder = 2
-    TabPosition = tpLeft
-    TabWidth = 40
-    OnChange = PageControlMainChange
-    OnDrawTab = PageControlMainDrawTab
-    object TabSheetParty: TTabSheet
-      Caption = #1055#1072#1088#1090#1080#1103
-      ImageIndex = 4
-      ExplicitLeft = 105
-      ExplicitTop = 3
-    end
-    object TabSheetJournal: TTabSheet
-      Caption = #1046#1091#1088#1085#1072#1083
-      ImageIndex = 3
-    end
-    object TabSheetCharts: TTabSheet
-      Caption = #1043#1088#1072#1092#1080#1082#1080
-      ImageIndex = 1
     end
   end
   object ImageList4: TImageList

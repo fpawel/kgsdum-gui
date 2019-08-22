@@ -181,14 +181,14 @@ end;
 procedure BlowGas(code: byte);
 begin
     TrySwitchGas(code);
-    Worker.Delay('продувка газа: ' + IntToStr(code), _one_minute_ms * 10);
+    Worker.Delay('продувка газа: ' + IntToStr(code), _one_minute_ms * AppIni.GasTime);
 end;
 
 procedure BlowAir;
 begin
     Worker.NewLogEntry(loglevInfo, 'продувка азотом');
     TrySwitchGas(1);
-    Worker.Delay('продувка азотом', _one_minute_ms * AppIni.GasTime);
+    Worker.Delay('продувка азотом', _one_minute_ms * 5);
     TrySwitchGas(0);
 end;
 
@@ -348,12 +348,16 @@ MainWorks := [TWork.Create('термоциклирование',
 
     end),
 
+  TWork.Create('установка НКУ',
+    procedure
+    begin
+        TermochamberSetupTemperature(20);
+    end),
+
   TWork.Create('термокомпенсация',
     procedure
     begin
         Worker.NewLogEntry(loglevInfo, 'Термокомпенсация +20"C');
-
-        TermochamberSetupTemperature(20);
 
         BlowGas(1);
 
@@ -457,7 +461,6 @@ MainWorks := [TWork.Create('термоциклирование',
         BlowAir;
 
     end)
-
   ];
 
 end.

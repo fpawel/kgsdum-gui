@@ -3,7 +3,7 @@ object FormAppConfig: TFormAppConfig
   Top = 0
   BorderStyle = bsToolWindow
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
-  ClientHeight = 344
+  ClientHeight = 340
   ClientWidth = 393
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -26,7 +26,6 @@ object FormAppConfig: TFormAppConfig
     BevelOuter = bvNone
     BorderWidth = 1
     TabOrder = 0
-    ExplicitWidth = 380
   end
   object Panel20: TPanel
     Left = 0
@@ -46,7 +45,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 0
-      ExplicitWidth = 378
       object Shape1: TShape
         Left = 1
         Top = 36
@@ -100,7 +98,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 2
-      ExplicitWidth = 378
       object Shape2: TShape
         Left = 1
         Top = 36
@@ -148,7 +145,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 1
-      ExplicitWidth = 378
       object Shape3: TShape
         Left = 1
         Top = 36
@@ -202,7 +198,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 5
-      ExplicitWidth = 378
       object Shape4: TShape
         Left = 1
         Top = 36
@@ -250,7 +245,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 4
-      ExplicitWidth = 378
       object Shape5: TShape
         Left = 1
         Top = 36
@@ -298,7 +292,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 3
-      ExplicitWidth = 378
       object Shape6: TShape
         Left = 1
         Top = 36
@@ -346,6 +339,7 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 6
+      ExplicitTop = 228
       object Shape7: TShape
         Left = 1
         Top = 36
@@ -367,7 +361,6 @@ object FormAppConfig: TFormAppConfig
         BevelOuter = bvNone
         Caption = #1042#1099#1076#1077#1088#1078#1082#1072' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1099', '#1084#1080#1085'.'
         TabOrder = 0
-        ExplicitTop = 4
       end
       object EdTempTime: TEdit
         Left = 263
@@ -394,8 +387,7 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 7
-      ExplicitLeft = 2
-      ExplicitTop = 303
+      ExplicitTop = 266
       object Shape8: TShape
         Left = 1
         Top = 36

@@ -30,13 +30,6 @@ type
         ProgressBar1: TProgressBar;
         ToolBarStop: TToolBar;
         ToolButton2: TToolButton;
-        PanelMessageBox: TPanel;
-        ImageError: TImage;
-        ImageInfo: TImage;
-        PanelMessageBoxTitle: TPanel;
-        ToolBar2: TToolBar;
-        ToolButton3: TToolButton;
-        RichEditlMessageBoxText: TRichEdit;
         PopupMenu1: TPopupMenu;
         N1: TMenuItem;
         TimerDelay: TTimer;
@@ -45,6 +38,14 @@ type
         TabSheetCharts: TTabSheet;
         TabSheetJournal: TTabSheet;
         LabelDelayTotalTime: TLabel;
+    PanelMessageBox: TPanel;
+    ImageError: TImage;
+    ImageInfo: TImage;
+    PanelMessageBoxTitle: TPanel;
+    ToolBar2: TToolBar;
+    ToolButton3: TToolButton;
+    RichEditlMessageBoxText: TRichEdit;
+    TabSheetData: TTabSheet;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
@@ -93,7 +94,8 @@ uses uitypes, types, ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug,
     UnitFormLastParty, dateutils, math,
     UnitFormSelectWorksDialog,
     works, UnitFormConsole, UnitFormJournal,
-    hardware_errors, UnitFormAppConfig, UnitWorker, UnitFormChartSeries;
+    hardware_errors, UnitFormAppConfig, UnitWorker, UnitFormChartSeries,
+  UnitFormData;
 
 procedure TKgsdumMainForm.FormCreate(Sender: TObject);
 begin
@@ -166,6 +168,15 @@ begin
     begin
         Font.Assign(self.Font);
         Parent := TabSheetCharts;
+        BorderStyle := bsNone;
+        Align := alClient;
+        Show;
+    end;
+
+    with FormData do
+    begin
+        Font.Assign(self.Font);
+        Parent := TabSheetData;
         BorderStyle := bsNone;
         Align := alClient;
         Show;

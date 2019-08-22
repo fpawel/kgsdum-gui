@@ -27,7 +27,8 @@ uses
   UnitWorker in 'work\UnitWorker.pas' {Worker: TDataModule},
   UnitFormChartSeries in 'UnitFormChartSeries.pas' {FormChartSeries},
   UnitFormCharts in 'UnitFormCharts.pas' {FormCharts},
-  vclutils in 'utils\vclutils.pas';
+  vclutils in 'utils\vclutils.pas',
+  UnitFormData in 'UnitFormData.pas' {FormData};
 
 {$R *.res}
 
@@ -47,5 +48,6 @@ begin
   Application.CreateForm(TWorker, Worker);
   Application.CreateForm(TFormChartSeries, FormChartSeries);
   Application.CreateForm(TFormCharts, FormCharts);
+  Application.CreateForm(TFormData, FormData);
   Application.Run;
 end.
