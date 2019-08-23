@@ -1,4 +1,4 @@
-unit UnitFormData;
+﻿unit UnitFormData;
 
 interface
 
@@ -6,7 +6,7 @@ uses
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Grids,
-    Vcl.ComCtrls;
+    Vcl.ComCtrls, System.Generics.Collections;
 
 type
     TProduct = record
@@ -37,6 +37,7 @@ type
         { Private declarations }
         FYearMonth: TArray<TYearMonth>;
         FTable: TArray<TArray<string>>;
+        FCheckCells: TDictionary<TPoint, bool>;
         procedure HandleReadOutpu1(const s: string);
     public
         { Public declarations }
@@ -51,19 +52,35 @@ implementation
 {$R *.dfm}
 
 uses FireDAC.Comp.Client, dateutils, stringgridutils, stringutils,
-    UnitFormPopup,    System.NetEncoding,
-    UnitKgsdumData, Grijjy.Bson.Serialization, JclSysUtils;
+    UnitFormPopup, UnitKgsdumData, FireDAC.Stan.Param, math;
+// , System.NetEncoding, Grijjy.Bson.Serialization, JclSysUtils
+
+function VariantIsEmptyOrNull(const Value: Variant): Boolean;
+begin
+    Result := VarIsClear(Value) or VarIsEmpty(Value) or VarIsNull(Value) or
+      (VarCompareValue(Value, Unassigned) = vrEqual);
+    if (not Result) and VarIsStr(Value) then
+        Result := Value = '';
+end;
+
+function FetchNullFloat(q: TFDQuery; field: string): string;
+var
+    Value: double;
+begin
+    if VariantIsEmptyOrNull(q.FieldValues[field]) then
+        exit('');
+    Value := q.FieldByName(field).AsFloat;
+    exit(Formatfloat('0.###', Value));
+end;
 
 procedure TFormData.FormCreate(Sender: TObject);
 begin
-    //
+    FCheckCells := TDictionary<TPoint, bool>.create;;
 end;
 
 procedure TFormData.FormShow(Sender: TObject);
 begin
     //
-    ComboBox1Change(nil);
-
 end;
 
 procedure TFormData.StringGrid2DrawCell(Sender: TObject; ACol, ARow: Integer;
@@ -72,6 +89,7 @@ var
     grd: TStringGrid;
     cnv: TCanvas;
     ta: TAlignment;
+    conc, pgs, limit_d: double;
 
 begin
     grd := Sender as TStringGrid;
@@ -80,9 +98,23 @@ begin
     cnv.Brush.Color := clWhite;
 
     if gdSelected in State then
-        cnv.Brush.Color := clGradientInactiveCaption;
+        cnv.Brush.Color := clGradientInactiveCaption
+    else if (ARow = 0) or (ACol = 0) then
+        cnv.Brush.Color := cl3DLight;
 
-    ta := taLeftJustify;
+    ta := taCenter;
+    if (ARow > 0) AND (ACol > 4) then
+        ta := taRightJustify;
+
+    if FCheckCells.ContainsKey(Point(ACol, ARow)) then
+    begin
+        if FCheckCells[Point(ACol, ARow)] then
+            cnv.Font.Color := clBlue
+        else
+            cnv.Font.Color := clRed;
+
+    end;
+
     DrawCellText(grd, ACol, ARow, Rect, ta, grd.Cells[ACol, ARow]);
 end;
 
@@ -93,9 +125,9 @@ var
 begin
     ComboBox1.Clear;
     SetLength(FYearMonth, 0);
-    with TFDQuery.Create(nil) do
+    with TFDQuery.create(nil) do
     begin
-        Connection := KgsdumData.ConnCharts;
+        Connection := KgsdumData.Conn;
         SQL.Text := 'SELECT DISTINCT ' +
           'cast(strftime(''%Y'', created_at) AS INTEGER) AS year, ' +
           'cast(strftime(''%m'', created_at) AS INTEGER) AS month FROM party ' +
@@ -109,6 +141,7 @@ begin
                 Year := FieldValues['year'];
                 Month := FieldValues['month'];
             end;
+            Next;
         end;
         Close;
         Free;
@@ -136,16 +169,85 @@ begin
 
 end;
 
+// KgsdumData.Conn.Connected := false;
+// JclSysUtils.Execute('kgsdump products.table -y=2019 -m=4 -f=base64', StrOutput);
+// KgsdumData.Conn.Connected := True;
+// StrOutput := TEncoding.UTF8.GetString(TNetEncoding.Base64.DecodeStringToBytes(StrOutput));
+// TgoBsonSerializer.Deserialize(StrOutput, FTable);
+
 procedure TFormData.ComboBox1Change(Sender: TObject);
 var
-    StrOutput:string;
-begin
-    KgsdumData.Conn.Connected := false;
-    JclSysUtils.Execute('kgsdump products.table -y=2019 -m=4 -f=base64', StrOutput);
-    KgsdumData.Conn.Connected := True;
-    StrOutput := TEncoding.UTF8.GetString(TNetEncoding.Base64.DecodeStringToBytes(StrOutput));
-    TgoBsonSerializer.Deserialize(StrOutput, FTable);
+    ACol, ARow: Integer;
+const
+    columns_count = 32;
+    columns: array [0 .. columns_count - 1] of array [0 .. 2]
+      of string = (('Номер', 'product_id', ''), ('День', 'day', ''),
+      ('Загрузка', 'party_id', ''), ('Зав.номер', 'serial_number', ''),
+      ('Адрес', 'addr', ''), ('Work ПГС3', 'work_gas3', ''),
+      ('Work +20⁰С', 'work_plus20', ''), ('Ref +20⁰С', 'ref_plus20', ''),
+      ('Work -5⁰С', 'work_minus5', ''), ('Ref -5⁰С', 'ref_minus5', ''),
+      ('Work +50⁰С', 'work_plus50', ''), ('Ref +50⁰С', 'ref_plus50', ''),
+      ('Погр.1 +20⁰С', 'err1_plus20', 'err1_plus20'),
+      ('Погр.4 +20⁰С', 'err4_plus20', 'err4_plus20'),
+      ('Погр.1 0⁰', 'err1_zero', 'err1_zero'), ('Погр.4 0⁰', 'err4_zero',
+      'err4_zero'), ('Погр.1 +50⁰', 'err1_plus50', 'err1_plus50'),
+      ('Погр.4 +50⁰', 'err4_plus50', 'err4_plus50'),
+      ('Погр.1 +20⁰.2', 'err1_plus20ret', 'err1_plus20ret'),
+      ('Погр.4 +20⁰.2', 'err4_plus20ret', 'err4_plus20ret'),
 
+      ('Конц.1 +20⁰С', 'c1_plus20', 'err1_plus20'),
+      ('Конц.4 +20⁰С', 'c4_plus20', 'err4_plus20'),
+      ('Конц.1 0⁰', 'c1_zero', 'err1_zero'), ('Конц.4 0⁰', 'c4_zero',
+      'err4_zero'), ('Конц.1 +50⁰', 'c1_plus50', 'err1_plus50'),
+      ('Конц.4 +50⁰', 'c4_plus50', 'err4_plus50'),
+      ('Конц.1 +20⁰.2', 'c1_plus20ret', 'err1_plus20ret'),
+      ('Конц.4 +20⁰.2', 'c4_plus20ret', 'err4_plus20ret'),
+
+      ('ПГС1', 'pgs1', ''), ('ПГС2', 'pgs2', ''), ('ПГС3', 'pgs3', ''),
+      ('ПГС4', 'pgs4', '')
+
+      );
+begin
+    FCheckCells.Clear;
+    if (ComboBox1.ItemIndex < 0) or (ComboBox1.ItemIndex >= Length(FYearMonth))
+    then
+        exit;
+    with StringGrid2, KgsdumData.FDQueryProductsValues,
+      FYearMonth[ComboBox1.ItemIndex] do
+    begin
+        colCount := columns_count;
+        RowCount := 1;
+        for ACol := 0 to colCount - 1 do
+            Cells[ACol, 0] := columns[ACol][0];
+        ParamByName('year').Value := Year;
+        ParamByName('month').Value := Month;
+        Open;
+        while not eof do
+        begin
+            RowCount := RowCount + 1;
+            ARow := RowCount - 1;
+            for ACol := 0 to colCount - 1 do
+            begin
+                if ACol < 5 then
+                    Cells[ACol, ARow] :=
+                      VarToStr(FieldByName(columns[ACol][1]).Value)
+                else
+                    Cells[ACol, ARow] :=
+                      FetchNullFloat(KgsdumData.FDQueryProductsValues,
+                      columns[ACol][1]);
+                if (Length(columns[ACol][2]) > 0) AND
+                  not(VariantIsEmptyOrNull(columns[ACol][2])) then
+                    FCheckCells.Add(Point(ACol, ARow),
+                      Abs(FieldByName(columns[ACol][2]).AsFloat) < 100);
+            end;
+            Next;
+        end;
+        Close;
+        if RowCount > 1 then
+            FixedRows := 1;
+        FixedCols := 1;
+    end;
+    StringGrid_SetupColumnsWidth(StringGrid2);
 
 end;
 

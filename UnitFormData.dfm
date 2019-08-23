@@ -36,10 +36,10 @@ object FormData: TFormData
     Font.Name = 'Tahoma'
     Font.Style = []
     GradientEndColor = clBlack
-    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSelect]
     ParentFont = False
     TabOrder = 0
     OnDrawCell = StringGrid2DrawCell
+    ExplicitLeft = -2
     ColWidths = (
       64
       64

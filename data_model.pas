@@ -5,25 +5,19 @@ interface
 uses classes, graphics;
 
 type
-    TProductField = (pcPlace, pcProductID, pcAddr, pcSerial, pcVarConc, pcVarWork,
-      pcVarRef, pcVarTemp,
+    TProductField = (pcPlace, pcProductID, pcAddr, pcSerial, pcVarConc,
+      pcVarWork, pcVarRef, pcVarTemp,
 
-      pc_work_plus20,
-      pc_ref_plus20,
+      pc_work_plus20, pc_ref_plus20,
 
       pc_work_gas3,
 
-      pc_work_minus5,
-      pc_ref_minus5,
+      pc_work_minus5, pc_ref_minus5,
 
-      pc_work_plus50,
-      pc_ref_plus50,
-
-
+      pc_work_plus50, pc_ref_plus50,
 
       pc_conc1_plus20, pc_conc4_plus20, pc_conc1_zero, pc_conc4_zero,
-      pc_conc1_plus50, pc_conc4_plus50,
-      pc_conc1_plus20ret, pc_conc4_plus20ret
+      pc_conc1_plus50, pc_conc4_plus50, pc_conc1_plus20ret, pc_conc4_plus20ret
 
       );
 
@@ -54,7 +48,7 @@ type
           FWorkGas3,
 
           FConc1Plus20, FConc4Plus20, FConc1Zero, FConc4Zero, FConc1Plus50,
-          FConc4Plus50, FConc1Plus20ret, FConc4Plus20ret : TNullFloat;
+          FConc4Plus50, FConc1Plus20ret, FConc4Plus20ret: TNullFloat;
 
         function FormatID: string;
 
@@ -122,6 +116,7 @@ function CheckProductFieldValue(product: TProduct; field: TProductField)
   : TCheckValueResult;
 
 function ProductFieldAlignment(c: TProductField): TAlignment;
+function CheckKgsdumError(conc: TNullFloat; pgs: double): TCheckValueResult;
 
 const
     VarConc = 72;
@@ -133,40 +128,52 @@ const
     product_column_name: array [TProductField] of string = ('№', 'ID', 'Адресс',
       'Зав.№', 'Конц.',
 
-        'Work', 'Ref', 'T',
+      'Work', 'Ref', 'T',
 
-        'Work+20⁰C',
-        'Ref+20⁰C',
+      'Work+20⁰C', 'Ref+20⁰C',
 
-        'Work_ПГС3',
+      'Work_ПГС3',
 
-        'Work-5⁰C',
-        'Ref-5⁰C',
+      'Work-5⁰C', 'Ref-5⁰C',
 
-        'Work+50⁰C',
-        'Ref+50⁰C',
+      'Work+50⁰C', 'Ref+50⁰C',
 
-        'ПГС1+20⁰C(1)', 'ПГС4+20⁰C(1)',
-        'ПГС1 0⁰C', 'ПГС4 0⁰C',
-        'ПГС1+50⁰C', 'ПГС4+50⁰C',
-        'ПГС1+20⁰C(2)', 'ПГС4+20⁰C(2)'
+      'Конц.1 +20⁰', 'Конц.4 +20⁰',
+      'Конц.1 0⁰', 'Конц.4 0⁰',
+      'Конц.1 +50⁰', 'Конц.4 +50⁰',
+      'Конц.1 +20⁰.2', 'Конц.4 +20⁰.2'
 
-        );
+      );
 
 implementation
 
 uses SysUtils, math;
 
+function CheckKgsdumError(conc: TNullFloat; pgs: double): TCheckValueResult;
+var
+    d, limit_d: double;
+begin
+    if not conc.FValid then
+        exit(cvrNone);
+    d := abs(conc.FValue - pgs);
+    limit_d := 0.1 + pgs * 0.12;
+    if abs(d) < limit_d then
+        exit(cvrOk)
+    else
+        exit(cvrErr);
+end;
+
 function TNullFloat.ToString: string;
 begin
     if not FValid then
         exit('');
-    exit(floattostr(FValue));
+    exit(FormatFloat('0.###',FValue));
 end;
 
 function TProduct.FormatID: string;
 begin
-    result := Format('№%d ID=%d заводской_номер=%s', [FPlace + 1, FProductID, FSerial]);
+    result := Format('№%d ID=%d заводской_номер=%s',
+      [FPlace + 1, FProductID, FSerial]);
 end;
 
 function FormatProductFieldValue(product: TProduct; field: TProductField;
@@ -261,42 +268,29 @@ end;
 function CheckProductFieldValue(product: TProduct; field: TProductField)
   : TCheckValueResult;
 
-    function chck(conc: TNullFloat; pgs: double): TCheckValueResult;
-    var d, limit_d : double;
-    begin
-        if not conc.FValid then
-            exit(cvrNone);
-        d := abs(conc.FValue - pgs);
-        limit_d := 0.1 + pgs * 0.12;
-        if abs(d) < limit_d then
-            exit(cvrOk)
-        else
-            exit(cvrErr);
-    end;
-
 begin
     with product do
     begin
         case field of
             pc_conc1_plus20:
-                exit(chck(FConc1Plus20, FPgs1));
+                exit(CheckKgsdumError(FConc1Plus20, FPgs1));
             pc_conc4_plus20:
-                exit(chck(FConc4Plus20, FPgs4));
+                exit(CheckKgsdumError(FConc4Plus20, FPgs4));
 
             pc_conc1_zero:
-                exit(chck(FConc1Zero, FPgs1));
+                exit(CheckKgsdumError(FConc1Zero, FPgs1));
             pc_conc4_zero:
-                exit(chck(FConc4Zero, FPgs4));
+                exit(CheckKgsdumError(FConc4Zero, FPgs4));
 
             pc_conc1_plus50:
-                exit(chck(FConc1Plus50, FPgs1));
+                exit(CheckKgsdumError(FConc1Plus50, FPgs1));
             pc_conc4_plus50:
-                exit(chck(FConc4Plus50, FPgs4));
+                exit(CheckKgsdumError(FConc4Plus50, FPgs4));
 
             pc_conc1_plus20ret:
-                exit(chck(FConc1Plus20ret, FPgs1));
+                exit(CheckKgsdumError(FConc1Plus20ret, FPgs1));
             pc_conc4_plus20ret:
-                exit(chck(FConc4Plus20ret, FPgs4));
+                exit(CheckKgsdumError(FConc4Plus20ret, FPgs4));
 
         else
             exit(cvrNone);

@@ -218,4 +218,75 @@ object KgsdumData: TKgsdumData
     Left = 408
     Top = 160
   end
+  object FDQueryProductsValues: TFDQuery
+    Connection = Conn
+    SQL.Strings = (
+      'SELECT CAST(product_id AS TEXT) AS product_id,'
+      '       CAST(product.party_id AS TEXT) AS party_id,'
+      '       CAST(addr AS TEXT) AS addr,'
+      '       CAST(serial_number AS TEXT) AS serial_number,'
+      '       cast(strftime('#39'%d'#39', party.created_at) AS INTEGER) AS day,'
+      '       work_plus20,'
+      '       ref_plus20,'
+      '       work_gas3,'
+      '       work_minus5,'
+      '       ref_minus5,'
+      '       work_plus50,'
+      '       ref_plus50,'
+      ''
+      
+        '       100 * (c1_plus20 - pgs1) / (0.1 + pgs1 * 0.12) AS err1_pl' +
+        'us20,'
+      
+        '       100 * (c4_plus20 - pgs1) / (0.1 + pgs4 * 0.12) AS err4_pl' +
+        'us20,'
+      
+        '       100 * (c1_zero - pgs1) / (0.1 + pgs1 * 0.12) AS err1_zero' +
+        ','
+      
+        '       100 * (c4_zero - pgs1) / (0.1 + pgs4 * 0.12) AS err4_zero' +
+        ','
+      
+        '       100 * (c1_plus50 - pgs1) / (0.1 + pgs1 * 0.12) AS err1_pl' +
+        'us50,'
+      
+        '       100 * (c4_plus50 - pgs1) / (0.1 + pgs4 * 0.12) AS err4_pl' +
+        'us50,'
+      
+        '       100 * (c1_plus20ret - pgs1) / (0.1 + pgs1 * 0.12) AS err1' +
+        '_plus20ret,'
+      
+        '       100 * (c4_plus20ret - pgs1) / (0.1 + pgs4 * 0.12) AS err4' +
+        '_plus20ret,'
+      ''
+      '       c1_plus20,'
+      '       c4_plus20,'
+      '       c1_zero,'
+      '       c4_zero,'
+      '       c1_plus50,'
+      '       c4_plus50,'
+      '       c1_plus20ret,'
+      '       c4_plus20ret,'
+      '       pgs1,'
+      '       pgs2,'
+      '       pgs3,'
+      '       pgs4'
+      ''
+      'FROM product'
+      '         INNER JOIN party on product.party_id = party.party_id'
+      'WHERE cast(strftime('#39'%Y'#39', party.created_at) AS INTEGER) = :year'
+      '  AND cast(strftime('#39'%m'#39', party.created_at) AS INTEGER) = :month'
+      'ORDER BY product.created_at')
+    Left = 176
+    Top = 216
+    ParamData = <
+      item
+        Name = 'YEAR'
+        ParamType = ptInput
+      end
+      item
+        Name = 'MONTH'
+        ParamType = ptInput
+      end>
+  end
 end

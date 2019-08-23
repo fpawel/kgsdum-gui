@@ -315,15 +315,15 @@ object KgsdumMainForm: TKgsdumMainForm
     object TabSheetData: TTabSheet
       Caption = #1040#1088#1093#1080#1074
       ImageIndex = 3
-      ExplicitLeft = 105
-      ExplicitTop = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
       ExplicitWidth = 0
       ExplicitHeight = 0
     end
   end
   object PanelMessageBox: TPanel
-    Left = 475
-    Top = 79
+    Left = 155
+    Top = 215
     Width = 581
     Height = 177
     BevelKind = bkFlat

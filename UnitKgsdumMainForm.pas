@@ -38,14 +38,14 @@ type
         TabSheetCharts: TTabSheet;
         TabSheetJournal: TTabSheet;
         LabelDelayTotalTime: TLabel;
-    PanelMessageBox: TPanel;
-    ImageError: TImage;
-    ImageInfo: TImage;
-    PanelMessageBoxTitle: TPanel;
-    ToolBar2: TToolBar;
-    ToolButton3: TToolButton;
-    RichEditlMessageBoxText: TRichEdit;
-    TabSheetData: TTabSheet;
+        PanelMessageBox: TPanel;
+        ImageError: TImage;
+        ImageInfo: TImage;
+        PanelMessageBoxTitle: TPanel;
+        ToolBar2: TToolBar;
+        ToolButton3: TToolButton;
+        RichEditlMessageBoxText: TRichEdit;
+        TabSheetData: TTabSheet;
         procedure FormShow(Sender: TObject);
         procedure ToolButtonRunClick(Sender: TObject);
         procedure ToolButton4Click(Sender: TObject);
@@ -95,7 +95,7 @@ uses uitypes, types, ShellApi, FireDAC.Comp.Client, UnitKgsdumData, JclDebug,
     UnitFormSelectWorksDialog,
     works, UnitFormConsole, UnitFormJournal,
     hardware_errors, UnitFormAppConfig, UnitWorker, UnitFormChartSeries,
-  UnitFormData;
+    UnitFormData;
 
 procedure TKgsdumMainForm.FormCreate(Sender: TObject);
 begin
@@ -355,7 +355,9 @@ begin
     PageControl.Repaint;
     PanelMessageBox.Hide;
     if PageControl.ActivePage = TabSheetCharts then
-        FormCharts.FetchDays;
+        FormCharts.FetchDays
+    else if PageControl.ActivePage = TabSheetData then
+        FormData.FetchYearsMonths;
 
 end;
 
@@ -406,7 +408,7 @@ end;
 
 procedure TKgsdumMainForm.OnStartDelay(what: String; durationMs: cardinal);
 begin
-    //FormChartSeries.NewChart;
+    // FormChartSeries.NewChart;
 
     LabelWhatDelay.Caption := what;
     LabelDelayElepsedTime.Caption := '00:00:00';

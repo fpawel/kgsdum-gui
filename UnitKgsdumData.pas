@@ -25,6 +25,7 @@ type
         FDQuery3: TFDQuery;
     Timer1: TTimer;
     FDGUIxWaitCursor1: TFDGUIxWaitCursor;
+    FDQueryProductsValues: TFDQuery;
         procedure DataModuleCreate(Sender: TObject);
 
     private

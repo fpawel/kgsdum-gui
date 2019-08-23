@@ -31,6 +31,8 @@ procedure StringGrid_RedrawCol(grd: TStringGrid; acol: integer);
 procedure DrawCellText(StringGrid1: TStringGrid; acol, arow: integer;
   Rect: TRect; ta: TAlignment; text: string);
 
+procedure StringGrid_SetupColumnsWidth(grd: TStringGrid);
+
 implementation
 
 uses Clipbrd, winapi.windows, system.math, winapi.uxtheme, stringutils,
@@ -305,6 +307,32 @@ begin
                 end;
             end;
     Clipboard.AsText := s;
+end;
+
+procedure StringGrid_SetupColumnWidth(grd: TStringGrid; acol: integer);
+var
+    w, arow: integer;
+begin
+    with grd do
+    begin
+        ColWidths[acol] := DefaultColWidth;
+        for arow := 0 to rowcount - 1 do
+        begin
+            w := Canvas.TextWidth(Cells[acol, arow]);
+            if ColWidths[acol] < w + 5 then
+                ColWidths[acol] := w + 5;
+        end;
+    end;
+
+end;
+
+procedure StringGrid_SetupColumnsWidth(grd: TStringGrid);
+var
+    acol: integer;
+begin
+    with grd do
+        for acol := 0 to colcount - 1 do
+            StringGrid_SetupColumnWidth(grd, acol);
 end;
 
 end.
