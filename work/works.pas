@@ -436,6 +436,7 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.SaveVarValue(VarConc, 'c1_zero');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_zero');
+        BlowGas(3);
         BlowAir;
 
         Worker.NewLogEntry(loglevInfo, 'проверка БО +50"С');
@@ -445,6 +446,7 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.SaveVarValue(VarConc, 'c1_plus50');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_plus50');
+        BlowGas(3);
         BlowAir;
 
         Worker.NewLogEntry(loglevInfo, 'проверка БО +20"С, повторно');
@@ -454,10 +456,7 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.SaveVarValue(VarConc, 'c1_plus20ret');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_plus20ret');
-        BlowGas(3);
-
         Worker.TermochamberStop;
-
         BlowAir;
 
     end)

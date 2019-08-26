@@ -93,10 +93,11 @@ begin
     FKey.Add(EditPgs2, 'pgs2');
     FKey.Add(EditPgs3, 'pgs3');
     FKey.Add(EditPgs4, 'pgs4');
+    FKey.Add(EdGasTime, 'gas_time');
+    FKey.Add(EdTempTime, 'temp_time');
     _reload;
 
-    EdGasTime.Text := inttostr(AppIni.GasTime);
-    EdTempTime.Text := inttostr(AppIni.TempTime);
+
 end;
 
 procedure TFormAppConfig.FormShow(Sender: TObject);
@@ -124,6 +125,9 @@ begin
     EditPgs2.Text := FloatToStr(party.FPgs2);
     EditPgs3.Text := FloatToStr(party.FPgs3);
     EditPgs4.Text := FloatToStr(party.FPgs4);
+
+    EdGasTime.Text := inttostr(AppIni.GasTime);
+    EdTempTime.Text := inttostr(AppIni.TempTime);
 
     FUpdate := false;
 end;

@@ -339,7 +339,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 6
-      ExplicitTop = 228
       object Shape7: TShape
         Left = 1
         Top = 36
@@ -387,7 +386,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 7
-      ExplicitTop = 266
       object Shape8: TShape
         Left = 1
         Top = 36
