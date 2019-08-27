@@ -22,7 +22,7 @@ type
         cmd: byte;
         data: TArray<byte>;
         function Bytes: TBytes;
-        procedure CheckResonse(response: TBytes);
+        procedure CheckResponse(response: TBytes);
     end;
 
 function Read3(addr: byte; AVar: word; w: TComportWorker): double;
@@ -46,7 +46,7 @@ begin
     result := _result;
 end;
 
-procedure TModbusRequest.CheckResonse(response: TBytes);
+procedure TModbusRequest.CheckResponse(response: TBytes);
 var
     crc: word;
 begin
@@ -85,7 +85,7 @@ begin
     comport.GetResponse(request.Bytes, w,
         procedure(response: TBytes)
         begin
-            request.CheckResonse(response);
+            request.CheckResponse(response);
             FParse(response);
             _result := response;
         end);

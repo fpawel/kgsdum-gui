@@ -605,23 +605,23 @@ end;
 
 procedure TWorker.Delay(what: string; DurationMS: cardinal);
 
-    procedure _Do_Delay;
+    procedure do_delay;
     var
-        _startTimeMs: cardinal;
+        startTimeMs: cardinal;
         function ExitCondition: boolean;
         begin
-            result := ((GetTickCount - _startTimeMs) >= DurationMS);
+            result := ((GetTickCount - startTimeMs) >= DurationMS);
         end;
 
     begin
-        _startTimeMs := GetTickCount;
+        startTimeMs := GetTickCount;
         while not ExitCondition do
         begin
             DoEachProduct(InterrogateProduct);
         end;
     end;
 
-    procedure _do_end;
+    procedure do_end;
     begin
         AtomicExchange(FFlagSkipDelay, 0);
         Synchronize(
@@ -646,24 +646,24 @@ begin
             KgsdumMainForm.OnStartDelay(what, DurationMS);
         end);
     try
-        _Do_Delay;
+        do_delay;
         NewLogEntry(logLevWarn, what + ': ' + TimeToStr(IncMilliSecond(0,
           DurationMS)) + ': задержка выполнена');
     except
         on e: ESkipDelay do
         begin
-            _do_end;
+            do_end;
             NewLogEntry(logLevWarn, what + ': ' + TimeToStr(IncMilliSecond(0,
               DurationMS)) + ': пропуск задержки');
             exit;
         end;
         on e: Exception do
         begin
-            _do_end;
+            do_end;
             raise;
         end;
     end;
-    _do_end;
+    do_end;
 end;
 
 procedure TWorker.SwitchGasBlock6006(code: byte);

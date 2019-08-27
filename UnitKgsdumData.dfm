@@ -289,4 +289,9 @@ object KgsdumData: TKgsdumData
         ParamType = ptInput
       end>
   end
+  object FDSQLiteValidate1: TFDSQLiteValidate
+    DriverLink = FDPhysSQLiteDriverLink1
+    Left = 288
+    Top = 40
+  end
 end

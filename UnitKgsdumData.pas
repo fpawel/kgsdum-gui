@@ -10,7 +10,7 @@ uses
     FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
     FireDAC.Comp.DataSet, FireDAC.Stan.ExprFuncs, FireDAC.Phys.SQLiteDef,
     FireDAC.Phys.SQLite, data_model, Vcl.ExtCtrls, FireDAC.ConsoleUI.Wait,
-  FireDAC.Comp.UI;
+    FireDAC.Comp.UI;
 
 type
     TQueryProcedure = reference to procedure(_: TFDQuery);
@@ -23,9 +23,10 @@ type
         FDQuery2: TFDQuery;
         ConnCharts: TFDConnection;
         FDQuery3: TFDQuery;
-    Timer1: TTimer;
-    FDGUIxWaitCursor1: TFDGUIxWaitCursor;
-    FDQueryProductsValues: TFDQuery;
+        Timer1: TTimer;
+        FDGUIxWaitCursor1: TFDGUIxWaitCursor;
+        FDQueryProductsValues: TFDQuery;
+    FDSQLiteValidate1: TFDSQLiteValidate;
         procedure DataModuleCreate(Sender: TObject);
 
     private
@@ -84,6 +85,10 @@ var
 begin
     dir := GetEnvironmentVariable('APPDATA') + '\kgsdum\';
     forcedirectories(dir);
+
+
+    FDSQLiteValidate1.Database := conn.Params.Database;
+    FDSQLiteValidate1.Sweep;
 
     Conn.Connected := true;
     ConnJournal.Connected := true;
@@ -168,10 +173,11 @@ begin
 end;
 
 procedure TKgsdumData.SaveLastSeriesBucket;
-var i : integer ;
+var
+    i: integer;
     last_bucket: TSeriesBucket;
 begin
-    if length(FSeriesPointEntries) = 0 then
+    if Length(FSeriesPointEntries) = 0 then
         exit;
 
     last_bucket := GetLastSeriesBucket;
