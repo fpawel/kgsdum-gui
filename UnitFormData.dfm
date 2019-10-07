@@ -39,7 +39,6 @@ object FormData: TFormData
     ParentFont = False
     TabOrder = 0
     OnDrawCell = StringGrid2DrawCell
-    ExplicitLeft = 8
     ColWidths = (
       64
       64

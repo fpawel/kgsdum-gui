@@ -7,7 +7,7 @@ uses
     System.Classes, Vcl.Graphics,
     Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Grids,
     Vcl.ComCtrls, System.Generics.Collections, Vcl.ToolWin, System.ImageList,
-  Vcl.ImgList;
+    Vcl.ImgList;
 
 type
     TProduct = record
@@ -29,15 +29,15 @@ type
         StringGrid2: TStringGrid;
         Panel3: TPanel;
         ComboBox1: TComboBox;
-    ImageList4: TImageList;
-    ToolBar5: TToolBar;
-    ToolButton9: TToolButton;
+        ImageList4: TImageList;
+        ToolBar5: TToolBar;
+        ToolButton9: TToolButton;
         procedure FormCreate(Sender: TObject);
         procedure ComboBox1Change(Sender: TObject);
         procedure FormShow(Sender: TObject);
         procedure StringGrid2DrawCell(Sender: TObject; ACol, ARow: Integer;
           Rect: TRect; State: TGridDrawState);
-    procedure ToolButton9Click(Sender: TObject);
+        procedure ToolButton9Click(Sender: TObject);
     private
         { Private declarations }
         FYearMonth: TArray<TYearMonth>;
@@ -60,22 +60,14 @@ uses FireDAC.Comp.Client, dateutils, stringgridutils, stringutils,
     UnitFormPopup, UnitKgsdumData, FireDAC.Stan.Param, math, JclSysUtils;
 // , System.NetEncoding, Grijjy.Bson.Serialization,
 
-function VariantIsEmptyOrNull(const Value: Variant): Boolean;
-begin
-    Result := VarIsClear(Value) or VarIsEmpty(Value) or VarIsNull(Value) or
-      (VarCompareValue(Value, Unassigned) = vrEqual);
-    if (not Result) and VarIsStr(Value) then
-        Result := Value = '';
-end;
-
 function FetchNullFloat(q: TFDQuery; field: string): string;
 var
-    Value: double;
+    AValue: double;
 begin
-    if VariantIsEmptyOrNull(q.FieldValues[field]) then
-        exit('');
-    Value := q.FieldByName(field).AsFloat;
-    exit(Formatfloat('0.###', Value));
+    if TryVariantToFloat(q.FieldValues[field], AValue) then
+        result := Formatfloat('0.###', AValue)
+    else
+        result := '';
 end;
 
 procedure TFormData.FormCreate(Sender: TObject);
@@ -124,26 +116,27 @@ begin
 end;
 
 procedure TFormData.ToolButton9Click(Sender: TObject);
-var s:string;
-  I: integer;
-  MyClass: TComponent;
+var
+    s: string;
+    I: Integer;
+    MyClass: TComponent;
 begin
     s := '';
     with StringGrid2 do
-    for I := Selection.Top to Selection.Bottom do
-    begin
-        if s <> '' then
-            s := s + ',';
-        s := s + Cells[0,i];
-    end;
+        for I := Selection.Top to Selection.Bottom do
+        begin
+            if s <> '' then
+                s := s + ',';
+            s := s + Cells[0, I];
+        end;
 
-     KgsdumData.Conn.Connected := false;
-     try
-        if JclSysUtils.Execute('kgsdump pdf -products='+s, s) <> 0 then
-        raise Exception.Create(s);
-     finally
-        KgsdumData.Conn.Connected := True;
-     end;
+    KgsdumData.Conn.Connected := false;
+    try
+        if JclSysUtils.Execute('kgsdump pdf -products=' + s, s) <> 0 then
+            raise Exception.create(s);
+    finally
+        KgsdumData.Conn.Connected := true;
+    end;
 end;
 
 procedure TFormData.FetchYearsMonths;
@@ -206,6 +199,7 @@ end;
 procedure TFormData.ComboBox1Change(Sender: TObject);
 var
     ACol, ARow: Integer;
+    AValue: double;
 const
     columns_count = 32;
     columns: array [0 .. columns_count - 1] of array [0 .. 2]
@@ -263,10 +257,11 @@ begin
                     Cells[ACol, ARow] :=
                       FetchNullFloat(KgsdumData.FDQueryProductsValues,
                       columns[ACol][1]);
+
                 if (Length(columns[ACol][2]) > 0) AND
-                  not(VariantIsEmptyOrNull(columns[ACol][2])) then
-                    FCheckCells.Add(Point(ACol, ARow),
-                      Abs(FieldByName(columns[ACol][2]).AsFloat) < 100);
+                  TryVariantToFloat(FieldValues[columns[ACol][2]], AValue) then
+                    FCheckCells.Add(Point(ACol, ARow), Abs(AValue) < 100);
+
             end;
             Next;
         end;

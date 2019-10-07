@@ -238,25 +238,25 @@ object KgsdumData: TKgsdumData
         '       100 * (c1_plus20 - pgs1) / (0.1 + pgs1 * 0.12) AS err1_pl' +
         'us20,'
       
-        '       100 * (c4_plus20 - pgs1) / (0.1 + pgs4 * 0.12) AS err4_pl' +
+        '       100 * (c4_plus20 - pgs4) / (0.1 + pgs4 * 0.12) AS err4_pl' +
         'us20,'
       
         '       100 * (c1_zero - pgs1) / (0.1 + pgs1 * 0.12) AS err1_zero' +
         ','
       
-        '       100 * (c4_zero - pgs1) / (0.1 + pgs4 * 0.12) AS err4_zero' +
+        '       100 * (c4_zero - pgs4) / (0.1 + pgs4 * 0.12) AS err4_zero' +
         ','
       
         '       100 * (c1_plus50 - pgs1) / (0.1 + pgs1 * 0.12) AS err1_pl' +
         'us50,'
       
-        '       100 * (c4_plus50 - pgs1) / (0.1 + pgs4 * 0.12) AS err4_pl' +
+        '       100 * (c4_plus50 - pgs4) / (0.1 + pgs4 * 0.12) AS err4_pl' +
         'us50,'
       
         '       100 * (c1_plus20ret - pgs1) / (0.1 + pgs1 * 0.12) AS err1' +
         '_plus20ret,'
       
-        '       100 * (c4_plus20ret - pgs1) / (0.1 + pgs4 * 0.12) AS err4' +
+        '       100 * (c4_plus20ret - pgs4) / (0.1 + pgs4 * 0.12) AS err4' +
         '_plus20ret,'
       ''
       '       c1_plus20,'

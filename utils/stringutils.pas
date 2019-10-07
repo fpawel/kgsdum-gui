@@ -10,7 +10,7 @@ function inttostr2(n: integer): string;
 function float_to_str(v: double): string;
 
 function month_name(month_number:integer):string;
-function try_str_to_float(s:string; var v:double):boolean;
+function TryStrToFloatMy(s:string; var v:double):boolean;
 
 function BytesToHex(BA: TArray<byte>; Sep: string = ' ';
     index_from : integer = -1;
@@ -19,10 +19,13 @@ function BytesToHex(BA: TArray<byte>; Sep: string = ' ';
 
 function MillisecondsToStr(ms:cardinal):string;
 
+function VariantIsNullOrEmpty(const Value: Variant): Boolean;
+function TryVariantToFloat(AVariantValue:variant; var AValue: double): boolean;
+
 implementation
 
 
-uses SysUtils, dateutils;
+uses SysUtils, dateutils, variants;
 
 function MillisecondsToStr(ms:cardinal):string;
 begin
@@ -53,7 +56,22 @@ begin
 
 end;
 
-function try_str_to_float(s:string; var v:double):boolean;
+function VariantIsNullOrEmpty(const Value: Variant): Boolean;
+begin
+    Result := VarIsClear(Value) or VarIsEmpty(Value) or VarIsNull(Value) or
+      (VarCompareValue(Value, Unassigned) = vrEqual);
+    if (not Result) and VarIsStr(Value) then
+        Result := Value = '';
+end;
+
+function TryVariantToFloat(AVariantValue:variant; var AValue: double): boolean;
+begin
+    if VariantIsNullOrEmpty(AVariantValue) then
+        exit(false);
+    exit(TryStrToFloatMy(AVariantValue, AValue));
+end;
+
+function TryStrToFloatMy(s:string; var v:double):boolean;
 begin
     result := TryStrToFloat(str_validate_decimal_separator(s), v);
 
