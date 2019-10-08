@@ -24,7 +24,8 @@ implementation
 uses sysutils, comport, UnitFormLastParty, stringutils,
     classes, windows, hardware_errors, UnitAppIni, modbus,
     crud,
-    UnitKgsdumMainForm, UnitWorker, UnitFormChartSeries, UnitKgsdumData;
+    UnitKgsdumMainForm, UnitWorker, UnitFormChartSeries, UnitKgsdumData,
+    UnitFormSelectWorksDialog;
 
 const
     _one_minute_ms = 1000 * 60;
@@ -97,8 +98,16 @@ procedure RunReadVar(addr: byte; AVar: byte);
 begin
     Worker.RunWork(Format('считать var[%d] адрес=%d', [AVar, addr]),
         procedure
+        var
+            v: double;
         begin
-            Worker.KgsReadVar(addr, AVar);
+            v := Worker.KgsReadVar(addr, AVar);
+            Worker.Synchronize(
+                procedure
+                begin
+                    FormSelectWorksDialog.EditValue.Text := floattostr(v);
+                end);
+
         end);
 end;
 
@@ -121,8 +130,15 @@ begin
     Worker.RunWork(Format('считать коэффициент[%d] адрес=%d',
       [ACoefficient, addr]),
         procedure
+        var
+            v: double;
         begin
-            Worker.KgsReadCoefficient(addr, ACoefficient);
+            v := Worker.KgsReadCoefficient(addr, ACoefficient);
+            Worker.Synchronize(
+                procedure
+                begin
+                    FormSelectWorksDialog.EditValue.Text := floattostr(v);
+                end);
         end);
 end;
 
@@ -181,7 +197,8 @@ end;
 procedure BlowGas(code: byte);
 begin
     TrySwitchGas(code);
-    Worker.Delay('продувка газа: ' + IntToStr(code), _one_minute_ms * AppIni.GasTime);
+    Worker.Delay('продувка газа: ' + IntToStr(code),
+      _one_minute_ms * AppIni.GasTime);
 end;
 
 procedure BlowAir;
@@ -344,20 +361,20 @@ MainWorks := [TWork.Create('термоциклирование',
         BlowGas(1);
         _do([DWriteKef(44, 2), DReadVar(102)]);
 
-        BlowAir;
-
+        //BlowAir;
     end),
 
   TWork.Create('установка НКУ',
     procedure
     begin
-        TermochamberSetupTemperature(20);
+        TermochamberSetupTemperature(AppIni.TempNku);
     end),
 
   TWork.Create('термокомпенсация',
     procedure
     begin
-        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация +20"C');
+        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация ' +
+          float_to_str(AppIni.TempNku) + '"C');
 
         BlowGas(1);
 
@@ -377,9 +394,10 @@ MainWorks := [TWork.Create('термоциклирование',
 
         BlowAir;
 
-        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация -5"C');
+        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация пониженной температуры'
+          + float_to_str(AppIni.TempLow1) + '"C');
 
-        TermochamberSetupTemperature(-5);
+        TermochamberSetupTemperature(AppIni.TempLow1);
 
         BlowGas(1);
         ProductsReadVar(105);
@@ -392,9 +410,9 @@ MainWorks := [TWork.Create('термоциклирование',
         ProductsReadVar(109);
         BlowAir;
 
-        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация +50"C');
-
-        TermochamberSetupTemperature(50);
+        Worker.NewLogEntry(loglevInfo, 'Термокомпенсация повышенной температуры'
+          + float_to_str(AppIni.TempHigh1) + '"C');
+        TermochamberSetupTemperature(AppIni.TempHigh1);
 
         BlowGas(1);
         ProductsReadVar(104);
@@ -418,9 +436,10 @@ MainWorks := [TWork.Create('термоциклирование',
   TWork.Create('проверка БО',
     procedure
     begin
-        Worker.NewLogEntry(loglevInfo, 'проверка БО +20"С');
+        Worker.NewLogEntry(loglevInfo, 'проверка БО НКУ ' +
+          float_to_str(AppIni.TempNku) + '"С');
 
-        TermochamberSetupTemperature(20);
+        TermochamberSetupTemperature(AppIni.TempNku);
         Adjust;
 
         BlowGas(1);
@@ -429,9 +448,10 @@ MainWorks := [TWork.Create('термоциклирование',
         Worker.SaveVarValue(VarConc, 'c4_plus20');
         BlowAir;
 
-        Worker.NewLogEntry(loglevInfo, 'проверка БО 0"С');
+        Worker.NewLogEntry(loglevInfo, 'проверка БО при пониженной температуре '
+          + float_to_str(AppIni.TempLow2) + '"С');
 
-        TermochamberSetupTemperature(0);
+        TermochamberSetupTemperature(AppIni.TempLow2);
         BlowGas(1);
         Worker.SaveVarValue(VarConc, 'c1_zero');
         BlowGas(4);
@@ -439,9 +459,10 @@ MainWorks := [TWork.Create('термоциклирование',
         BlowGas(3);
         BlowAir;
 
-        Worker.NewLogEntry(loglevInfo, 'проверка БО +50"С');
+        Worker.NewLogEntry(loglevInfo, 'проверка БО при повышенной температуре '
+          + float_to_str(AppIni.TempHigh2) + '"С');
 
-        TermochamberSetupTemperature(50);
+        TermochamberSetupTemperature(AppIni.TempHigh2);
         BlowGas(1);
         Worker.SaveVarValue(VarConc, 'c1_plus50');
         BlowGas(4);
@@ -449,17 +470,17 @@ MainWorks := [TWork.Create('термоциклирование',
         BlowGas(3);
         BlowAir;
 
-        Worker.NewLogEntry(loglevInfo, 'проверка БО +20"С, повторно');
+        Worker.NewLogEntry(loglevInfo, 'проверка БО НКУ повторно');
 
-        TermochamberSetupTemperature(20);
+        TermochamberSetupTemperature(AppIni.TempNku);
         BlowGas(1);
         Worker.SaveVarValue(VarConc, 'c1_plus20ret');
         BlowGas(4);
         Worker.SaveVarValue(VarConc, 'c4_plus20ret');
         Worker.TermochamberStop;
+        BlowGas(3);
         BlowAir;
 
-    end)
-  ];
+    end)];
 
 end.

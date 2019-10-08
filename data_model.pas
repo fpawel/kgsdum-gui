@@ -34,7 +34,7 @@ type
         FProductID, FPartyID: int64;
         FProduction: boolean;
         FPlace, FAddr: integer;
-        FSerial: string;
+        FSerial: integer;
         FConnection: string;
         FConnectionFailed: boolean;
 
@@ -172,7 +172,7 @@ end;
 
 function TProduct.FormatID: string;
 begin
-    result := Format('№%d ID=%d заводской_номер=%s',
+    result := Format('№%d ID=%d заводской_номер=%d',
       [FPlace + 1, FProductID, FSerial]);
 end;
 
@@ -189,7 +189,7 @@ begin
             pcAddr:
                 exit(IntToStr(FAddr));
             pcSerial:
-                exit(FSerial);
+                exit(IntToStr(FSerial));
             pcVarConc:
                 if FConnectionFailed then
                     exit('нет связи')

@@ -9,6 +9,7 @@ uses
     ComponentBaloonHintU;
 
 type
+    TProcFloat = procedure(v:double) of object;
     TFormAppConfig = class(TForm)
         Panel19: TPanel;
         Panel20: TPanel;
@@ -44,6 +45,26 @@ type
         Shape8: TShape;
         Panel16: TPanel;
         EdGasTime: TEdit;
+    Panel18: TPanel;
+    Shape10: TShape;
+    Label2: TLabel;
+    EdTempLow1: TEdit;
+    Panel17: TPanel;
+    Shape9: TShape;
+    Label1: TLabel;
+    EdTempHigh1: TEdit;
+    Panel21: TPanel;
+    Shape11: TShape;
+    Label3: TLabel;
+    EdTempNku: TEdit;
+    Panel22: TPanel;
+    Shape12: TShape;
+    Label4: TLabel;
+    EdTempLow2: TEdit;
+    Panel23: TPanel;
+    Shape13: TShape;
+    Label5: TLabel;
+    EdTempHigh2: TEdit;
         procedure ComboBoxComportProductsDropDown(Sender: TObject);
         procedure FormCreate(Sender: TObject);
         procedure FormDeactivate(Sender: TObject);
@@ -54,6 +75,11 @@ type
         procedure EditTempNormChange(Sender: TObject);
         procedure EdTempTimeChange(Sender: TObject);
         procedure EdGasTimeChange(Sender: TObject);
+    procedure EdTempLow1Change(Sender: TObject);
+    procedure EdTempHigh1Change(Sender: TObject);
+    procedure EdTempNkuChange(Sender: TObject);
+    procedure EdTempLow2Change(Sender: TObject);
+    procedure EdTempHigh2Change(Sender: TObject);
     private
         { Private declarations }
         FUpdate: boolean;
@@ -70,6 +96,8 @@ type
 
         procedure ShowBalloonTip(c: TWinControl; Icon: TIconKind;
           Title, Text: string);
+
+        procedure SetFloatParam(ed:TEdit; p:TProcFloat);
     public
         { Public declarations }
     end;
@@ -95,6 +123,14 @@ begin
     FKey.Add(EditPgs4, 'pgs4');
     FKey.Add(EdGasTime, 'gas_time');
     FKey.Add(EdTempTime, 'temp_time');
+
+    FKey.Add(EdTempLow1, 'temp_low1');
+    FKey.Add(EdTempLow2, 'temp_low2');
+    FKey.Add(EdTempHigh1, 'temp_high1');
+    FKey.Add(EdTempHigh2, 'temp_high2');
+    FKey.Add(EdTempNku, 'temp_nku');
+
+
     _reload;
 
 
@@ -129,6 +165,12 @@ begin
     EdGasTime.Text := inttostr(AppIni.GasTime);
     EdTempTime.Text := inttostr(AppIni.TempTime);
 
+    EdTempLow1.Text := FloatToStr(AppIni.TempLow1);
+    EdTempLow2.Text := FloatToStr(AppIni.TempLow2);
+    EdTempHigh1.Text := FloatToStr(AppIni.TempHigh1);
+    EdTempHigh2.Text := FloatToStr(AppIni.TempHigh2);
+    EdTempNku.Text := FloatToStr(AppIni.TempNku);
+
     FUpdate := false;
 end;
 
@@ -160,6 +202,51 @@ begin
         exit;
     AppIni.ComportTempName := ComboBoxComportTemp.Text;
 
+end;
+
+procedure TFormAppConfig.SetFloatParam(ed:TEdit; p:TProcFloat);
+var v:double;
+begin
+    if FUpdate then
+        exit;
+    CloseWindow(FhWndTip);
+    if TryStrToFloatMy(EdTempLow1.Text, v) then
+        p(v)
+    else
+    begin
+        ShowBalloonTip(ed as TWinControl, TIconKind.Error, '',
+          'не допустимое значение');
+        if Visible then
+            (ed as TWinControl).SetFocus;
+    end;
+    if Visible then
+        (ed as TWinControl).SetFocus;
+
+end;
+
+procedure TFormAppConfig.EdTempHigh1Change(Sender: TObject);
+begin
+    SetFloatParam(Sender as TEdit, AppIni.SetTempHigh1);
+end;
+
+procedure TFormAppConfig.EdTempHigh2Change(Sender: TObject);
+begin
+    SetFloatParam(Sender as TEdit, AppIni.SetTempHigh2);
+end;
+
+procedure TFormAppConfig.EdTempLow1Change(Sender: TObject);
+begin
+    SetFloatParam(Sender as TEdit, AppIni.SetTempLow1);
+end;
+
+procedure TFormAppConfig.EdTempLow2Change(Sender: TObject);
+begin
+    SetFloatParam(Sender as TEdit, AppIni.SetTempLow2);
+end;
+
+procedure TFormAppConfig.EdTempNkuChange(Sender: TObject);
+begin
+    SetFloatParam(Sender as TEdit, AppIni.SetTempNku);
 end;
 
 procedure TFormAppConfig.EdTempTimeChange(Sender: TObject);

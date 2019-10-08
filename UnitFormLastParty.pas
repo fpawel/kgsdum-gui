@@ -503,14 +503,15 @@ begin
 
     with TFDQuery.Create(nil) do
     begin
-        Connection := KgsdumData.Conn;
-        SQL.Text :=
-          'UPDATE product SET serial_number = :serial_number WHERE product_id = :product_id;';
-        ParamByName('serial_number').Value := Value;
-        ParamByName('product_id').Value := p.FProductID;
+
         try
+            Connection := KgsdumData.Conn;
+            SQL.Text :=
+              'UPDATE product SET serial_number = :serial_number WHERE product_id = :product_id;';
+            ParamByName('serial_number').Value := StrToInt(Value);
+            ParamByName('product_id').Value := p.FProductID;
             ExecSQL;
-            p.FSerial := Value;
+            p.FSerial := StrToInt(Value);
             FProducts[ARow - 1] := p;
         except
             on E: Exception do
@@ -518,7 +519,7 @@ begin
                 with StringGrid1 do
                 begin
                     OnSetEditText := nil;
-                    Cells[ACol, ARow] := p.FSerial;
+                    Cells[ACol, ARow] := IntToStr(p.FSerial);
                     OnSetEditText := StringGrid1SetEditText;
                 end;
 
@@ -549,7 +550,9 @@ end;
 procedure TFormLastParty.SetAddrValue(AAddr: byte; AVar: byte; AValue: double);
 var
     i, nVar: Integer;
-    s : string;
+    s: string;
+
+    p: TProduct;
 
 begin
     for i := 0 to Length(FProducts) - 1 do
@@ -573,9 +576,12 @@ begin
             for nVar := 0 to Length(KgsMainVars) - 1 do
                 if KgsMainVars[nVar] = AVar then
                 begin
-                    FormChartSeries.AddValue(AAddr, AVar, AValue, now);
+
+                    FormChartSeries.AddValue(FProducts[i].FSerial, AVar,
+                      AValue, now);
                     FormChartSeries.Show;
-                    KgsdumData.AddSeriesPoint(AAddr, AVar, AValue);
+                    KgsdumData.AddSeriesPoint(FProducts[i].FSerial,
+                      AVar, AValue);
                 end;
             exit;
         end;

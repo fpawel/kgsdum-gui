@@ -60,6 +60,8 @@ type
         procedure Button2Click(Sender: TObject);
     private
         { Private declarations }
+
+
         function TheVar: byte;
         function TheCoef: byte;
         function TheAddr: byte;
@@ -76,6 +78,23 @@ implementation
 {$R *.dfm}
 
 uses works, data_model, UnitWorker;
+
+procedure TFormSelectWorksDialog.FormCreate(Sender: TObject);
+var
+    i: integer;
+begin
+
+
+
+    SetWindowLong(Button1.Handle, GWL_STYLE, GetWindowLong(Button1.Handle,
+      GWL_STYLE) or BS_MULTILINE);
+    // CheckListBox1.CheckAll(cbChecked);
+    CheckListBox1.Clear;
+    for i := 0 to length(works.MainWorks) - 1 do
+        CheckListBox1.Items.Add(MainWorks[i].Name);
+    CheckListBox1.CheckAll(cbChecked);
+
+end;
 
 procedure TFormSelectWorksDialog.Button11Click(Sender: TObject);
 begin
@@ -116,8 +135,6 @@ end;
 
 procedure TFormSelectWorksDialog.Button16Click(Sender: TObject);
 begin
-    KgsdumData.NewChartSeries('Опрос');
-    FormChartSeries.NewChart;
     Worker.RunInterrogate;
 end;
 
@@ -134,10 +151,7 @@ begin
             xs[length(xs) - 1] := MainWorks[i];
         end;
     end;
-
-    KgsdumData.NewChartSeries('Настройка КГС-ДУМ');
-    FormChartSeries.NewChart;
-    Worker.RunWorks(true, xs);
+    Worker.RunMainworks(xs);
 end;
 
 procedure TFormSelectWorksDialog.Button2Click(Sender: TObject);
@@ -186,19 +200,7 @@ begin
     RunSwitchGasBlock((Sender as TComponent).Tag);
 end;
 
-procedure TFormSelectWorksDialog.FormCreate(Sender: TObject);
-var
-    i: integer;
-begin
-    SetWindowLong(Button1.Handle, GWL_STYLE, GetWindowLong(Button1.Handle,
-      GWL_STYLE) or BS_MULTILINE);
-    // CheckListBox1.CheckAll(cbChecked);
-    CheckListBox1.Clear;
-    for i := 0 to length(works.MainWorks) - 1 do
-        CheckListBox1.Items.Add(MainWorks[i].Name);
-    CheckListBox1.CheckAll(cbChecked);
 
-end;
 
 procedure TFormSelectWorksDialog.FormDeactivate(Sender: TObject);
 begin

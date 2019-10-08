@@ -3,8 +3,8 @@ object FormAppConfig: TFormAppConfig
   Top = 0
   BorderStyle = bsToolWindow
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
-  ClientHeight = 340
-  ClientWidth = 393
+  ClientHeight = 584
+  ClientWidth = 387
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,18 +20,19 @@ object FormAppConfig: TFormAppConfig
   object Panel19: TPanel
     Left = 0
     Top = 0
-    Width = 393
+    Width = 387
     Height = 17
     Align = alTop
     BevelOuter = bvNone
     BorderWidth = 1
     TabOrder = 0
+    ExplicitWidth = 393
   end
   object Panel20: TPanel
     Left = 0
     Top = 17
-    Width = 393
-    Height = 312
+    Width = 387
+    Height = 552
     Align = alTop
     BevelOuter = bvNone
     BorderWidth = 1
@@ -39,16 +40,17 @@ object FormAppConfig: TFormAppConfig
     object Panel1: TPanel
       Left = 1
       Top = 1
-      Width = 391
+      Width = 385
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 0
+      ExplicitWidth = 391
       object Shape1: TShape
         Left = 1
         Top = 36
-        Width = 389
+        Width = 383
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -68,7 +70,7 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 1
       end
       object ComboBoxComportProducts: TComboBox
-        Left = 263
+        Left = 260
         Top = 4
         Width = 98
         Height = 26
@@ -92,16 +94,17 @@ object FormAppConfig: TFormAppConfig
     object Panel3: TPanel
       Left = 1
       Top = 77
-      Width = 391
+      Width = 385
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 2
+      ExplicitWidth = 391
       object Shape2: TShape
         Left = 1
         Top = 36
-        Width = 389
+        Width = 383
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -121,7 +124,7 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 0
       end
       object EditPgs1: TEdit
-        Left = 263
+        Left = 260
         Top = 5
         Width = 98
         Height = 26
@@ -139,16 +142,17 @@ object FormAppConfig: TFormAppConfig
     object Panel5: TPanel
       Left = 1
       Top = 39
-      Width = 391
+      Width = 385
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 1
+      ExplicitWidth = 391
       object Shape3: TShape
         Left = 1
         Top = 36
-        Width = 389
+        Width = 383
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -168,7 +172,7 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 0
       end
       object ComboBoxComportTemp: TComboBox
-        Left = 263
+        Left = 260
         Top = 4
         Width = 98
         Height = 26
@@ -192,16 +196,17 @@ object FormAppConfig: TFormAppConfig
     object Panel7: TPanel
       Left = 1
       Top = 191
-      Width = 391
+      Width = 385
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 5
+      ExplicitWidth = 391
       object Shape4: TShape
         Left = 1
         Top = 36
-        Width = 389
+        Width = 383
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -221,7 +226,7 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 0
       end
       object EditPgs4: TEdit
-        Left = 263
+        Left = 260
         Top = 5
         Width = 98
         Height = 26
@@ -239,16 +244,17 @@ object FormAppConfig: TFormAppConfig
     object Panel9: TPanel
       Left = 1
       Top = 153
-      Width = 391
+      Width = 385
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 4
+      ExplicitWidth = 391
       object Shape5: TShape
         Left = 1
         Top = 36
-        Width = 389
+        Width = 383
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -268,7 +274,7 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 0
       end
       object EditPgs3: TEdit
-        Left = 263
+        Left = 260
         Top = 5
         Width = 98
         Height = 26
@@ -286,16 +292,17 @@ object FormAppConfig: TFormAppConfig
     object Panel11: TPanel
       Left = 1
       Top = 115
-      Width = 391
+      Width = 385
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 3
+      ExplicitWidth = 391
       object Shape6: TShape
         Left = 1
         Top = 36
-        Width = 389
+        Width = 383
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -315,7 +322,7 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 0
       end
       object EditPgs2: TEdit
-        Left = 263
+        Left = 260
         Top = 5
         Width = 98
         Height = 26
@@ -333,16 +340,17 @@ object FormAppConfig: TFormAppConfig
     object Panel13: TPanel
       Left = 1
       Top = 229
-      Width = 391
+      Width = 385
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 6
+      ExplicitWidth = 391
       object Shape7: TShape
         Left = 1
         Top = 36
-        Width = 389
+        Width = 383
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -362,7 +370,7 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 0
       end
       object EdTempTime: TEdit
-        Left = 263
+        Left = 260
         Top = 5
         Width = 98
         Height = 26
@@ -380,16 +388,17 @@ object FormAppConfig: TFormAppConfig
     object Panel15: TPanel
       Left = 1
       Top = 267
-      Width = 391
+      Width = 385
       Height = 38
       Align = alTop
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 7
+      ExplicitWidth = 391
       object Shape8: TShape
         Left = 1
         Top = 36
-        Width = 389
+        Width = 383
         Height = 1
         Align = alBottom
         Pen.Color = cl3DLight
@@ -409,7 +418,7 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 0
       end
       object EdGasTime: TEdit
-        Left = 263
+        Left = 260
         Top = 5
         Width = 98
         Height = 26
@@ -422,6 +431,250 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 1
         Text = 'EdGas'
         OnChange = EdGasTimeChange
+      end
+    end
+    object Panel18: TPanel
+      Left = 1
+      Top = 305
+      Width = 385
+      Height = 47
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 1
+      TabOrder = 8
+      ExplicitLeft = 0
+      ExplicitTop = 393
+      ExplicitWidth = 460
+      object Shape10: TShape
+        Left = 1
+        Top = 45
+        Width = 383
+        Height = 1
+        Align = alBottom
+        Pen.Color = cl3DLight
+        ExplicitLeft = 168
+        ExplicitTop = 152
+        ExplicitWidth = 65
+      end
+      object Label2: TLabel
+        Left = 1
+        Top = 1
+        Width = 240
+        Height = 44
+        Align = alLeft
+        Alignment = taRightJustify
+        Caption = #1055#1086#1085#1080#1078#1077#1085#1085#1072#1103' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1087#1088#1080' '#1085#1072#1089#1090#1088#1086#1081#1082#1077
+        WordWrap = True
+      end
+      object EdTempLow1: TEdit
+        Left = 260
+        Top = 5
+        Width = 98
+        Height = 26
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -15
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        Text = 'EdGas'
+        OnChange = EdTempLow1Change
+      end
+    end
+    object Panel17: TPanel
+      Left = 1
+      Top = 352
+      Width = 385
+      Height = 47
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 1
+      TabOrder = 9
+      ExplicitLeft = -7
+      ExplicitTop = 404
+      ExplicitWidth = 460
+      object Shape9: TShape
+        Left = 1
+        Top = 45
+        Width = 383
+        Height = 1
+        Align = alBottom
+        Pen.Color = cl3DLight
+        ExplicitLeft = 168
+        ExplicitTop = 152
+        ExplicitWidth = 65
+      end
+      object Label1: TLabel
+        Left = 1
+        Top = 1
+        Width = 240
+        Height = 44
+        Align = alLeft
+        Alignment = taRightJustify
+        Caption = #1055#1086#1074#1099#1096#1077#1085#1085#1072#1103' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1087#1088#1080' '#1085#1072#1089#1090#1088#1086#1081#1082#1077
+        WordWrap = True
+      end
+      object EdTempHigh1: TEdit
+        Left = 260
+        Top = 5
+        Width = 98
+        Height = 26
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -15
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        Text = 'EdGas'
+        OnChange = EdTempHigh1Change
+      end
+    end
+    object Panel21: TPanel
+      Left = 1
+      Top = 399
+      Width = 385
+      Height = 47
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 1
+      TabOrder = 10
+      ExplicitLeft = 0
+      ExplicitTop = 452
+      object Shape11: TShape
+        Left = 1
+        Top = 45
+        Width = 383
+        Height = 1
+        Align = alBottom
+        Pen.Color = cl3DLight
+        ExplicitLeft = 168
+        ExplicitTop = 152
+        ExplicitWidth = 65
+      end
+      object Label3: TLabel
+        Left = 1
+        Top = 1
+        Width = 240
+        Height = 44
+        Align = alLeft
+        Alignment = taRightJustify
+        Caption = #1058#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1085'.'#1082'.'#1091'.'
+        WordWrap = True
+      end
+      object EdTempNku: TEdit
+        Left = 260
+        Top = 5
+        Width = 98
+        Height = 26
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -15
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        Text = 'EdGas'
+        OnChange = EdTempNkuChange
+      end
+    end
+    object Panel22: TPanel
+      Left = 1
+      Top = 446
+      Width = 385
+      Height = 47
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 1
+      TabOrder = 11
+      ExplicitLeft = 0
+      ExplicitTop = 585
+      object Shape12: TShape
+        Left = 1
+        Top = 45
+        Width = 383
+        Height = 1
+        Align = alBottom
+        Pen.Color = cl3DLight
+        ExplicitLeft = 168
+        ExplicitTop = 152
+        ExplicitWidth = 65
+      end
+      object Label4: TLabel
+        Left = 1
+        Top = 1
+        Width = 227
+        Height = 44
+        Align = alLeft
+        Alignment = taRightJustify
+        Caption = #1055#1086#1085#1080#1078#1077#1085#1085#1072#1103' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1087#1088#1080' '#1087#1088#1086#1074#1077#1088#1082#1077
+        WordWrap = True
+        ExplicitHeight = 38
+      end
+      object EdTempLow2: TEdit
+        Left = 260
+        Top = 5
+        Width = 98
+        Height = 26
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -15
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        Text = 'EdGas'
+        OnChange = EdTempLow2Change
+      end
+    end
+    object Panel23: TPanel
+      Left = 1
+      Top = 493
+      Width = 385
+      Height = 47
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 1
+      TabOrder = 12
+      ExplicitLeft = 0
+      ExplicitTop = 585
+      object Shape13: TShape
+        Left = 1
+        Top = 45
+        Width = 383
+        Height = 1
+        Align = alBottom
+        Pen.Color = cl3DLight
+        ExplicitLeft = 168
+        ExplicitTop = 152
+        ExplicitWidth = 65
+      end
+      object Label5: TLabel
+        Left = 1
+        Top = 1
+        Width = 228
+        Height = 44
+        Align = alLeft
+        Alignment = taRightJustify
+        Caption = #1055#1086#1074#1099#1096#1077#1085#1085#1072#1103' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1087#1088#1080' '#1087#1088#1086#1074#1077#1088#1082#1077
+        WordWrap = True
+        ExplicitHeight = 38
+      end
+      object EdTempHigh2: TEdit
+        Left = 260
+        Top = 5
+        Width = 98
+        Height = 26
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -15
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        Text = 'EdGas'
+        OnChange = EdTempHigh2Change
       end
     end
   end

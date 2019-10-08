@@ -1,10 +1,11 @@
 debug
-build
+build/*
+*.exe
+!build/kgsdum.exe
 Win32
 bin
 .vscode/
 .idea/
-*.exe
 .idea
 *.tds
 *.~*

@@ -28,6 +28,8 @@ type
         FHComportProducts, FHComportTermo: THandle;
         FThread: TWorkThread;
 
+        FNewChartCreated: boolean;
+
         procedure DoEachProduct1(func: TProductProcedure);
         procedure CloseComport(var hPort: THandle);
         procedure DoEndWork;
@@ -41,10 +43,16 @@ type
 
         procedure OnComport(r: TComportLogEntry);
 
+        procedure CreateNewChartsBuccket;
+        procedure RunWorks(withJourna: boolean; works: TWorks);
+
     public
         { Public declarations }
         ComportProductsConfig, ComportGasConfig, ComportTermoConfig
           : TConfigGetResponse;
+
+        procedure RunMainworks(works: TArray<TWork>);
+
         procedure DoEachProduct(func: TProductProcedure);
         procedure CancelExecution;
         procedure SkipDelay;
@@ -68,7 +76,7 @@ type
         procedure TryWithErrorMessage(Proc: TWorkProcedure);
 
         procedure RunWork(AName: string; AWork: TWorkProcedure);
-        procedure RunWorks(withJourna: boolean; works: TWorks);
+
         procedure RunKgsSetAddr(addr: byte);
         procedure RunInterrogate;
 
@@ -99,6 +107,7 @@ uses UnitFormLastParty, hardware_errors, UnitFormJournal, UnitFormConsole,
 
 procedure TWorker.DataModuleCreate(Sender: TObject);
 begin
+    FNewChartCreated := false;
     FThread := nil;
     FFlagRunning := 0;
     FHComportProducts := INVALID_HANDLE_VALUE;
@@ -133,11 +142,25 @@ begin
     RunWorks(false, [TWork.Create(AName, AWork)]);
 end;
 
+procedure TWorker.CreateNewChartsBuccket;
+begin
+    if FNewChartCreated then
+        exit;
+    KgsdumData.NewChartSeries('Настройка КГС-ДУМ');
+    FormChartSeries.NewChart;
+    FNewChartCreated := true;
+end;
+
+procedure TWorker.RunMainworks(works: TArray<TWork>);
+begin
+    CreateNewChartsBuccket;
+    RunWorks(true, works);
+end;
+
 procedure TWorker.RunWorks(withJourna: boolean; works: TWorks);
 begin
     if AtomicIncrement(FFlagRunning, 0) = 1 then
         raise EConfigError.Create('already running');
-
     FThread := TWorkThread.Create(true);
     FThread.FreeOnTerminate := true;
     FThread.FWorks := works;
@@ -686,6 +709,8 @@ end;
 // ------------------------------------------------------------------------------
 procedure TWorker.RunInterrogate;
 begin
+
+    CreateNewChartsBuccket;
 
     Worker.RunWork('опрос',
         procedure
