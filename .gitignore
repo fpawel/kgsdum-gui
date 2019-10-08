@@ -1,7 +1,4 @@
 debug
-build/*
-*.exe
-!build/kgsdum.exe
 Win32
 bin
 .vscode/
