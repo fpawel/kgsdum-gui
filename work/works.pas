@@ -324,20 +324,7 @@ end;
 
 initialization
 
-MainWorks := [TWork.Create('термоциклирование',
-    procedure
-    var
-        i: integer;
-    begin
-        for i := 1 to 3 do
-        begin
-            TermochamberSetupTemperature(-60);
-            TermochamberSetupTemperature(80);
-        end;
-        TermochamberSetupTemperature(20);
-    end),
-
-  TWork.Create('установка НКУ',
+MainWorks := [TWork.Create('установка НКУ',
     procedure
     begin
         TermochamberSetupTemperature(20);
@@ -362,12 +349,6 @@ MainWorks := [TWork.Create('термоциклирование',
         _do([DWriteKef(44, 2), DReadVar(102)]);
 
         //BlowAir;
-    end),
-
-  TWork.Create('установка НКУ',
-    procedure
-    begin
-        TermochamberSetupTemperature(AppIni.TempNku);
     end),
 
   TWork.Create('термокомпенсация',
