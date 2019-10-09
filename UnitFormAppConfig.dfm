@@ -26,7 +26,6 @@ object FormAppConfig: TFormAppConfig
     BevelOuter = bvNone
     BorderWidth = 1
     TabOrder = 0
-    ExplicitWidth = 393
   end
   object Panel20: TPanel
     Left = 0
@@ -46,7 +45,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 0
-      ExplicitWidth = 391
       object Shape1: TShape
         Left = 1
         Top = 36
@@ -100,7 +98,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 2
-      ExplicitWidth = 391
       object Shape2: TShape
         Left = 1
         Top = 36
@@ -148,7 +145,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 1
-      ExplicitWidth = 391
       object Shape3: TShape
         Left = 1
         Top = 36
@@ -202,7 +198,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 5
-      ExplicitWidth = 391
       object Shape4: TShape
         Left = 1
         Top = 36
@@ -250,7 +245,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 4
-      ExplicitWidth = 391
       object Shape5: TShape
         Left = 1
         Top = 36
@@ -298,7 +292,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 3
-      ExplicitWidth = 391
       object Shape6: TShape
         Left = 1
         Top = 36
@@ -346,7 +339,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 6
-      ExplicitWidth = 391
       object Shape7: TShape
         Left = 1
         Top = 36
@@ -394,7 +386,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 7
-      ExplicitWidth = 391
       object Shape8: TShape
         Left = 1
         Top = 36
@@ -442,9 +433,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 8
-      ExplicitLeft = 0
-      ExplicitTop = 393
-      ExplicitWidth = 460
       object Shape10: TShape
         Left = 1
         Top = 45
@@ -459,12 +447,14 @@ object FormAppConfig: TFormAppConfig
       object Label2: TLabel
         Left = 1
         Top = 1
-        Width = 240
+        Width = 227
         Height = 44
         Align = alLeft
         Alignment = taRightJustify
         Caption = #1055#1086#1085#1080#1078#1077#1085#1085#1072#1103' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1087#1088#1080' '#1085#1072#1089#1090#1088#1086#1081#1082#1077
         WordWrap = True
+        ExplicitLeft = 14
+        ExplicitHeight = 38
       end
       object EdTempLow1: TEdit
         Left = 260
@@ -491,9 +481,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 9
-      ExplicitLeft = -7
-      ExplicitTop = 404
-      ExplicitWidth = 460
       object Shape9: TShape
         Left = 1
         Top = 45
@@ -508,12 +495,14 @@ object FormAppConfig: TFormAppConfig
       object Label1: TLabel
         Left = 1
         Top = 1
-        Width = 240
+        Width = 228
         Height = 44
         Align = alLeft
         Alignment = taRightJustify
         Caption = #1055#1086#1074#1099#1096#1077#1085#1085#1072#1103' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1087#1088#1080' '#1085#1072#1089#1090#1088#1086#1081#1082#1077
         WordWrap = True
+        ExplicitLeft = 13
+        ExplicitHeight = 38
       end
       object EdTempHigh1: TEdit
         Left = 260
@@ -540,8 +529,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 10
-      ExplicitLeft = 0
-      ExplicitTop = 452
       object Shape11: TShape
         Left = 1
         Top = 45
@@ -556,12 +543,14 @@ object FormAppConfig: TFormAppConfig
       object Label3: TLabel
         Left = 1
         Top = 1
-        Width = 240
+        Width = 140
         Height = 44
         Align = alLeft
         Alignment = taRightJustify
         Caption = #1058#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1085'.'#1082'.'#1091'.'
         WordWrap = True
+        ExplicitLeft = 101
+        ExplicitHeight = 19
       end
       object EdTempNku: TEdit
         Left = 260
@@ -588,8 +577,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 11
-      ExplicitLeft = 0
-      ExplicitTop = 585
       object Shape12: TShape
         Left = 1
         Top = 45
@@ -637,8 +624,6 @@ object FormAppConfig: TFormAppConfig
       BevelOuter = bvNone
       BorderWidth = 1
       TabOrder = 12
-      ExplicitLeft = 0
-      ExplicitTop = 585
       object Shape13: TShape
         Left = 1
         Top = 45

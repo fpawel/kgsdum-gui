@@ -210,7 +210,7 @@ begin
     if FUpdate then
         exit;
     CloseWindow(FhWndTip);
-    if TryStrToFloatMy(EdTempLow1.Text, v) then
+    if TryStrToFloatMy(ed.Text, v) then
         p(v)
     else
     begin
