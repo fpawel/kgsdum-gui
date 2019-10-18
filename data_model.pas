@@ -93,7 +93,8 @@ type
 
     TSeriesPointEntry = record
         StoredAt: TDateTime;
-        AVar, Addr: byte;
+        AVar: byte;
+        ASerial:integer;
         Value: double;
     end;
 

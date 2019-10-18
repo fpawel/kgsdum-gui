@@ -20,6 +20,8 @@ object FormCharts: TFormCharts
     Top = 0
     Width = 5
     Height = 300
+    ExplicitLeft = 257
+    ExplicitTop = -8
   end
   object Panel1: TPanel
     Left = 0

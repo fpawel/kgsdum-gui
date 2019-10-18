@@ -37,7 +37,7 @@ type
         { Public declarations }
 
         procedure SetPartyValue(propertyName: string; AValue: Variant);
-        procedure AddSeriesPoint(TheAddr, TheVar: byte; TheValue: double);
+        procedure AddSeriesPoint(TheSerial:integer; TheVar: byte; TheValue: double);
         procedure NewChartSeries(AName: string);
 
         function GetLastSeriesBucket: TSeriesBucket;
@@ -149,7 +149,7 @@ begin
     end;
 end;
 
-procedure TKgsdumData.AddSeriesPoint(TheAddr, TheVar: byte; TheValue: double);
+procedure TKgsdumData.AddSeriesPoint(TheSerial: integer; TheVar: byte; TheValue: double);
 var
     i: integer;
     s: string;
@@ -161,7 +161,7 @@ begin
     begin
         StoredAt := now;
         AVar := TheVar;
-        Addr := TheAddr;
+        ASerial := TheSerial;
         Value := TheValue;
     end;
 
@@ -192,7 +192,7 @@ begin
             with FSeriesPointEntries[i] do
             begin
                 SQL.Text := SQL.Text + Format(' (%d, %d, %d, %s, %s)',
-                  [last_bucket.BucketID, Addr, AVar, float_to_str(Value),
+                  [last_bucket.BucketID, ASerial, AVar, float_to_str(Value),
                   DateTimeToDBString(StoredAt)]);
                 if i < Length(FSeriesPointEntries) - 1 then
                     SQL.Text := SQL.Text + ', ';
