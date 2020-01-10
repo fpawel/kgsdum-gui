@@ -11,7 +11,6 @@ type
     private
         { Private declarations }
 
-
     public
         { Public declarations }
         Ini: TInifile;
@@ -21,7 +20,6 @@ type
 
         procedure SetComportProductsName(value: string);
         procedure SetComportTempName(value: string);
-
 
         procedure SetGasTime(value: integer);
         procedure SetTempTime(value: integer);
@@ -42,28 +40,24 @@ type
         procedure SetTempNku(value: double);
         function GetTempNku: double;
 
+        procedure SetPneumoAddr(value: byte);
+        function GetPneumoAddr: byte;
+
         property ComportProductsName: string read GetComportProductsName
           write SetComportProductsName;
         property ComportTempName: string read GetComportTempName
           write SetComportTempName;
 
-        property GasTime: integer read GetGasTime
-          write SetGasTime;
-        property TempTime: integer read GetTempTime
-          write SetTempTime;
+        property GasTime: integer read GetGasTime write SetGasTime;
+        property TempTime: integer read GetTempTime write SetTempTime;
 
-        property TempLow1: double read GetTempLow1
-          write SetTempLow1;
-        property TempLow2: double read GetTempLow2
-          write SetTempLow2;
-        property TempHigh1: double read GetTemphigh1
-          write SetTemphigh1;
-        property TempHigh2: double read GetTemphigh2
-          write SetTempHigh2;
-        property TempNku: double read GetTempNku
-          write SetTempNku;
+        property TempLow1: double read GetTempLow1 write SetTempLow1;
+        property TempLow2: double read GetTempLow2 write SetTempLow2;
+        property TempHigh1: double read GetTempHigh1 write SetTempHigh1;
+        property TempHigh2: double read GetTempHigh2 write SetTempHigh2;
+        property TempNku: double read GetTempNku write SetTempNku;
 
-
+        property PneumoAddr: byte read GetPneumoAddr write SetPneumoAddr;
 
 
     end;
@@ -76,6 +70,16 @@ implementation
 { %CLASSGROUP 'Vcl.Controls.TControl' }
 
 {$R *.dfm}
+
+procedure TAppIni.SetPneumoAddr(value: byte);
+begin
+    Ini.WriteInteger('work', 'pneumo_addr', value);
+end;
+
+function TAppIni.GetPneumoAddr: byte;
+begin
+    result := Ini.ReadInteger('work', 'pneumo_addr', $20);
+end;
 
 procedure TAppIni.DataModuleCreate(Sender: TObject);
 begin
@@ -101,7 +105,6 @@ procedure TAppIni.SetTempTime(value: integer);
 begin
     Ini.WriteInteger('work', 'temp_time', value);
 end;
-
 
 function TAppIni.GetComportProductsName: string;
 begin
@@ -158,7 +161,7 @@ begin
     result := AppIni.Ini.ReadFloat('work', 'temp_high2', 60);
 end;
 
-procedure TAppIni.SetTemphigh2(value: double);
+procedure TAppIni.SetTempHigh2(value: double);
 begin
     AppIni.Ini.WriteFloat('work', 'temp_high2', value);
 end;

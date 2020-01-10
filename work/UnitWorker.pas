@@ -692,7 +692,7 @@ end;
 procedure TWorker.SwitchGasBlock6006(code: byte);
 begin
     try
-        modbus.GetResponse($20, $10, [0, $10, 0, 1, 2, 0, code],
+        modbus.GetResponse(AppIni.PneumoAddr, $10, [0, $10, 0, 1, 2, 0, code],
           ComportProductsWorker,
             procedure(_: TBytes)
             begin

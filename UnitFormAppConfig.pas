@@ -10,6 +10,7 @@ uses
 
 type
     TProcFloat = procedure(v:double) of object;
+    TProcbyte = procedure(v:byte) of object;
     TFormAppConfig = class(TForm)
         Panel19: TPanel;
         Panel20: TPanel;
@@ -65,6 +66,10 @@ type
     Shape13: TShape;
     Label5: TLabel;
     EdTempHigh2: TEdit;
+    Panel24: TPanel;
+    Shape14: TShape;
+    Panel25: TPanel;
+    EdPneumoAddr: TEdit;
         procedure ComboBoxComportProductsDropDown(Sender: TObject);
         procedure FormCreate(Sender: TObject);
         procedure FormDeactivate(Sender: TObject);
@@ -80,6 +85,7 @@ type
     procedure EdTempNkuChange(Sender: TObject);
     procedure EdTempLow2Change(Sender: TObject);
     procedure EdTempHigh2Change(Sender: TObject);
+    procedure EdPneumoAddrChange(Sender: TObject);
     private
         { Private declarations }
         FUpdate: boolean;
@@ -98,6 +104,7 @@ type
           Title, Text: string);
 
         procedure SetFloatParam(ed:TEdit; p:TProcFloat);
+        procedure SetByteParam(ed:TEdit; p:TProcbyte);
     public
         { Public declarations }
     end;
@@ -129,6 +136,7 @@ begin
     FKey.Add(EdTempHigh1, 'temp_high1');
     FKey.Add(EdTempHigh2, 'temp_high2');
     FKey.Add(EdTempNku, 'temp_nku');
+    FKey.Add(EdPneumoAddr, 'pneumo_addr');
 
 
     _reload;
@@ -170,6 +178,7 @@ begin
     EdTempHigh1.Text := FloatToStr(AppIni.TempHigh1);
     EdTempHigh2.Text := FloatToStr(AppIni.TempHigh2);
     EdTempNku.Text := FloatToStr(AppIni.TempNku);
+    EdPneumoAddr.Text := inttostr(AppIni.PneumoAddr);
 
     FUpdate := false;
 end;
@@ -201,6 +210,27 @@ begin
     if FUpdate then
         exit;
     AppIni.ComportTempName := ComboBoxComportTemp.Text;
+
+end;
+
+
+procedure TFormAppConfig.SetByteParam(ed:TEdit; p:TProcbyte);
+var v:integer;
+begin
+    if FUpdate then
+        exit;
+    CloseWindow(FhWndTip);
+    if TryStrToInt(ed.Text, v) and (v >= 0) and (v <= $FF) then
+        p(v)
+    else
+    begin
+        ShowBalloonTip(ed as TWinControl, TIconKind.Error, '',
+          'не допустимое значение');
+        if Visible then
+            (ed as TWinControl).SetFocus;
+    end;
+    if Visible then
+        (ed as TWinControl).SetFocus;
 
 end;
 
@@ -289,6 +319,11 @@ begin
     end;
     if Visible then
         (Sender as TWinControl).SetFocus;
+end;
+
+procedure TFormAppConfig.EdPneumoAddrChange(Sender: TObject);
+begin
+    SetByteParam(Sender as TEdit, AppIni.SetPneumoAddr);
 end;
 
 procedure TFormAppConfig.EditPgs1Change(Sender: TObject);

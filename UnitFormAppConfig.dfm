@@ -3,7 +3,7 @@ object FormAppConfig: TFormAppConfig
   Top = 0
   BorderStyle = bsToolWindow
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
-  ClientHeight = 584
+  ClientHeight = 600
   ClientWidth = 387
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -31,7 +31,7 @@ object FormAppConfig: TFormAppConfig
     Left = 0
     Top = 17
     Width = 387
-    Height = 552
+    Height = 584
     Align = alTop
     BevelOuter = bvNone
     BorderWidth = 1
@@ -453,7 +453,6 @@ object FormAppConfig: TFormAppConfig
         Alignment = taRightJustify
         Caption = #1055#1086#1085#1080#1078#1077#1085#1085#1072#1103' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1087#1088#1080' '#1085#1072#1089#1090#1088#1086#1081#1082#1077
         WordWrap = True
-        ExplicitLeft = 14
         ExplicitHeight = 38
       end
       object EdTempLow1: TEdit
@@ -501,7 +500,6 @@ object FormAppConfig: TFormAppConfig
         Alignment = taRightJustify
         Caption = #1055#1086#1074#1099#1096#1077#1085#1085#1072#1103' '#1090#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1087#1088#1080' '#1085#1072#1089#1090#1088#1086#1081#1082#1077
         WordWrap = True
-        ExplicitLeft = 13
         ExplicitHeight = 38
       end
       object EdTempHigh1: TEdit
@@ -549,7 +547,6 @@ object FormAppConfig: TFormAppConfig
         Alignment = taRightJustify
         Caption = #1058#1077#1084#1087#1077#1088#1072#1090#1091#1088#1072' '#1085'.'#1082'.'#1091'.'
         WordWrap = True
-        ExplicitLeft = 101
         ExplicitHeight = 19
       end
       object EdTempNku: TEdit
@@ -660,6 +657,55 @@ object FormAppConfig: TFormAppConfig
         TabOrder = 0
         Text = 'EdGas'
         OnChange = EdTempHigh2Change
+      end
+    end
+    object Panel24: TPanel
+      Left = 1
+      Top = 540
+      Width = 385
+      Height = 38
+      Align = alTop
+      BevelOuter = bvNone
+      BorderWidth = 1
+      TabOrder = 13
+      ExplicitLeft = -15
+      ExplicitTop = 601
+      object Shape14: TShape
+        Left = 1
+        Top = 36
+        Width = 383
+        Height = 1
+        Align = alBottom
+        Pen.Color = cl3DLight
+        ExplicitLeft = 168
+        ExplicitTop = 152
+        ExplicitWidth = 65
+      end
+      object Panel25: TPanel
+        Left = 1
+        Top = 1
+        Width = 240
+        Height = 35
+        Align = alLeft
+        Alignment = taRightJustify
+        BevelOuter = bvNone
+        Caption = #1040#1076#1088#1077#1089' '#1075#1072#1079#1086#1074#1086#1075#1086' '#1073#1083#1086#1082#1072
+        TabOrder = 0
+      end
+      object EdPneumoAddr: TEdit
+        Left = 260
+        Top = 5
+        Width = 98
+        Height = 26
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -15
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 1
+        Text = 'EdPneumoAddr'
+        OnChange = EdPneumoAddrChange
       end
     end
   end
